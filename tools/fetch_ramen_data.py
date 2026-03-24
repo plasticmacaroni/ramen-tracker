@@ -59,6 +59,7 @@ _TYPOS = _load_typos()
 STYLE_TYPOS = {k.lower(): v for k, v in _TYPOS.get('style', {}).items()}
 BRAND_TYPOS = {k.lower(): v for k, v in _TYPOS.get('brand', {}).items()}
 TEXT_TYPOS = {k.lower(): v for k, v in _TYPOS.get('text', {}).items()}
+RENAMES = {r['id']: r for r in _TYPOS.get('rename', [])}
 
 
 def download_xlsx():
@@ -166,6 +167,17 @@ def parse_xlsx():
                     stars = float(raw_stars)
                 except (ValueError, TypeError):
                     pass
+
+        rename = RENAMES.get(review_id)
+        if rename:
+            if 'replace_variety' in rename:
+                variety = rename['replace_variety']
+            if 'replace_brand' in rename:
+                brand = rename['replace_brand']
+            if 'replace_style' in rename:
+                style = rename['replace_style']
+            if 'replace_country' in rename:
+                country = rename['replace_country']
 
         ramen_list.append({
             'id': review_id,
@@ -1065,7 +1077,7 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
 
         # --- Image ---
         if needs_image:
-            query = f'{r["brand"]} {r["variety"]} packaging the ramen rater'
+            query = f'{r["brand"]} {r["variety"]} the ramen rater'
             candidates = _search_bing(query)
 
             if not candidates:

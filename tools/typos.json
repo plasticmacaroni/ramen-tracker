@@ -1,4 +1,26 @@
 {
+  "rename": [
+    {
+      "id": 4813,
+      "replace_variety": "Cup Noodle Chicken Flavour - Singapore"
+    },
+    {
+      "id": 265,
+      "replace_variety": "Cup Noodles Chicken Flavour"
+    },
+    {
+      "id": 935,
+      "replace_variety": "Instant Lunch Beef"
+    },
+    {
+      "id": 53,
+      "replace_variety": "Cup Noodle Chicken Flavour - Indonesia"
+    },
+    {
+      "id": 1456,
+      "replace_variety": "Cup Noodles Chicken Flavour - Singapore"
+    }
+  ],
   "style": {
     "boowl": "Bowl",
     "trray": "Tray"
@@ -8,9 +30,11 @@
     "Ottogi": "Otoki",
     "Nssin": "Nissin",
     "Maruhan": "Maruchan",
-    "Kiki Noodle": "Kiki"
+    "Kiki Noodle": "Kiki",
+    "Koba": "Kobe"
   },
   "text": {
+    "Japanese Home Style Noodles": "",
     "Fllavor": "Flavor",
     "CBowlhicken Curry": "Chicken Curry",
     "hilled": "Chilled",

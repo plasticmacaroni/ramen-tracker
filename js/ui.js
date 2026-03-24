@@ -872,11 +872,16 @@ export function renderCollection() {
   if (countryFilter) items = items.filter(r => r.country === countryFilter);
   if (styleFilter) items = items.filter(r => r.style === styleFilter);
   if (searchQuery.length >= 2) {
-    const terms = searchQuery.split(/\s+/);
-    items = items.filter(r => {
-      const haystack = `${r.variety} ${r.brand} ${r.country}`.toLowerCase();
-      return terms.every(t => haystack.includes(t));
-    });
+    const numId = /^\d+$/.test(searchQuery) ? Number(searchQuery) : null;
+    if (numId !== null) {
+      items = items.filter(r => r.id === numId);
+    } else {
+      const terms = searchQuery.split(/\s+/);
+      items = items.filter(r => {
+        const haystack = `${r.variety} ${r.brand} ${r.country}`.toLowerCase();
+        return terms.every(t => haystack.includes(t));
+      });
+    }
   }
 
   switch (sort) {
@@ -1536,11 +1541,16 @@ export function renderSharedCollection() {
   if (countryFilter) items = items.filter(r => r.country === countryFilter);
   if (styleFilter) items = items.filter(r => r.style === styleFilter);
   if (searchQuery.length >= 2) {
-    const terms = searchQuery.split(/\s+/);
-    items = items.filter(r => {
-      const haystack = `${r.variety} ${r.brand} ${r.country}`.toLowerCase();
-      return terms.every(t => haystack.includes(t));
-    });
+    const numId = /^\d+$/.test(searchQuery) ? Number(searchQuery) : null;
+    if (numId !== null) {
+      items = items.filter(r => r.id === numId);
+    } else {
+      const terms = searchQuery.split(/\s+/);
+      items = items.filter(r => {
+        const haystack = `${r.variety} ${r.brand} ${r.country}`.toLowerCase();
+        return terms.every(t => haystack.includes(t));
+      });
+    }
   }
 
   switch (sort) {

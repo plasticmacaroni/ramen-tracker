@@ -42,6 +42,11 @@ export function getRamenById(id) {
 
 export function searchRamen(query, list = allRamen) {
   if (!query || query.length < 2) return [];
+  const numId = /^\d+$/.test(query.trim()) ? Number(query.trim()) : null;
+  if (numId !== null) {
+    const exact = list.filter(r => r.id === numId);
+    if (exact.length) return exact;
+  }
   const q = query.toLowerCase();
   const terms = q.split(/\s+/);
   return list.filter(r => {
@@ -82,11 +87,16 @@ export function filterAndSort(options = {}) {
   let list = [...allRamen];
 
   if (search && search.length >= 2) {
-    const terms = search.toLowerCase().split(/\s+/);
-    list = list.filter(r => {
-      const haystack = `${r.variety} ${r.brand} ${r.country}`.toLowerCase();
-      return terms.every(t => haystack.includes(t));
-    });
+    const numId = /^\d+$/.test(search.trim()) ? Number(search.trim()) : null;
+    if (numId !== null) {
+      list = list.filter(r => r.id === numId);
+    } else {
+      const terms = search.toLowerCase().split(/\s+/);
+      list = list.filter(r => {
+        const haystack = `${r.variety} ${r.brand} ${r.country}`.toLowerCase();
+        return terms.every(t => haystack.includes(t));
+      });
+    }
   }
 
   if (brand) list = list.filter(r => r.brand === brand);

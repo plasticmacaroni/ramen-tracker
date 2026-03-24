@@ -105,7 +105,6 @@ function restoreFromHash() {
     document.getElementById('rate-search').dispatchEvent(new Event('input'));
   }
 
-  syncClearButtons();
 }
 
 function observeFilterChanges() {
