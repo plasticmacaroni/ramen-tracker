@@ -146,7 +146,7 @@ function flag(country) {
 
 /* ---- Card Renderers ---- */
 
-const BRAND_LOGO_EXTS = ['png', 'svg', 'webp', 'jpg'];
+const BRAND_LOGO_EXTS = ['png', 'svg', 'webp', 'jpg', 'avif', 'jpeg', 'gif', 'bmp', 'ico', 'jfif', 'tiff', 'tif'];
 
 function brandLogoPath(brand, ext = 'png') {
   return `images/brand/${brand.toLowerCase()}.${ext}`;
@@ -242,10 +242,7 @@ function ramenImage(ramen) {
   if (ramen.custom && ramen.imageData) {
     return `<img src="${ramen.imageData}" alt="${ramen.variety}" loading="lazy">`;
   }
-  if (ramen.image) {
-    return `<img src="images/ramen/${ramen.id}.webp" alt="${ramen.variety}" loading="lazy">`;
-  }
-  return `<span class="placeholder-icon" role="img" aria-label="No photo available">🍜</span>`;
+  return `<img src="images/ramen/${ramen.id}.webp" alt="${ramen.variety}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'placeholder-icon',role:'img',ariaLabel:'No photo available',textContent:'🍜'}))">`;
 }
 
 export function renderRamenCard(ramen, options = {}) {
@@ -418,7 +415,7 @@ export function openRatingModal(ramen) {
   document.getElementById('rating-ramen-meta').textContent = `${ramen.brand} · ${flag(ramen.country)} ${ramen.country || ''}`;
   const headerImg = document.getElementById('rating-header-image');
   headerImg.innerHTML = ramenImage(ramen);
-  headerImg.style.cursor = (ramen.image || (ramen.custom && ramen.imageData)) ? 'zoom-in' : '';
+  headerImg.style.cursor = 'zoom-in';
 
   const detailsEl = document.getElementById('rating-details');
   const creditEl = document.getElementById('rating-ramen-credit');
@@ -997,7 +994,12 @@ export function initDiscoverView() {
   setupInfiniteScroll();
 }
 
-export function renderDiscover() {
+export function getDiscoverPageCount() { return discoverPage; }
+
+let _onDiscoverPageChange = null;
+export function onDiscoverPageChange(fn) { _onDiscoverPageChange = fn; }
+
+export function renderDiscover(restorePages) {
   const list = document.getElementById('discover-list');
   const loading = document.getElementById('discover-loading');
 
@@ -1013,7 +1015,25 @@ export function renderDiscover() {
 
   list.innerHTML = '';
   discoverPage = 0;
-  appendDiscoverPage();
+
+  const pagesToLoad = restorePages > 1 ? restorePages : 1;
+  for (let i = 0; i < pagesToLoad && discoverPage * ITEMS_PER_PAGE < discoverFiltered.length; i++) {
+    appendDiscoverPage();
+  }
+
+  if (restorePages > 1) {
+    try {
+      const raw = sessionStorage.getItem('discover_anchor');
+      sessionStorage.removeItem('discover_anchor');
+      if (raw) {
+        const { index, offset } = JSON.parse(raw);
+        const card = list.children[index];
+        if (card) {
+          requestAnimationFrame(() => window.scrollTo(0, card.offsetTop - offset));
+        }
+      }
+    } catch {}
+  }
 
   loading.classList.toggle('hidden', discoverFiltered.length > 0);
   if (discoverFiltered.length === 0) {
@@ -1046,11 +1066,28 @@ function setupInfiniteScroll() {
   sentinel.style.height = '1px';
   document.getElementById('discover-list').after(sentinel);
 
+  window.addEventListener('beforeunload', () => {
+    try {
+      const cards = document.querySelectorAll('#discover-list .ramen-card');
+      for (let i = 0; i < cards.length; i++) {
+        const rect = cards[i].getBoundingClientRect();
+        if (rect.bottom > 0) {
+          sessionStorage.setItem('discover_anchor', JSON.stringify({
+            index: i,
+            offset: rect.top,
+          }));
+          return;
+        }
+      }
+    } catch {}
+  });
+
   discoverObserver = new IntersectionObserver(entries => {
     if (entries[0].isIntersecting) {
       const loaded = discoverPage * ITEMS_PER_PAGE;
       if (loaded < discoverFiltered.length) {
         appendDiscoverPage();
+        _onDiscoverPageChange?.();
       }
     }
   }, { rootMargin: '200px' });

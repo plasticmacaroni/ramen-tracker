@@ -55,6 +55,12 @@ function writeHash() {
       if (val) params[key] = val;
     }
   }
+
+  if (currentTab === 'discover') {
+    const p = ui.getDiscoverPageCount();
+    if (p > 1) params.p = String(p);
+  }
+
   const parts = [];
   for (const [k, v] of Object.entries(params)) {
     if (v) parts.push(`${encodeURIComponent(k)}=${encodeURIComponent(v)}`);
@@ -92,11 +98,14 @@ function restoreFromHash() {
     suppressHashUpdate = false;
   }
 
-  switchTab(tab, true);
+  const restorePages = tab === 'discover' ? (parseInt(params.p) || 0) : 0;
+  switchTab(tab, true, restorePages);
 
   if (tab === 'rate' && params.q) {
     document.getElementById('rate-search').dispatchEvent(new Event('input'));
   }
+
+  syncClearButtons();
 }
 
 function observeFilterChanges() {
@@ -113,7 +122,7 @@ function observeFilterChanges() {
 
 /* ---- Tab Switching ---- */
 
-function switchTab(tab, skipHash) {
+function switchTab(tab, skipHash, restorePages) {
   currentTab = tab;
   refreshTabsAndViews();
 
@@ -131,17 +140,17 @@ function switchTab(tab, skipHash) {
     v.setAttribute('aria-hidden', isActive ? 'false' : 'true');
   });
 
-  refreshView(tab);
+  refreshView(tab, restorePages);
   if (!skipHash) writeHash();
 }
 
-function refreshView(tab) {
+function refreshView(tab, restorePages) {
   switch (tab) {
     case 'collection':
       ui.renderCollection();
       break;
     case 'discover':
-      ui.renderDiscover();
+      ui.renderDiscover(restorePages);
       break;
     case 'fight':
       ui.renderFightView();
@@ -153,6 +162,7 @@ function refreshView(tab) {
 }
 
 ui.setRefreshCallback(() => refreshView(currentTab));
+ui.onDiscoverPageChange(() => writeHash());
 
 function setupTabListeners() {
   refreshTabsAndViews();
@@ -238,3 +248,11 @@ async function init() {
 }
 
 init();
+
+window.addEventListener('pageshow', () => {
+  document.querySelectorAll('.search-box').forEach(box => {
+    const input = box.querySelector('input[type="text"]');
+    const btn = box.querySelector('.search-clear');
+    if (input && btn) btn.classList.toggle('hidden', !input.value.trim());
+  });
+});

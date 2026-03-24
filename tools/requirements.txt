@@ -2,3 +2,6 @@ openpyxl
 requests
 Pillow
 playwright
+rapidfuzz
+paddlepaddle
+paddleocr

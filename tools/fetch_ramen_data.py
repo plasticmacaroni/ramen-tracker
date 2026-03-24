@@ -21,6 +21,16 @@ import argparse
 from pathlib import Path
 from io import BytesIO
 
+# If running outside the venv, add its site-packages so imports work
+_venv = Path(__file__).resolve().parent.parent / ".venv"
+if _venv.is_dir() and not (hasattr(sys, 'real_prefix') or sys.base_prefix != sys.prefix):
+    _sp = _venv / "Lib" / "site-packages"
+    if not _sp.is_dir():
+        _py = f"python{sys.version_info.major}.{sys.version_info.minor}"
+        _sp = _venv / "lib" / _py / "site-packages"
+    if _sp.is_dir() and str(_sp) not in sys.path:
+        sys.path.insert(0, str(_sp))
+
 import requests
 from openpyxl import load_workbook
 
@@ -46,9 +56,9 @@ def _load_typos():
     return {}
 
 _TYPOS = _load_typos()
-STYLE_TYPOS = _TYPOS.get('style', {})
-BRAND_TYPOS = _TYPOS.get('brand', {})
-TEXT_TYPOS = _TYPOS.get('text', {})
+STYLE_TYPOS = {k.lower(): v for k, v in _TYPOS.get('style', {}).items()}
+BRAND_TYPOS = {k.lower(): v for k, v in _TYPOS.get('brand', {}).items()}
+TEXT_TYPOS = {k.lower(): v for k, v in _TYPOS.get('text', {}).items()}
 
 
 def download_xlsx():
@@ -137,10 +147,10 @@ def parse_xlsx():
             continue
 
         brand = str(row[col_map.get('brand', 0)] or '').strip()
-        brand = BRAND_TYPOS.get(brand, brand)
+        brand = BRAND_TYPOS.get(brand.lower(), brand)
         variety = str(row[col_map.get('variety', 0)] or '').strip()
         for typo, fix in TEXT_TYPOS.items():
-            variety = variety.replace(typo, fix)
+            variety = re.sub(re.escape(typo), fix, variety, flags=re.IGNORECASE)
         if not variety:
             continue
 
@@ -165,28 +175,11 @@ def parse_xlsx():
             'country': country,
             'stars': stars,
             'url': f"https://www.theramenrater.com/?s={review_id}",
-            'image': False,
         })
 
     wb.close()
     print(f"  Parsed {len(ramen_list)} ramen entries")
     return ramen_list
-
-
-def update_image_flags(ramen_list):
-    """Set the image flag for any ramen that already has a downloaded .webp."""
-    existing = set()
-    if IMAGES_DIR.exists():
-        for f in IMAGES_DIR.glob("*.webp"):
-            if f.stem.isdigit():
-                existing.add(int(f.stem))
-    count = 0
-    for r in ramen_list:
-        has = r['id'] in existing
-        r['image'] = has
-        if has:
-            count += 1
-    return count
 
 
 def save_json(ramen_list):
@@ -197,6 +190,26 @@ def save_json(ramen_list):
     print(f"  Saved {out_path} ({out_path.stat().st_size / 1024:.0f} KB)")
 
 
+POPULARITY_PATH = DATA_DIR / "popularity.json"
+
+
+def load_popularity():
+    """Load {id: count} from data/popularity.json. Returns dict with int keys."""
+    if POPULARITY_PATH.exists():
+        with open(POPULARITY_PATH, 'r', encoding='utf-8') as f:
+            raw = json.load(f)
+        return {int(k): v for k, v in raw.items()}
+    return {}
+
+
+def save_popularity(pop_map):
+    """Write {id: count} to data/popularity.json (string keys for JSON compat)."""
+    DATA_DIR.mkdir(exist_ok=True)
+    with open(POPULARITY_PATH, 'w', encoding='utf-8') as f:
+        json.dump({str(k): v for k, v in sorted(pop_map.items())}, f, ensure_ascii=False)
+    print(f"  Saved {POPULARITY_PATH} ({len(pop_map)} entries)")
+
+
 BROWSER_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -205,18 +218,27 @@ BROWSER_HEADERS = {
 }
 
 def _search_bing(query):
-    """Scrape Bing image search results. Returns list of image URLs."""
+    """Scrape Bing image search results. Returns list of image URLs.
+    Retries with back-off on 403/429 rate-limiting responses."""
     from urllib.parse import quote_plus
     url = f"https://www.bing.com/images/search?q={quote_plus(query)}&form=HDRSC2&first=1"
-    try:
-        resp = requests.get(url, headers=BROWSER_HEADERS, timeout=15)
-        resp.raise_for_status()
-        urls = re.findall(r'murl&quot;:&quot;(https?://[^&]+?)&quot;', resp.text)
-        urls = [u for u in urls if not u.endswith('.svg')]
-        return urls[:5]
-    except Exception as e:
-        print(f"      Bing: {type(e).__name__}: {e}")
-        return []
+    for attempt in range(3):
+        try:
+            resp = requests.get(url, headers=BROWSER_HEADERS, timeout=15)
+            if resp.status_code in (403, 429):
+                wait = 2 ** (attempt + 1)
+                print(f"      Bing: {resp.status_code} — retrying in {wait}s ({attempt+1}/3)")
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            urls = re.findall(r'murl&quot;:&quot;(https?://[^&]+?)&quot;', resp.text)
+            urls = [u for u in urls if not u.endswith('.svg')]
+            return urls[:5]
+        except requests.RequestException as e:
+            print(f"      Bing: {type(e).__name__}: {e}")
+            return []
+    print(f"      Bing: still blocked after 3 retries, skipping")
+    return []
 
 
 UBLOCK_ID = "ddkjiahejlhfcafbddmgiahcphecmpfh"
@@ -311,14 +333,23 @@ class ScraperControlPanel:
     background thread while this panel runs mainloop() on main.
     """
 
-    def __init__(self):
+    def __init__(self, ramen_list):
+        self._ramen_list = ramen_list
         self.engine = "google"
+        self._lock = threading.Lock()
+        self._single_queue = []
+        self._bulk_paused = True
+        self._wake = threading.Event()
+        self._match_ids = []
+        self.shutting_down = False
+
         self._root = tk.Tk()
         root = self._root
         root.title("Ramen Scraper")
         root.attributes("-topmost", True)
-        root.resizable(False, False)
-        root.geometry("280x170")
+        root.resizable(True, True)
+        root.geometry("620x560")
+        root.minsize(460, 400)
         root.configure(bg="#1a1a2e")
 
         tk.Label(root, text="Search Engine", font=("Segoe UI", 10, "bold"),
@@ -334,18 +365,107 @@ class ScraperControlPanel:
                            activebackground="#1a1a2e", activeforeground="#f7d354",
                            font=("Segoe UI", 10)).pack(side=tk.LEFT, padx=10)
 
+        tk.Label(root, text="Scrape one ramen (pauses bulk queue)", font=("Segoe UI", 9, "bold"),
+                 fg="#e0e0e0", bg="#1a1a2e").pack(pady=(12, 2))
+        tk.Label(root, text="Fuzzy search — pick a row, then queue scrape (or double-click row)",
+                 font=("Segoe UI", 8), fg="#888", bg="#1a1a2e").pack(pady=(0, 2))
+
+        self._single_var = tk.StringVar()
+        ent = tk.Entry(root, textvariable=self._single_var, font=("Segoe UI", 10),
+                       width=52, bg="#16213e", fg="#e0e0e0", insertbackground="#e0e0e0")
+        ent.pack(pady=(0, 4), padx=10)
+        ent.bind("<Return>", lambda e: self._on_find_matches())
+
+        find_row = tk.Frame(root, bg="#1a1a2e")
+        find_row.pack(pady=(0, 6))
+        tk.Button(find_row, text="Find matches", command=self._on_find_matches,
+                  font=("Segoe UI", 9), bg="#16213e", fg="#e0e0e0",
+                  activebackground="#0f3460", activeforeground="#f7d354").pack(side=tk.LEFT, padx=4)
+
+        list_frame = tk.Frame(root, bg="#1a1a2e")
+        list_frame.pack(pady=(0, 6), padx=10, fill=tk.BOTH, expand=True)
+        yscroll = tk.Scrollbar(list_frame, orient=tk.VERTICAL)
+        yscroll.pack(side=tk.RIGHT, fill=tk.Y)
+        xscroll = tk.Scrollbar(list_frame, orient=tk.HORIZONTAL)
+        xscroll.pack(side=tk.BOTTOM, fill=tk.X)
+        self._results_list = tk.Listbox(
+            list_frame, height=12, font=("TkFixedFont", 9),
+            bg="#16213e", fg="#e0e0e0", selectbackground="#0f3460",
+            selectforeground="#f7d354",
+            yscrollcommand=yscroll.set, xscrollcommand=xscroll.set,
+            exportselection=False, activestyle="dotbox",
+        )
+        self._results_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        yscroll.config(command=self._results_list.yview)
+        xscroll.config(command=self._results_list.xview)
+        self._results_list.bind("<Double-Button-1>", lambda e: self._on_queue_scrape_selection())
+
+        btn_row = tk.Frame(root, bg="#1a1a2e")
+        btn_row.pack(pady=(0, 6))
+        tk.Button(btn_row, text="Queue scrape (selected)", command=self._on_queue_scrape_selection,
+                  font=("Segoe UI", 9), bg="#16213e", fg="#e0e0e0",
+                  activebackground="#0f3460", activeforeground="#f7d354").pack(side=tk.LEFT, padx=4)
+        tk.Button(btn_row, text="Resume all scraping", command=self._on_resume_all,
+                  font=("Segoe UI", 9), bg="#16213e", fg="#e0e0e0",
+                  activebackground="#0f3460", activeforeground="#f7d354").pack(side=tk.LEFT, padx=4)
+
         self._progress_var = tk.StringVar(value="Starting...")
         tk.Label(root, textvariable=self._progress_var, font=("Segoe UI", 9),
-                 fg="#a0a0a0", bg="#1a1a2e").pack(pady=(8, 2))
+                 fg="#a0a0a0", bg="#1a1a2e").pack(pady=(4, 2))
 
         self._status_var = tk.StringVar(value="")
         tk.Label(root, textvariable=self._status_var, font=("Segoe UI", 8),
-                 fg="#666", bg="#1a1a2e", wraplength=260).pack(pady=(0, 8))
+                 fg="#666", bg="#1a1a2e", wraplength=430).pack(pady=(0, 8))
 
-        root.protocol("WM_DELETE_WINDOW", lambda: None)
+        root.protocol("WM_DELETE_WINDOW", self._on_close)
+
+    def _on_close(self):
+        self.shutting_down = True
+        self._wake.set()
+        try:
+            self._root.destroy()
+        except Exception:
+            pass
 
     def _on_engine_change(self):
         self.engine = self._engine_var.get()
+
+    def _on_find_matches(self):
+        text = (self._single_var.get() or "").strip()
+        if not text:
+            self.set_status("Type a few letters, a review #, or brand words")
+            return
+        matches = _fuzzy_rank_ramen(text, self._ramen_list, limit=50)
+        self._results_list.delete(0, tk.END)
+        self._match_ids.clear()
+        if not matches:
+            self.set_status("No matches — try different words or review #")
+            return
+        for r in matches:
+            brand = r.get("brand") or ""
+            variety = r.get("variety") or ""
+            line = f"#{r['id']:5d}  {brand} — {variety}"
+            self._results_list.insert(tk.END, line)
+            self._match_ids.append(r["id"])
+        self.set_status(f"{len(matches)} matches — select one, Queue scrape (or double-click)")
+
+    def _on_queue_scrape_selection(self):
+        sel = self._results_list.curselection()
+        if not sel:
+            self.set_status("Select a row in the list first (Find matches, then click a line)")
+            return
+        rid = self._match_ids[sel[0]]
+        with self._lock:
+            self._single_queue.append(rid)
+            self._bulk_paused = True
+        self._wake.set()
+        self.set_status(f"Queued #{rid} — runs after current step, then bulk stays paused")
+
+    def _on_resume_all(self):
+        with self._lock:
+            self._bulk_paused = False
+        self._wake.set()
+        self.set_status("Resuming bulk queue…")
 
     def set_progress(self, text):
         if self._root:
@@ -363,15 +483,52 @@ class ScraperControlPanel:
         def _worker():
             try:
                 result[0] = fn(*args, **kwargs)
+            except KeyboardInterrupt:
+                self.shutting_down = True
             except Exception as e:
                 error[0] = e
             finally:
+                try:
+                    self._root.after(0, self._root.destroy)
+                except Exception:
+                    pass
+
+        def _signal_check():
+            """Periodic no-op that lets Python's signal handler fire inside mainloop."""
+            if self.shutting_down:
+                self._root.destroy()
+                return
+            try:
+                self._root.after(200, _signal_check)
+            except Exception:
+                pass
+
+        import signal
+        prev_handler = signal.getsignal(signal.SIGINT)
+
+        def _ctrl_c(sig, frame):
+            print("\n\nCtrl+C — shutting down…")
+            self.shutting_down = True
+            self._wake.set()
+            try:
                 self._root.after(0, self._root.destroy)
+            except Exception:
+                pass
+
+        signal.signal(signal.SIGINT, _ctrl_c)
 
         t = threading.Thread(target=_worker, daemon=True)
         t.start()
-        self._root.mainloop()
-        t.join()
+        self._root.after(200, _signal_check)
+        try:
+            self._root.mainloop()
+        except Exception:
+            pass
+        finally:
+            signal.signal(signal.SIGINT, prev_handler)
+        t.join(timeout=3)
+        if self.shutting_down:
+            raise KeyboardInterrupt
         if error[0]:
             raise error[0]
         return result[0]
@@ -564,6 +721,9 @@ def _download_image(img_url, out_path, has_pillow, Image):
     """Download a single image URL and save as compressed WebP. Returns True on success."""
     try:
         resp = requests.get(img_url, headers={**BROWSER_HEADERS, "Accept": "image/webp,image/*,*/*;q=0.8"}, timeout=15)
+        if resp.status_code in (403, 401):
+            print(f"      Skipped ({resp.status_code} Forbidden)")
+            return False
         resp.raise_for_status()
 
         content_type = resp.headers.get('Content-Type', '')
@@ -583,6 +743,7 @@ def _download_image(img_url, out_path, has_pillow, Image):
             if img.width > MAX_WIDTH:
                 ratio = MAX_WIDTH / img.width
                 img = img.resize((MAX_WIDTH, int(img.height * ratio)), Image.LANCZOS)
+            img.info.pop('exif', None)
             img.save(out_path, 'WEBP', quality=WEBP_QUALITY)
         else:
             out_path.write_bytes(resp.content)
@@ -660,49 +821,78 @@ def _recompress_dir(directory, patterns, fmt, quality, Image):
     return recompressed
 
 
-TOOLS_DIR = ROOT_DIR / "tools"
+_ori_model_error = ""
+
+def _init_orientation_model():
+    """Initialize PaddleOCR document orientation classifier. Returns model or None."""
+    global _ori_model_error
+    try:
+        import paddleocr
+        ver = getattr(paddleocr, '__version__', 'unknown')
+        print(f"  PaddleOCR version: {ver}")
+    except ImportError:
+        _ori_model_error = "paddleocr not installed (pip install paddleocr paddlepaddle)"
+        print(f"  ERROR: {_ori_model_error}")
+        return None
+
+    try:
+        from paddleocr import DocImgOrientationClassification
+        model = DocImgOrientationClassification(model_name="PP-LCNet_x1_0_doc_ori")
+        print("  Orientation model loaded (PP-LCNet_x1_0_doc_ori)")
+        return model
+    except ImportError as e:
+        _ori_model_error = f"DocImgOrientationClassification not in paddleocr {ver} — pip install --upgrade paddleocr"
+        _debug(f"  {_ori_model_error}: {e}")
+        print(f"  ERROR: {_ori_model_error}")
+    except Exception as e:
+        _ori_model_error = str(e)
+        _debug(f"  Orientation model init error: {e}")
+        print(f"  ERROR: Orientation model failed to load: {e}")
+        import traceback
+        traceback.print_exc()
+    return None
 
 
-class OrientationChecker:
-    """Long-running Node.js process for checking image orientation via tesseract.js OSD."""
+def _check_orientation(model, image_path, Image):
+    """Check/fix orientation of an image using PaddleOCR. Returns (status, detail_str)."""
+    import numpy as np
+    try:
+        pil_img = Image.open(image_path).convert('RGB')
+        img_array = np.array(pil_img)
+        pil_img.close()
 
-    def __init__(self):
-        import subprocess as sp
-        script = TOOLS_DIR / "fix-orientation.js"
-        node_modules = CACHE_DIR / "node_modules"
+        results = list(model.predict(img_array, batch_size=1))
+        if not results:
+            return "skip", "no prediction result"
 
-        if not script.exists() or not node_modules.exists():
-            raise FileNotFoundError("fix-orientation.js or node_modules not found")
+        raw = results[0].json
+        _debug(f"  PaddleOCR raw: {raw}")
 
-        self._proc = sp.Popen(
-            ["node", str(script), "--server"],
-            stdin=sp.PIPE, stdout=sp.PIPE, stderr=None,
-            text=True, bufsize=1,
-        )
+        # Output may be nested under 'res' key or flat
+        data = raw.get("res", raw) if isinstance(raw, dict) else raw
 
-    def check(self, image_path):
-        """Check/fix orientation of a single image. Returns dict with status."""
-        if self._proc.poll() is not None:
-            return {"status": "error", "reason": "worker exited"}
-        try:
-            print(f"      OSD: sending {Path(image_path).name}...", end="", flush=True)
-            self._proc.stdin.write(str(image_path) + "\n")
-            self._proc.stdin.flush()
-            line = self._proc.stdout.readline().strip()
-            if line:
-                result = json.loads(line)
-                print(f" {result.get('status', '?')}")
-                return result
-            print(" no response")
-            return {"status": "error", "reason": "no response"}
-        except Exception as e:
-            print(f" error: {e}")
-            return {"status": "error", "reason": str(e)}
+        labels = data.get("label_names", [])
+        scores = data.get("scores", [])
+        label = labels[0] if labels else None
+        score = float(scores[0]) if scores else 0.0
+        angle = int(label) if label and str(label).isdigit() else 0
 
-    def close(self):
-        if self._proc and self._proc.poll() is None:
-            self._proc.stdin.close()
-            self._proc.wait(timeout=10)
+        _debug(f"  PaddleOCR parsed: angle={angle} confidence={score:.3f}")
+        print(f" [angle={angle}° conf={score:.2f}]", end="", flush=True)
+
+        if angle == 0:
+            return "ok", None
+
+        pil_img = Image.open(image_path).convert('RGB')
+        rotated = pil_img.rotate(angle, expand=True)
+        rotated.save(image_path, 'WEBP', quality=WEBP_QUALITY)
+        pil_img.close()
+        rotated.close()
+
+        return "fixed", f"rotated {angle}° (confidence: {score:.2f})"
+    except Exception as e:
+        _debug(f"  Orientation error for {Path(image_path).name}: {e}")
+        return "error", str(e)
 
 
 def recompress_existing():
@@ -735,9 +925,72 @@ def recompress_existing():
         print(f"  All {ramen_files + brand_files} images are properly compressed")
 
 
+def _fuzzy_rank_ramen(query, ramen_list, limit=50):
+    """Fuzzy-match query against brand, variety, country, and style.
+
+    Scoring strategy (0–100 scale):
+      - All query words found as substrings       → 85-100 (bonus for coverage)
+      - Some query words found as substrings       → 60-84  (proportional to words matched)
+      - rapidfuzz partial/token/WRatio fallback     → raw score
+      - difflib fallback if no rapidfuzz            → ratio * 100
+
+    Exact review # returns that row only.
+    """
+    q = (query or "").strip()
+    if not q:
+        return []
+    if q.isdigit():
+        rid = int(q)
+        for r in ramen_list:
+            if r.get("id") == rid:
+                return [r]
+        return []
+
+    try:
+        from rapidfuzz import fuzz
+    except ImportError:
+        fuzz = None
+
+    q_fold = q.casefold()
+    q_words = q_fold.split()
+
+    scored = []
+    for r in ramen_list:
+        brand = str(r.get("brand") or "")
+        variety = str(r.get("variety") or "")
+        country = str(r.get("country") or "")
+        style = str(r.get("style") or "")
+        hay = f"{brand} {variety} {country} {style}"
+        hay_fold = hay.casefold()
+
+        # Word-level substring matching
+        matched_words = sum(1 for w in q_words if w in hay_fold)
+        word_ratio = matched_words / len(q_words) if q_words else 0
+
+        if word_ratio == 1.0:
+            coverage = len(q_fold) / len(hay_fold) if hay_fold else 0
+            score = 85.0 + 15.0 * coverage
+        elif word_ratio > 0:
+            score = 60.0 + 24.0 * word_ratio
+        elif fuzz:
+            score = max(
+                fuzz.partial_ratio(q, hay),
+                fuzz.token_set_ratio(q, hay),
+                fuzz.WRatio(q, hay),
+            )
+        else:
+            from difflib import SequenceMatcher
+            score = SequenceMatcher(None, q_fold, hay_fold).ratio() * 100
+
+        scored.append((score, r))
+
+    scored.sort(key=lambda x: (-x[0], x[1].get("id", 0)))
+    min_score = 72 if len(q_fold) <= 2 else (55 if fuzz else 40)
+    return [r for s, r in scored if s >= min_score][:limit]
+
 
 def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
-    """Fetch product images and popularity scores together. Saves JSON after each update."""
+    """Fetch product images and popularity scores. Popularity stored in data/popularity.json."""
     IMAGES_DIR.mkdir(exist_ok=True)
 
     try:
@@ -748,6 +1001,8 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
         has_pillow = False
         Image = None
 
+    pop_map = load_popularity()
+
     existing = set()
     for f in IMAGES_DIR.glob("*.webp"):
         if f.stem.isdigit():
@@ -755,14 +1010,13 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
 
     needed = [r for r in ramen_list
               if r['id'] not in existing
-              or not r.get('popularity')
-              or (r['id'] in existing and not r.get('orientation_checked'))]
+              or r['id'] not in pop_map]
 
     if not needed:
         print(f"Images & popularity: everything up to date ({len(existing)} images).")
         return
 
-    any_need_popularity = any(not r.get('popularity') for r in needed)
+    any_need_popularity = any(r['id'] not in pop_map for r in needed)
 
     if limit is not None:
         batch = needed[:limit]
@@ -780,15 +1034,8 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
             print(f"  WARNING: Could not launch browser ({e}). Skipping popularity.")
             print("  Run: bash tools/setup.sh")
 
-    # Start orientation checker (long-running Node process)
-    osd = None
-    try:
-        osd = OrientationChecker()
-        print("  Started orientation checker (tesseract.js)")
-    except FileNotFoundError:
-        print("  Orientation checker not available (run: cd tools/.cache && npm install)")
-    except Exception as e:
-        print(f"  Orientation checker failed to start: {e}")
+    # Initialize PaddleOCR orientation detection model
+    ori_model = _init_orientation_model()
 
     downloaded = 0
     scored = 0
@@ -799,134 +1046,154 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
     def _get_engine():
         return panel.engine if panel else "google"
 
-    try:
-        for i, r in enumerate(batch):
-            out_path = IMAGES_DIR / f"{r['id']}.webp"
-            needs_image = not out_path.exists()
-            has_image = out_path.exists()
-            existing_pop = r.get('popularity')
-            needs_popularity = not existing_pop
-            changed = False
+    def _do_one(r, progress_prefix):
+        nonlocal downloaded, scored, oriented, errors, no_results
+        out_path = IMAGES_DIR / f"{r['id']}.webp"
+        needs_image = not out_path.exists()
+        has_image = out_path.exists()
+        existing_pop = pop_map.get(r['id'])
+        needs_popularity = not existing_pop
 
-            _debug(f"--- #{r['id']} {r['brand']} - {r['variety']}")
-            _debug(f"  existing popularity value: {repr(existing_pop)} -> needs_popularity={needs_popularity}")
+        _debug(f"--- #{r['id']} {r['brand']} - {r['variety']}")
+        _debug(f"  existing popularity value: {repr(existing_pop)} -> needs_popularity={needs_popularity}")
 
-            if panel:
-                panel.set_progress(f"[{i+1}/{len(batch)}] {r['variety'][:30]}")
-                panel.set_status(f"Engine: {_get_engine().title()}")
+        if panel:
+            panel.set_progress(f"{progress_prefix} {r['variety'][:30]}")
+            panel.set_status(f"Engine: {_get_engine().title()}")
 
-            print(f"    [{i+1}/{len(batch)}] #{r['id']} {r['brand']} - {r['variety']}")
+        print(f"    {progress_prefix} #{r['id']} {r['brand']} - {r['variety']}")
 
-            # --- Image ---
-            if needs_image:
-                query = f'{r["brand"]} {r["variety"]} packaging the ramen rater'
-                candidates = _search_bing(query)
+        # --- Image ---
+        if needs_image:
+            query = f'{r["brand"]} {r["variety"]} packaging the ramen rater'
+            candidates = _search_bing(query)
 
-                if not candidates:
-                    no_results += 1
-                    print(f"      Image: no candidates found")
-                else:
-                    saved = False
-                    for j, img_url in enumerate(candidates):
-                        print(f"      Image: trying {j+1}/{len(candidates)}: {img_url[:100]}")
-                        if _download_image(img_url, out_path, has_pillow, Image):
-                            saved = True
-                            downloaded += 1
-                            r['image'] = True
-                            has_image = True
-                            changed = True
-                            print(f"      Image: downloaded")
-                            break
-                    if not saved:
-                        errors += 1
-                        print(f"      Image: FAILED (all {len(candidates)} candidates failed)")
-
-                time.sleep(0.3)
+            if not candidates:
+                no_results += 1
+                print(f"      Image: no candidates found")
             else:
-                print(f"      Image: ok")
+                saved = False
+                for j, img_url in enumerate(candidates):
+                    print(f"      Image: trying {j+1}/{len(candidates)}: {img_url[:100]}")
+                    if _download_image(img_url, out_path, has_pillow, Image):
+                        saved = True
+                        downloaded += 1
+                        has_image = True
+                        print(f"      Image: downloaded")
+                        break
+                if not saved:
+                    errors += 1
+                    print(f"      Image: FAILED (all {len(candidates)} candidates failed)")
 
-            # --- Orientation ---
-            needs_orient = has_image and not r.get('orientation_checked')
-            if needs_orient and has_pillow:
-                # EXIF pass first (free, no OCR needed)
-                from PIL import ImageOps
-                try:
-                    pil_img = Image.open(out_path)
-                    exif_orient = None
-                    try:
-                        exif_orient = pil_img.getexif().get(0x0112, 1)
-                    except Exception:
-                        pass
-                    if exif_orient and exif_orient != 1:
-                        pil_img = ImageOps.exif_transpose(pil_img)
-                        pil_img = pil_img.convert('RGB')
-                        pil_img.save(out_path, 'WEBP', quality=WEBP_QUALITY)
-                        print(f"      Orientation (EXIF): FIXED (tag={exif_orient})")
-                        oriented += 1
-                    else:
-                        print(f"      Orientation (EXIF): ok")
-                except Exception as e:
-                    _debug(f"  EXIF error for {out_path.name}: {e}")
-                    print(f"      Orientation (EXIF): error ({e})")
+            time.sleep(0.3)
+        else:
+            print(f"      Image: ok")
 
-                # OCR/OSD pass
-                if osd:
-                    osd_result = osd.check(out_path)
-                    status = osd_result.get("status", "error")
-                    if status == "fixed":
-                        rot = osd_result.get("rotation", "?")
-                        conf = osd_result.get("confidence", "?")
-                        print(f"      Orientation (OSD): FIXED — rotated {rot}° (confidence: {conf})")
-                        oriented += 1
-                    elif status == "ok":
-                        print(f"      Orientation (OSD): ok")
-                    elif status == "skip":
-                        print(f"      Orientation (OSD): skipped ({osd_result.get('reason', '')})")
-                    else:
-                        reason = osd_result.get("reason", "unknown")
-                        _debug(f"  OSD error for {out_path.name}: {reason}")
-                        print(f"      Orientation (OSD): error ({reason})")
-                else:
-                    print(f"      Orientation (OSD): —")
-
-                r['orientation_checked'] = True
-                changed = True
-            elif has_image:
-                print(f"      Orientation: already checked")
-            else:
-                print(f"      Orientation: no image")
-
-            # --- Popularity ---
-            if needs_popularity and page:
-                pop_query = f'"{r["brand"]}" {r["variety"]}'
-                engine = _get_engine()
-                time.sleep(random.uniform(3, 12))
-                if engine == "google":
-                    count = _google_web_result_count(page, pop_query, r["brand"])
-                else:
-                    count = _bing_web_result_count(page, pop_query, r["brand"])
-                if count > 0:
-                    r['popularity'] = count
-                    scored += 1
-                    changed = True
-                    print(f"      Popularity: {count:,} ({engine})")
-                    if panel:
-                        panel.set_status(f"{r['variety'][:25]}: {count:,}")
-                else:
-                    print(f"      Popularity: no results ({engine})")
-            elif existing_pop:
-                print(f"      Popularity: {existing_pop:,}")
-            else:
-                print(f"      Popularity: —")
-
-            if changed:
-                save_json(ramen_list)
-    finally:
-        if osd:
+        # --- Orientation ---
+        if has_image and has_pillow:
+            # EXIF pass first (free, no OCR needed)
+            from PIL import ImageOps
             try:
-                osd.close()
-            except Exception:
-                pass
+                pil_img = Image.open(out_path)
+                exif_orient = None
+                try:
+                    exif_orient = pil_img.getexif().get(0x0112, 1)
+                except Exception:
+                    pass
+                if exif_orient and exif_orient != 1:
+                    pil_img = ImageOps.exif_transpose(pil_img)
+                    pil_img = pil_img.convert('RGB')
+                    pil_img.info.pop('exif', None)
+                    pil_img.save(out_path, 'WEBP', quality=WEBP_QUALITY)
+                    print(f"      Orientation (EXIF): FIXED (tag={exif_orient})")
+                    oriented += 1
+                else:
+                    print(f"      Orientation (EXIF): ok")
+                pil_img.close()
+            except Exception as e:
+                _debug(f"  EXIF error for {out_path.name}: {e}")
+                print(f"      Orientation (EXIF): error ({e})")
+
+            # PaddleOCR orientation detection pass
+            if ori_model:
+                status, detail = _check_orientation(ori_model, out_path, Image)
+                if status == "fixed":
+                    print(f"      Orientation (ML): FIXED — {detail}")
+                    oriented += 1
+                elif status == "ok":
+                    print(f"      Orientation (ML): ok")
+                elif status == "skip":
+                    print(f"      Orientation (ML): skipped ({detail})")
+                else:
+                    print(f"      Orientation (ML): error ({detail})")
+            else:
+                print(f"      Orientation (ML): UNAVAILABLE — {_ori_model_error}")
+
+        else:
+            print(f"      Orientation: no image")
+
+        # --- Popularity ---
+        if needs_popularity and page:
+            pop_query = f'"{r["brand"]}" {r["variety"]}'
+            engine = _get_engine()
+            time.sleep(random.uniform(3, 12))
+            if engine == "google":
+                count = _google_web_result_count(page, pop_query, r["brand"])
+            else:
+                count = _bing_web_result_count(page, pop_query, r["brand"])
+            if count > 0:
+                pop_map[r['id']] = count
+                scored += 1
+                save_popularity(pop_map)
+                print(f"      Popularity: {count:,} ({engine})")
+                if panel:
+                    panel.set_status(f"{r['variety'][:25]}: {count:,}")
+            else:
+                print(f"      Popularity: no results ({engine})")
+        elif existing_pop:
+            print(f"      Popularity: {existing_pop:,}")
+        else:
+            print(f"      Popularity: —")
+
+    try:
+        idx = 0
+        n_batch = len(batch)
+
+        while True:
+            if panel:
+                if panel.shutting_down:
+                    print("\n  Aborted by user.")
+                    break
+                with panel._lock:
+                    req = panel._single_queue.pop(0) if panel._single_queue else None
+                    paused = panel._bulk_paused
+                if req is not None:
+                    found = next((x for x in ramen_list if x.get("id") == req), None)
+                    if found:
+                        print(f"    [single] #{found['id']} {found['brand']} - {found['variety']}")
+                        _do_one(found, "[single]")
+                        if panel:
+                            panel.set_progress(f"[single] #{found['id']} done")
+                            panel.set_status("Single done — paused. Click Resume all scraping to continue.")
+                    else:
+                        if panel:
+                            panel.set_status(f"No ramen with id {req}")
+                        print(f"    [single] no ramen with id {req}")
+                    panel._wake.clear()
+                    continue
+
+                if paused:
+                    if panel._wake.wait(timeout=0.25):
+                        panel._wake.clear()
+                    continue
+
+            if idx >= n_batch:
+                break
+
+            r = batch[idx]
+            _do_one(r, f"[{idx + 1}/{n_batch}]")
+            idx += 1
+    finally:
         if context:
             context.close()
         if pw:
@@ -959,25 +1226,10 @@ def main():
         if not ramen_list:
             print("No data parsed. Exiting.")
             sys.exit(1)
+        save_json(ramen_list)
 
-        # Carry forward popularity scores from previous JSON after a fresh parse
-        if json_path.exists():
-            try:
-                with open(json_path, 'r', encoding='utf-8') as f:
-                    old_data = json.load(f)
-                pop_map = {r['id']: r['popularity'] for r in old_data if r.get('popularity')}
-                merged = 0
-                for r in ramen_list:
-                    if r['id'] in pop_map:
-                        r['popularity'] = pop_map[r['id']]
-                        merged += 1
-                if merged:
-                    print(f"  Carried forward {merged} popularity scores from previous run")
-            except Exception:
-                pass
-
-    has_images = update_image_flags(ramen_list)
-    print(f"  {has_images} ramen already have images")
+    existing_images = sum(1 for f in IMAGES_DIR.glob("*.webp") if f.stem.isdigit()) if IMAGES_DIR.exists() else 0
+    print(f"  {existing_images} ramen already have images")
 
     print("Checking existing images...")
     recompress_existing()
@@ -985,7 +1237,7 @@ def main():
     # Run scraping with the floating control panel (tkinter needs main thread)
     panel = None
     try:
-        panel = ScraperControlPanel()
+        panel = ScraperControlPanel(ramen_list)
         print("  Opened scraper control panel (switch engines live)")
         panel.run_with_panel(
             _main_scrape_and_finish, ramen_list, args.limit, panel
@@ -997,10 +1249,12 @@ def main():
 
 def _main_scrape_and_finish(ramen_list, limit, panel):
     fetch_images_and_popularity(ramen_list, limit=limit, panel=panel)
-    update_image_flags(ramen_list)
-    save_json(ramen_list)
     print(f"\nDone! {len(ramen_list)} ramen in database.")
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nAborted.")
+        sys.exit(1)

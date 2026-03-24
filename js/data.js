@@ -7,11 +7,15 @@ let brands = [];
 
 export async function loadRamenData() {
   try {
-    const res = await fetch('data/ramen.json');
-    if (!res.ok) {
-      allRamen = [];
-    } else {
-      allRamen = await res.json();
+    const [ramenRes, popRes] = await Promise.all([
+      fetch('data/ramen.json'),
+      fetch('data/popularity.json'),
+    ]);
+    allRamen = ramenRes.ok ? await ramenRes.json() : [];
+    const popMap = popRes.ok ? await popRes.json() : {};
+    for (const r of allRamen) {
+      const pop = popMap[r.id];
+      if (pop) r.popularity = pop;
     }
   } catch {
     allRamen = [];

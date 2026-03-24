@@ -6,12 +6,23 @@
   "brand": {
     "99 Ramch Market": "99 Ranch Market",
     "Ottogi": "Otoki",
-    "Nssin": "Nissin"
+    "Nssin": "Nissin",
+    "Maruhan": "Maruchan",
+    "Kiki Noodle": "Kiki"
   },
   "text": {
     "Fllavor": "Flavor",
     "CBowlhicken Curry": "Chicken Curry",
     "hilled": "Chilled",
-    "&": "and"
+    "&": "and",
+    "Chilli": "Chili",
+    "Instan": "Instant",
+    "Flavour": "Flavor",
+    "Instantt": "Instant",
+    "uldak": "Buldak",
+    "BBuldoc": "Buldok",
+    "Goku-Uma": "Goku Uma",
+    "Hpakata": "Hakata",
+    "CCuphongqing": "Chongqing"
   }
 }

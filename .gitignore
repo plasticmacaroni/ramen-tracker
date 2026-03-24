@@ -2,7 +2,7 @@
 __pycache__/
 *.pyc
 
-# Local Node deps if you run npm in tools/ (pipeline also uses tools/.cache)
+# Pipeline cache (downloaded models, browser profile, etc.)
 tools/node_modules/
 
 # OS / editor noise
@@ -13,6 +13,6 @@ Thumbs.db
 
 # All downloaded/generated pipeline files (recreated by setup.sh / pipeline)
 tools/.cache/
-
-# Tesseract / tesseract.js orientation model (downloaded to cache or cwd)
+# PaddleOCR / ML model files
 *.traineddata
+

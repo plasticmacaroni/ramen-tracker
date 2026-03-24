@@ -352,15 +352,27 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 2px solid var(--bg-elevated);
+  border-radius: var(--radius-sm);
   color: var(--text-muted);
   font-size: 0.85rem;
   cursor: pointer;
+  transition: var(--transition);
+  user-select: none;
+}
+
+.toggle-label:has(input:checked) {
+  border-color: var(--yellow);
+  color: var(--text);
 }
 
 .toggle-label input[type="checkbox"] {
   accent-color: var(--yellow);
   width: 16px;
   height: 16px;
+  margin: 0;
 }
 
 /* ---- EMPTY STATES ---- */
@@ -1740,7 +1752,7 @@ a:hover {
 
   body[data-card-size="large"] .ramen-card {
     gap: 16px;
-    max-height: 250px;
+    max-height: 400px;
   }
 
   body[data-card-size="large"] .card-list {

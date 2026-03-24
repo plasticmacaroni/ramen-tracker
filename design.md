@@ -158,7 +158,8 @@ js/
   share.js         -- Share URL encoding/decoding (binary + deflate + base64url)
   ui.js            -- All UI rendering and event handling
 data/
-  ramen.json       -- Full ramen database (generated; app loads only this)
+  ramen.json       -- Full ramen database (generated from xlsx; never mutated by scraper)
+  popularity.json  -- {id: web-result-count} sidecar (written by scraper, merged at load)
 images/
   ramen/*.webp     -- Product thumbnails (generated)
   brand/*.png      -- Brand logos (manually added, lowercase name e.g. nissin.png)

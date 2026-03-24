@@ -19,31 +19,27 @@ if [ ! -d "$VENV_DIR" ]; then
     python -m venv "$VENV_DIR"
 fi
 
-if [ -f "$VENV_DIR/Scripts/activate" ]; then
-    source "$VENV_DIR/Scripts/activate"
-elif [ -f "$VENV_DIR/bin/activate" ]; then
-    source "$VENV_DIR/bin/activate"
+# Resolve venv Python/pip directly (more reliable than source activate on Windows)
+if [ -f "$VENV_DIR/Scripts/python.exe" ]; then
+    PYTHON="$VENV_DIR/Scripts/python.exe"
+    PIP="$VENV_DIR/Scripts/pip.exe"
+elif [ -f "$VENV_DIR/bin/python" ]; then
+    PYTHON="$VENV_DIR/bin/python"
+    PIP="$VENV_DIR/bin/pip"
+else
+    echo "ERROR: Could not find Python in venv at $VENV_DIR"
+    exit 1
 fi
 
-echo "Python: $(python --version) at $(which python)"
+echo "Python: $("$PYTHON" --version) at $PYTHON"
 
 echo "Installing Python dependencies..."
-pip install --quiet --upgrade pip
-pip install --quiet -r tools/requirements.txt
-
-# Install Node.js dependencies (tesseract.js for image orientation detection)
-if command -v node &> /dev/null && command -v npm &> /dev/null; then
-    echo "Installing Node.js dependencies (tesseract.js)..."
-    mkdir -p tools/.cache
-    (cd tools/.cache && npm install --quiet)
-    echo "Node: $(node --version)"
-else
-    echo "NOTE: Node.js not found. Image orientation auto-fix will be skipped."
-    echo "  Install from: https://nodejs.org"
-fi
+"$PIP" install --quiet --upgrade pip
+"$PIP" install --quiet -r tools/requirements.txt
 
 echo ""
 echo "Setup complete! Playwright browser + uBlock will auto-install on first run."
+echo "PaddleOCR orientation model will download automatically on first run."
 
 if [ "$1" = "run" ]; then
     shift
@@ -52,5 +48,5 @@ if [ "$1" = "run" ]; then
         ARGS="--limit $1"
     fi
     echo "Running pipeline... $ARGS"
-    python tools/fetch_ramen_data.py $ARGS
+    "$PYTHON" tools/fetch_ramen_data.py $ARGS
 fi
