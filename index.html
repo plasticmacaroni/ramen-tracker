@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ramen Rater</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <a href="#app-main" class="skip-link">Skip to content</a>
+
+  <header id="app-header" role="banner">
+    <h1>RAMEN RATER</h1>
+    <button id="settings-btn" aria-label="Settings and backup" title="Settings &amp; Backup">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </header>
+
+  <main id="app-main" role="main">
+    <!-- RATE VIEW -->
+    <section id="view-rate" class="view active" role="tabpanel" aria-labelledby="tab-rate" aria-label="Rate ramen">
+      <div class="search-box" role="search">
+        <svg aria-hidden="true" class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="rate-search" placeholder="Search for a ramen to rate..." autocomplete="off" aria-label="Search for a ramen to rate">
+        <button id="rate-search-clear" class="search-clear hidden" aria-label="Clear search">&times;</button>
+      </div>
+      <div id="rate-results" class="card-list" role="list" aria-label="Search results"></div>
+      <div id="rate-welcome" class="empty-state" aria-live="polite">
+        <div class="empty-icon" aria-hidden="true">🍜</div>
+        <h2>RATE YOUR RAMEN</h2>
+        <p>Search above to find a ramen and log your rating</p>
+      </div>
+      <p id="rate-add-custom" class="add-custom-link">Can't find your ramen? <a href="#" aria-label="Add a custom ramen entry">Add it yourself</a></p>
+    </section>
+
+    <!-- COLLECTION VIEW -->
+    <section id="view-collection" class="view" role="tabpanel" aria-labelledby="tab-collection" aria-label="My rated ramen" aria-hidden="true">
+      <div class="search-box" role="search">
+        <svg aria-hidden="true" class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="collection-search" placeholder="Search your ramen..." autocomplete="off" aria-label="Search your rated ramen">
+        <button id="collection-search-clear" class="search-clear hidden" aria-label="Clear search">&times;</button>
+      </div>
+      <div class="view-controls" role="group" aria-label="Filters and sorting">
+        <select id="collection-sort" class="control-select" aria-label="Sort order">
+          <option value="rank">By Rank</option>
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="flavor">Best Flavor</option>
+          <option value="noodle">Best Noodles</option>
+          <option value="popular-desc">Most Popular</option>
+          <option value="popular-asc">Least Popular</option>
+        </select>
+        <select id="collection-brand" class="control-select" aria-label="Filter by brand">
+          <option value="">All Brands</option>
+        </select>
+        <select id="collection-country" class="control-select" aria-label="Filter by country">
+          <option value="">All Countries</option>
+        </select>
+        <select id="collection-style" class="control-select" aria-label="Filter by style">
+          <option value="">All Styles</option>
+        </select>
+        <button id="collection-clear-filters" class="btn-clear-filters hidden" aria-label="Clear all filters">Clear Filters</button>
+      </div>
+      <div id="collection-list" class="card-list" role="list" aria-label="Your rated ramen"></div>
+      <div id="collection-empty" class="empty-state" aria-live="polite">
+        <div class="empty-icon" aria-hidden="true">📋</div>
+        <h2>NO RAMEN YET</h2>
+        <p>You haven't rated any ramen! Head to the Rate tab to get started.</p>
+        <button class="btn btn-primary" data-goto="rate">RATE YOUR FIRST</button>
+      </div>
+    </section>
+
+    <!-- DISCOVER VIEW -->
+    <section id="view-discover" class="view" role="tabpanel" aria-labelledby="tab-discover" aria-label="Discover ramen" aria-hidden="true">
+      <div class="search-box" role="search">
+        <svg aria-hidden="true" class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="discover-search" placeholder="Search all ramen..." autocomplete="off" aria-label="Search all ramen">
+        <button id="discover-search-clear" class="search-clear hidden" aria-label="Clear search">&times;</button>
+      </div>
+      <div class="view-controls" role="group" aria-label="Filters and sorting">
+        <select id="discover-sort" class="control-select" aria-label="Sort order">
+          <option value="stars-desc">Highest Rated</option>
+          <option value="stars-asc">Lowest Rated</option>
+          <option value="popular-desc">Most Popular</option>
+          <option value="popular-asc">Least Popular</option>
+          <option value="brand">Brand A-Z</option>
+          <option value="country">Country A-Z</option>
+          <option value="newest">Newest Reviews</option>
+        </select>
+        <select id="discover-brand" class="control-select" aria-label="Filter by brand">
+          <option value="">All Brands</option>
+        </select>
+        <select id="discover-country" class="control-select" aria-label="Filter by country">
+          <option value="">All Countries</option>
+        </select>
+        <select id="discover-style" class="control-select" aria-label="Filter by style">
+          <option value="">All Styles</option>
+        </select>
+        <label class="toggle-label">
+          <input type="checkbox" id="discover-hide-rated" aria-label="Hide already rated ramen">
+          <span>Hide Rated</span>
+        </label>
+        <button id="discover-clear-filters" class="btn-clear-filters hidden" aria-label="Clear all filters">Clear Filters</button>
+      </div>
+      <div id="discover-list" class="card-list" role="list" aria-label="All ramen"></div>
+      <div id="discover-loading" class="loading-indicator" aria-live="polite">Loading ramen database...</div>
+    </section>
+
+    <!-- FIGHT VIEW -->
+    <section id="view-fight" class="view" role="tabpanel" aria-labelledby="tab-fight" aria-label="Ramen fight comparison game" aria-hidden="true">
+      <div id="fight-arena" class="hidden">
+        <div class="fight-header">
+          <h2>RAMEN FIGHT!</h2>
+          <div class="fight-stats" aria-label="Fight statistics">
+            <span id="fight-streak" class="fight-stat" title="Current win streak" aria-label="Current win streak">🔥 0</span>
+            <span id="fight-total" class="fight-stat" title="Total fights" aria-label="Total fights">⚔️ 0</span>
+          </div>
+        </div>
+        <p class="fight-prompt" id="fight-prompt">TAP THE ONE YOU PREFER</p>
+        <div class="fight-cards" role="group" aria-label="Choose which ramen you prefer">
+          <div id="fight-left" class="fight-card" data-side="left" role="button" tabindex="0" aria-label="Choose left ramen"></div>
+          <div class="fight-vs" aria-hidden="true">VS</div>
+          <div id="fight-right" class="fight-card" data-side="right" role="button" tabindex="0" aria-label="Choose right ramen"></div>
+        </div>
+        <button id="fight-skip" class="btn btn-muted" aria-label="Skip this matchup">SKIP</button>
+      </div>
+      <div id="fight-empty" class="empty-state" aria-live="polite">
+        <div class="empty-icon" aria-hidden="true">⚔️</div>
+        <h2>RAMEN FIGHT!</h2>
+        <p>Rate at least 2 ramen to start battling them against each other!</p>
+        <button class="btn btn-primary" data-goto="rate">RATE SOME RAMEN</button>
+      </div>
+    </section>
+
+    <!-- SHARED VIEW (dynamic, hidden by default) -->
+    <section id="view-shared" class="view hidden" role="tabpanel" aria-labelledby="tab-shared" aria-label="Shared ramen rankings" aria-hidden="true">
+      <div class="shared-header">
+        <h2 id="shared-view-title"></h2>
+        <button id="shared-dismiss" class="btn btn-muted btn-sm" aria-label="Remove shared view and return to your ramen">Remove shared view</button>
+      </div>
+      <div class="search-box" role="search">
+        <svg aria-hidden="true" class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="shared-search" placeholder="Search shared ramen..." autocomplete="off" aria-label="Search shared ramen">
+        <button id="shared-search-clear" class="search-clear hidden" aria-label="Clear search">&times;</button>
+      </div>
+      <div class="view-controls" role="group" aria-label="Filters and sorting">
+        <select id="shared-sort" class="control-select" aria-label="Sort order">
+          <option value="rank">By Rank</option>
+          <option value="flavor">Best Flavor</option>
+          <option value="noodle">Best Noodles</option>
+          <option value="popular-desc">Most Popular</option>
+          <option value="popular-asc">Least Popular</option>
+        </select>
+        <select id="shared-brand" class="control-select" aria-label="Filter by brand">
+          <option value="">All Brands</option>
+        </select>
+        <select id="shared-country" class="control-select" aria-label="Filter by country">
+          <option value="">All Countries</option>
+        </select>
+        <select id="shared-style" class="control-select" aria-label="Filter by style">
+          <option value="">All Styles</option>
+        </select>
+        <button id="shared-clear-filters" class="btn-clear-filters hidden" aria-label="Clear all filters">Clear Filters</button>
+      </div>
+      <div id="shared-list" class="card-list" role="list" aria-label="Shared ramen rankings"></div>
+      <div id="shared-empty" class="empty-state hidden" aria-live="polite">
+        <div class="empty-icon" aria-hidden="true">📋</div>
+        <h2>NO RAMEN</h2>
+        <p>This shared list is empty or could not be loaded.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- RATING MODAL -->
+  <div id="modal-rate" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="rating-ramen-name">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <button class="modal-close" aria-label="Close rating dialog">&times;</button>
+      <div id="rating-step-rate" class="rating-step">
+        <div id="rating-header" class="rating-header">
+          <div id="rating-header-image" class="rating-header-image" role="img" aria-label="Ramen product photo (click to enlarge)"></div>
+          <div class="rating-header-info">
+            <h2 id="rating-ramen-name"></h2>
+            <p id="rating-ramen-meta" class="text-muted"></p>
+            <div id="rating-details" class="rating-details" aria-label="Ramen details"></div>
+            <p id="rating-ramen-credit"></p>
+          </div>
+        </div>
+        <div class="rating-section">
+          <h3 id="flavor-heading">FLAVOR</h3>
+          <div class="tier-selector" id="tier-flavor" role="radiogroup" aria-labelledby="flavor-heading"></div>
+        </div>
+        <div class="rating-section">
+          <h3 id="noodle-heading">NOODLES / INGREDIENTS</h3>
+          <div class="tier-selector" id="tier-noodle" role="radiogroup" aria-labelledby="noodle-heading"></div>
+        </div>
+        <button id="rating-next" class="btn btn-primary" disabled aria-label="Submit rating and proceed to ranking">NEXT</button>
+        <div class="rating-actions-secondary">
+          <button id="rating-remove" class="btn btn-muted hidden" aria-label="Remove your rating for this ramen">REMOVE RATING</button>
+          <button id="rating-delete-custom" class="btn btn-danger hidden" aria-label="Permanently delete this custom ramen entry">DELETE CUSTOM RAMEN</button>
+        </div>
+      </div>
+
+      <div id="rating-step-compare" class="rating-step hidden" aria-live="polite">
+        <h3 class="compare-title" id="compare-heading">WHICH DID YOU ENJOY MORE?</h3>
+        <div class="compare-progress" aria-label="Comparison progress">
+          <span id="compare-counter"></span>
+          <div class="compare-dots" id="compare-dots" aria-hidden="true"></div>
+        </div>
+        <div class="compare-cards" role="group" aria-labelledby="compare-heading">
+          <div id="compare-new" class="compare-card" data-pick="new" role="button" tabindex="0" aria-label="Choose this ramen as preferred"></div>
+          <div class="compare-vs" aria-hidden="true">VS</div>
+          <div id="compare-existing" class="compare-card" data-pick="existing" role="button" tabindex="0" aria-label="Choose this ramen as preferred"></div>
+        </div>
+      </div>
+
+      <div id="rating-step-done" class="rating-step hidden" aria-live="assertive">
+        <div class="done-celebration" aria-hidden="true">🎉</div>
+        <h2>RATED!</h2>
+        <p id="done-rank" class="done-rank"></p>
+        <p id="done-score" class="done-score"></p>
+        <button id="rating-done" class="btn btn-primary">NICE!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMAGE LIGHTBOX -->
+  <div id="image-lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="Full-size image view (click to close)">
+    <img id="lightbox-img" src="" alt="Full-size ramen product photo">
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="modal-settings" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-heading">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <button class="modal-close" aria-label="Close settings">&times;</button>
+      <h2 id="settings-heading">SETTINGS</h2>
+      <div class="settings-section">
+        <h3>DISPLAY</h3>
+        <label class="toggle-label">
+          <input type="checkbox" id="settings-hide-rater-score">
+          <span>Hide Ramen Rater grades on Rate tab</span>
+        </label>
+        <div class="card-size-setting" role="group" aria-label="Card size">
+          <span class="text-muted" id="card-size-label">Card size</span>
+          <div class="card-size-options" role="radiogroup" aria-labelledby="card-size-label">
+            <button class="card-size-btn" data-size="compact" role="radio" aria-checked="false" title="Compact card size">Compact</button>
+            <button class="card-size-btn" data-size="large" role="radio" aria-checked="true" title="Large card size (default, more accessible)">Large</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>BACKUP</h3>
+        <p class="text-muted">Your data is stored in this browser. Download backups regularly!</p>
+        <div class="settings-actions">
+          <button id="backup-download" class="btn btn-primary" aria-label="Download a backup of your ratings as a JSON file">DOWNLOAD BACKUP</button>
+          <label class="btn btn-muted" for="backup-upload" role="button" tabindex="0" aria-label="Restore ratings from a backup file">RESTORE BACKUP</label>
+          <input type="file" id="backup-upload" accept=".json" class="hidden" aria-label="Choose backup file to restore">
+        </div>
+        <p id="backup-status" class="text-muted" aria-live="polite"></p>
+      </div>
+      <div class="settings-section">
+        <h3>SHARE</h3>
+        <p class="text-muted">Share your ranked ramen list with friends via a link.</p>
+        <button id="share-open" class="btn btn-primary" aria-label="Share your ramen rankings as a link">SHARE MY RANKINGS</button>
+      </div>
+      <div class="settings-section">
+        <h3>DATA</h3>
+        <p class="text-muted"><span id="stats-count">0</span> ramen rated &middot; <span id="stats-fights">0</span> fights</p>
+        <button id="data-clear" class="btn btn-danger" aria-label="Permanently clear all your ratings and rankings">CLEAR ALL DATA</button>
+      </div>
+      <div class="settings-section settings-credit">
+        <p class="text-muted">Ramen data from <a href="https://www.theramenrater.com" target="_blank" rel="noopener">theramenrater.com</a> &mdash; The Ramen Rater is the internet's #1 source for instant noodle reviews since 2002.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BACKUP REMINDER BANNER -->
+  <div id="backup-banner" class="banner hidden" role="alert" aria-live="assertive">
+    <p>You have unsaved ratings! <button id="banner-backup" class="banner-link" aria-label="Download a backup now">Download a backup</button></p>
+    <button id="banner-dismiss" class="banner-close" aria-label="Dismiss backup reminder">&times;</button>
+  </div>
+
+  <!-- CUSTOM RAMEN MODAL -->
+  <div id="modal-custom-ramen" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="custom-ramen-heading">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <button class="modal-close" aria-label="Close custom ramen form">&times;</button>
+      <h2 id="custom-ramen-heading">ADD CUSTOM RAMEN</h2>
+      <p class="text-muted">Add a ramen that's not in the database.</p>
+      <form class="custom-form" aria-label="Custom ramen entry form">
+        <label class="form-label">
+          Variety Name *
+          <input type="text" id="custom-variety" class="form-input" placeholder="e.g. Tonkotsu Deluxe" autocomplete="off" required aria-required="true">
+        </label>
+        <label class="form-label">
+          Brand *
+          <input type="text" id="custom-brand" class="form-input" placeholder="e.g. Local Noodle Co" autocomplete="off" required aria-required="true">
+        </label>
+        <label class="form-label">
+          Style
+          <select id="custom-style" class="form-input" aria-label="Ramen style">
+            <option value="Pack">Pack</option>
+            <option value="Cup">Cup</option>
+            <option value="Bowl">Bowl</option>
+            <option value="Tray">Tray</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+        <label class="form-label">
+          Country
+          <select id="custom-country" class="form-input" aria-label="Country of origin">
+            <option value="">Select country...</option>
+          </select>
+        </label>
+        <label class="form-label">
+          Photo (optional)
+          <input type="file" id="custom-image" accept="image/*" capture="environment" aria-label="Upload a photo of the ramen">
+        </label>
+        <div id="custom-image-preview" class="image-preview" aria-label="Photo preview"></div>
+        <button id="custom-ramen-save" class="btn btn-primary" type="button" style="width:100%;margin-top:8px;" aria-label="Save this custom ramen and open it for rating">ADD &amp; RATE</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SHARE MODAL -->
+  <div id="modal-share" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="share-heading">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <button class="modal-close" aria-label="Close share dialog">&times;</button>
+      <h2 id="share-heading">SHARE MY RANKINGS</h2>
+      <div id="share-step-name" class="share-step">
+        <p class="text-muted">Enter your name so your friends know whose list this is.</p>
+        <label class="form-label">
+          Display Name
+          <input type="text" id="share-name" class="form-input" placeholder="e.g. Noodle King Jeff" autocomplete="off" maxlength="40" aria-required="true">
+        </label>
+        <button id="share-generate" class="btn btn-primary" disabled style="width:100%;margin-top:12px;" aria-label="Generate a shareable link">GENERATE LINK</button>
+      </div>
+      <div id="share-step-result" class="share-step hidden">
+        <p class="text-muted">Your link is ready! Anyone with this link can see your rankings.</p>
+        <div class="share-url-box">
+          <input type="text" id="share-url" class="form-input share-url-input" readonly aria-label="Shareable link URL">
+          <button id="share-copy" class="btn btn-primary btn-sm" aria-label="Copy link to clipboard">COPY</button>
+        </div>
+        <p id="share-copy-status" class="text-muted share-copy-status" aria-live="polite"></p>
+        <div class="share-actions">
+          <button id="share-native" class="btn btn-muted hidden" aria-label="Share link using your device's share menu">SHARE...</button>
+          <button id="share-new" class="btn btn-muted" aria-label="Generate a new link with a different name">CHANGE NAME</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARED DETAIL MODAL (read-only) -->
+  <div id="modal-shared-detail" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="shared-detail-name">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <button class="modal-close" aria-label="Close detail view">&times;</button>
+      <div class="rating-header">
+        <div id="shared-detail-image" class="rating-header-image"></div>
+        <div class="rating-header-info">
+          <h2 id="shared-detail-name"></h2>
+          <p id="shared-detail-meta" class="text-muted"></p>
+          <div id="shared-detail-chips" class="rating-details" aria-label="Ramen details"></div>
+          <p id="shared-detail-credit"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB NAVIGATION -->
+  <nav id="tab-nav" role="tablist" aria-label="Main navigation">
+    <button id="tab-rate" class="tab-btn active" data-tab="rate" role="tab" aria-selected="true" aria-controls="view-rate" title="Rate — search and rate ramen">
+      <span class="tab-icon" aria-hidden="true">🍜</span>
+      <span class="tab-label">Rate</span>
+    </button>
+    <button id="tab-collection" class="tab-btn" data-tab="collection" role="tab" aria-selected="false" aria-controls="view-collection" tabindex="-1" title="My Ramen — your rated collection">
+      <span class="tab-icon" aria-hidden="true">📋</span>
+      <span class="tab-label">My Ramen</span>
+    </button>
+    <button id="tab-discover" class="tab-btn" data-tab="discover" role="tab" aria-selected="false" aria-controls="view-discover" tabindex="-1" title="Discover — browse all ramen">
+      <span class="tab-icon" aria-hidden="true">🔍</span>
+      <span class="tab-label">Discover</span>
+    </button>
+    <button id="tab-fight" class="tab-btn" data-tab="fight" role="tab" aria-selected="false" aria-controls="view-fight" tabindex="-1" title="Ramen Fight — head-to-head comparisons">
+      <span class="tab-icon" aria-hidden="true">⚔️</span>
+      <span class="tab-label">Fight!</span>
+    </button>
+    <button id="tab-shared" class="tab-btn hidden" data-tab="shared" role="tab" aria-selected="false" aria-controls="view-shared" tabindex="-1">
+      <span class="tab-icon" aria-hidden="true">👤</span>
+      <span class="tab-label" id="tab-shared-label">Shared</span>
+    </button>
+  </nav>
+
+  <div id="a11y-announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
