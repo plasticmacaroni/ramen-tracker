@@ -174,7 +174,7 @@ def parse_xlsx():
             'style': style,
             'country': country,
             'stars': stars,
-            'url': f"https://www.theramenrater.com/?s={review_id}",
+            'url': f"https://www.theramenrater.com/?s=%23{review_id}%3A",
         })
 
     wb.close()

@@ -442,7 +442,7 @@ export function openRatingModal(ramen) {
     creditEl.innerHTML = '<span class="badge badge-custom">Custom Entry</span>';
     deleteBtn.classList.remove('hidden');
   } else {
-    const url = ramen.url || `https://www.theramenrater.com/?s=${ramen.id}`;
+    const url = ramen.url || `https://www.theramenrater.com/?s=%23${ramen.id}%3A`;
     creditEl.innerHTML = `<a href="${url}" target="_blank" rel="noopener" class="rater-link">View on The Ramen Rater ↗</a>`;
     deleteBtn.classList.add('hidden');
   }
@@ -1636,7 +1636,7 @@ function openSharedDetailModal(ramen) {
   if (ramen.custom) {
     creditEl.innerHTML = `<span class="badge badge-custom">Custom entry by ${sharedData.name}</span>`;
   } else {
-    const url = ramen.url || `https://www.theramenrater.com/?s=${ramen.id}`;
+    const url = ramen.url || `https://www.theramenrater.com/?s=%23${ramen.id}%3A`;
     creditEl.innerHTML = `<a href="${url}" target="_blank" rel="noopener" class="rater-link">View on The Ramen Rater \u2197</a>`;
   }
 
