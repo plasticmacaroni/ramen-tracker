@@ -5,11 +5,13 @@
   },
   "brand": {
     "99 Ramch Market": "99 Ranch Market",
-    "Ottogi": "Otoki"
+    "Ottogi": "Otoki",
+    "Nssin": "Nissin"
   },
   "text": {
     "Fllavor": "Flavor",
     "CBowlhicken Curry": "Chicken Curry",
-    "hilled": "Chilled"
+    "hilled": "Chilled",
+    "&": "and"
   }
 }
