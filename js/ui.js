@@ -1866,6 +1866,7 @@ export function initGoToButtons() {
 let _scannerStream = null;
 let _scannerRafId = null;
 let _scannerHandled = false;
+let _lastNoMatch = null;
 
 function _copyBarcode(decodedText, codeSpan) {
   navigator.clipboard.writeText(decodedText).then(() => {
@@ -1884,6 +1885,8 @@ function _copyBarcode(decodedText, codeSpan) {
 }
 
 function _showNoMatch(statusEl, decodedText) {
+  if (_lastNoMatch === decodedText) return;
+  _lastNoMatch = decodedText;
   statusEl.textContent = '';
   statusEl.className = 'barcode-status barcode-not-found';
   const label = document.createTextNode('No match: ');
@@ -1949,6 +1952,7 @@ function openBarcodeScanner(context) {
   trapFocus(modal);
 
   _scannerHandled = false;
+  _lastNoMatch = null;
 
   navigator.mediaDevices.getUserMedia({
     audio: false,
