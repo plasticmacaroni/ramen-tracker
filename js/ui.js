@@ -1906,8 +1906,30 @@ function openBarcodeScanner(context) {
         closeBarcodeScanner();
         openRatingModal(ramen);
       } else {
-        statusEl.textContent = `No match: ${decodedText}`;
+        statusEl.textContent = '';
         statusEl.className = 'barcode-status barcode-not-found';
+        const label = document.createTextNode('No match: ');
+        const codeSpan = document.createElement('span');
+        codeSpan.textContent = decodedText;
+        codeSpan.style.cssText = 'text-decoration:underline;cursor:pointer;user-select:all';
+        codeSpan.title = 'Tap to copy';
+        codeSpan.addEventListener('click', () => {
+          navigator.clipboard.writeText(decodedText).then(() => {
+            codeSpan.textContent = decodedText + ' (copied!)';
+            setTimeout(() => { codeSpan.textContent = decodedText; }, 1500);
+          }).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = decodedText;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            codeSpan.textContent = decodedText + ' (copied!)';
+            setTimeout(() => { codeSpan.textContent = decodedText; }, 1500);
+          });
+        });
+        statusEl.appendChild(label);
+        statusEl.appendChild(codeSpan);
       }
     },
     () => {}

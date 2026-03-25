@@ -217,7 +217,9 @@ class BarcodeEditor:
             self._status_var.set(f"DUPLICATE: {barcode} already belongs to {dupe_label}")
             return
 
-        _add_barcode(bl, rid, barcode)
+        if _add_barcode(bl, rid, barcode) is None:
+            self._status_var.set(f"Invalid barcode: {barcode}")
+            return
         save_barcodes(bl)
         btype = _detect_barcode_type(barcode)
         self._status_var.set(f"Added {barcode} ({btype}) to #{rid}")

@@ -287,8 +287,19 @@ def barcoded_ids(barcode_list):
 
 
 def _add_barcode(barcode_list, rid, barcode):
-    """Append a barcode to the entry for rid (creating it if needed). Returns the entry."""
-    bc = str(barcode)
+    """Append a barcode to the entry for rid (creating it if needed). Returns the entry,
+    or None if the barcode is invalid."""
+    bc = str(barcode).strip()
+    if not bc.isdigit() or len(bc) not in (8, 12, 13, 14):
+        print(f"    WARNING: rejected '{bc}' for #{rid} — not 8/12/13/14 digits")
+        return None
+    if not _valid_barcode(bc):
+        digits = [int(d) for d in bc]
+        payload = digits[:-1]
+        total = sum(d * (3 if i % 2 == 0 else 1) for i, d in enumerate(reversed(payload)))
+        expected = (10 - (total % 10)) % 10
+        print(f"    WARNING: rejected '{bc}' for #{rid} — check digit {bc[-1]} != {expected}")
+        return None
     existing = next((e for e in barcode_list if e["id"] == rid), None)
     if existing:
         codes = existing.setdefault("barcodes", [])
@@ -960,7 +971,10 @@ class BarcodePanel:
             self._search_var.set(f"DUPLICATE: {barcode} already used by #{dupe_id}")
             print(f"    DUPLICATE: {barcode} already belongs to #{dupe_id}, not saving for #{rid}")
             return
-        _add_barcode(bl, rid, barcode)
+        if _add_barcode(bl, rid, barcode) is None:
+            self._search_var.set(f"INVALID barcode: {barcode}")
+            print(f"    INVALID barcode rejected: {barcode} for #{rid}")
+            return
         save_barcodes(bl)
         r = next((r for r in self._ramen_list if r["id"] == rid), None)
         label = f"#{rid}"
@@ -1305,10 +1319,13 @@ def _run_barcode_gathering(ramen_list, panel):
                     _log_duplicate(rid, dupe_id, barcode)
                     print(f"    [auto] DUPLICATE: {barcode} already belongs to #{dupe_id}, skipping #{rid} (skip #{n})")
                 else:
-                    _add_barcode(bl, rid, barcode)
-                    save_barcodes(bl)
-                    panel.set_last_saved(rid, barcode, btype)
-                    print(f"    [auto] SAVED: #{rid} → {barcode} ({btype})")
+                    if _add_barcode(bl, rid, barcode) is None:
+                        n = record_skip(rid)
+                        print(f"    [auto] INVALID barcode rejected: {barcode} for #{rid} (skip #{n})")
+                    else:
+                        save_barcodes(bl)
+                        panel.set_last_saved(rid, barcode, btype)
+                        print(f"    [auto] SAVED: #{rid} → {barcode} ({btype})")
             elif result == "scanned":
                 n = record_skip(rid)
                 print(f"    [auto] Skipped #{rid} (no barcode found, skip #{n})")
@@ -1369,10 +1386,13 @@ def _run_barcode_gathering(ramen_list, panel):
                             print(f"    DUPLICATE: {barcode} already belongs to #{dupe_id}, not saving for #{rid}")
                             panel.set_search_status(f"DUPLICATE: {barcode} already used by #{dupe_id}")
                         else:
-                            _add_barcode(bl, rid, barcode)
-                            save_barcodes(bl)
-                            panel.set_last_saved(rid, barcode, btype)
-                            print(f"    SAVED: {barcode} ({btype})")
+                            if _add_barcode(bl, rid, barcode) is None:
+                                panel.set_search_status(f"INVALID barcode: {barcode}")
+                                print(f"    INVALID barcode rejected: {barcode} for #{rid}")
+                            else:
+                                save_barcodes(bl)
+                                panel.set_last_saved(rid, barcode, btype)
+                                print(f"    SAVED: {barcode} ({btype})")
                     resolved = True
                     break
                 elif action == "skip_item":
@@ -1436,10 +1456,13 @@ def _run_barcode_gathering(ramen_list, panel):
                             print(f"    DUPLICATE: {barcode} already belongs to #{dupe_id}, not saving for #{rid}")
                             panel.set_search_status(f"DUPLICATE: {barcode} already used by #{dupe_id}")
                         else:
-                            _add_barcode(bl, rid, barcode)
-                            save_barcodes(bl)
-                            panel.set_last_saved(rid, barcode, btype)
-                            print(f"    SAVED: {barcode} ({btype})")
+                            if _add_barcode(bl, rid, barcode) is None:
+                                panel.set_search_status(f"INVALID barcode: {barcode}")
+                                print(f"    INVALID barcode rejected: {barcode} for #{rid}")
+                            else:
+                                save_barcodes(bl)
+                                panel.set_last_saved(rid, barcode, btype)
+                                print(f"    SAVED: {barcode} ({btype})")
                 elif action == "skip_item":
                     n = record_skip(rid)
                     print(f"    Skipped item (skip #{n})")
