@@ -246,7 +246,7 @@ function ramenImage(ramen) {
 }
 
 export function renderRamenCard(ramen, options = {}) {
-  const { showUserScore = false, showStars = true, clickable = true, hideRaterGrade = false } = options;
+  const { showUserScore = false, showStars = true, clickable = true, hideRaterGrade = false, showWishlistBadge = false } = options;
   const rating = storage.getRating(ramen.id);
   const isRated = !!rating;
   const score = storage.getScore(ramen.id);
@@ -306,6 +306,12 @@ export function renderRamenCard(ramen, options = {}) {
     : '';
   if (isRated && !showUserScore) a11yParts.push('Rated');
 
+  const wishlisted = !isRated && (showWishlistBadge || showStars) && storage.isWishlisted(ramen.id);
+  const wishlistBadge = wishlisted
+    ? '<span class="badge badge-wishlist" title="On your Want to Try list">&#x2661; Want to Try</span>'
+    : '';
+  if (wishlisted) a11yParts.push('Want to Try');
+
   el.setAttribute('aria-label', a11yParts.join(', '));
   el.setAttribute('title', a11yParts.join(' · '));
 
@@ -319,6 +325,7 @@ export function renderRamenCard(ramen, options = {}) {
         ${ramen.style ? `<span class="badge badge-style" title="Style: ${ramen.style}">${ramen.style}</span>` : ''}
         ${tiersHtml}
         ${ratedBadge}
+        ${wishlistBadge}
       </div>
       <div class="card-country">${flag(ramen.country)} ${ramen.country || 'Unknown'}</div>
     </div>
@@ -445,6 +452,16 @@ export function openRatingModal(ramen) {
     const url = ramen.url || `https://www.theramenrater.com/?s=%23${ramen.id}%3A`;
     creditEl.innerHTML = `<a href="${url}" target="_blank" rel="noopener" class="rater-link">View on The Ramen Rater ↗</a>`;
     deleteBtn.classList.add('hidden');
+  }
+
+  const wishBtn = document.getElementById('rating-wishlist');
+  if (existingRating) {
+    wishBtn.classList.add('hidden');
+  } else {
+    wishBtn.classList.remove('hidden');
+    const wishlisted = storage.isWishlisted(ramen.id);
+    wishBtn.classList.toggle('active', wishlisted);
+    wishBtn.innerHTML = wishlisted ? '&#x2665; On Your List' : '&#x2661; Want to Try';
   }
 
   document.getElementById('rating-step-rate').classList.remove('hidden');
@@ -579,6 +596,21 @@ export function initRatingModal() {
     ranking.cancelInsertion();
     storage.deleteCustomRamen(currentRatingRamen.id);
     closeRatingModal();
+  });
+
+  document.getElementById('rating-wishlist').addEventListener('click', () => {
+    if (!currentRatingRamen) return;
+    const id = currentRatingRamen.id;
+    const btn = document.getElementById('rating-wishlist');
+    if (storage.isWishlisted(id)) {
+      storage.removeFromWishlist(id);
+      btn.classList.remove('active');
+      btn.innerHTML = '&#x2661; Want to Try';
+    } else {
+      storage.addToWishlist(id);
+      btn.classList.add('active');
+      btn.innerHTML = '&#x2665; On Your List';
+    }
   });
 }
 
@@ -777,6 +809,19 @@ function compressImage(file) {
 
 /* ---- Collection View ---- */
 
+let collectionMode = 'rankings';
+
+function updateWishlistCount() {
+  const count = storage.getWishlistCount();
+  const badge = document.getElementById('wishlist-count');
+  if (count > 0) {
+    badge.textContent = count;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
 export function initCollectionView() {
   const sortSelect = document.getElementById('collection-sort');
   const brandSelect = document.getElementById('collection-brand');
@@ -809,8 +854,10 @@ export function initCollectionView() {
   const clearFiltersBtn = document.getElementById('collection-clear-filters');
 
   const refresh = () => {
-    renderCollection();
-    const active = sortSelect.value !== 'rank' || brandSelect.value || countrySelect.value
+    if (collectionMode === 'wishlist') renderWishlist();
+    else renderCollection();
+    const active = (collectionMode === 'rankings' && sortSelect.value !== 'rank')
+      || brandSelect.value || countrySelect.value
       || styleSelect.value || searchInput.value.trim();
     clearFiltersBtn.classList.toggle('hidden', !active);
   };
@@ -842,10 +889,44 @@ export function initCollectionView() {
       el.dispatchEvent(new Event('change')));
     refresh();
   });
+
+  const toggleRankings = document.getElementById('toggle-rankings');
+  const toggleWishlist = document.getElementById('toggle-wishlist');
+
+  function setCollectionMode(mode) {
+    collectionMode = mode;
+    toggleRankings.classList.toggle('active', mode === 'rankings');
+    toggleWishlist.classList.toggle('active', mode === 'wishlist');
+    toggleRankings.setAttribute('aria-selected', mode === 'rankings' ? 'true' : 'false');
+    toggleWishlist.setAttribute('aria-selected', mode === 'wishlist' ? 'true' : 'false');
+    sortSelect.classList.toggle('hidden', mode === 'wishlist');
+    if (mode === 'rankings') {
+      document.getElementById('wishlist-list').classList.add('hidden');
+      document.getElementById('wishlist-empty').classList.add('hidden');
+      renderCollection();
+    } else {
+      document.getElementById('collection-list').classList.add('hidden');
+      document.getElementById('collection-empty').classList.add('hidden');
+      renderWishlist();
+    }
+    const active = brandSelect.value || countrySelect.value
+      || styleSelect.value || searchInput.value.trim()
+      || (mode === 'rankings' && sortSelect.value !== 'rank');
+    clearFiltersBtn.classList.toggle('hidden', !active);
+  }
+
+  toggleRankings.addEventListener('click', () => setCollectionMode('rankings'));
+  toggleWishlist.addEventListener('click', () => setCollectionMode('wishlist'));
+  updateWishlistCount();
 }
 
 export function renderCollection() {
+  updateWishlistCount();
+  if (collectionMode === 'wishlist') { renderWishlist(); return; }
+  document.getElementById('wishlist-list').classList.add('hidden');
+  document.getElementById('wishlist-empty').classList.add('hidden');
   const list = document.getElementById('collection-list');
+  list.classList.remove('hidden');
   const empty = document.getElementById('collection-empty');
   const sort = document.getElementById('collection-sort').value;
   const brandFilter = document.getElementById('collection-brand').value;
@@ -868,7 +949,7 @@ export function renderCollection() {
     return ramen ? { ...ramen, rating, rank: storage.getRank(id), score: storage.getScore(id) } : null;
   }).filter(Boolean);
 
-  if (brandFilter) items = items.filter(r => r.brand === brandFilter);
+  if (brandFilter) items = items.filter(r => data.brandMatches(r.brand, brandFilter));
   if (countryFilter) items = items.filter(r => r.country === countryFilter);
   if (styleFilter) items = items.filter(r => r.style === styleFilter);
   if (searchQuery.length >= 2) {
@@ -923,6 +1004,82 @@ export function renderCollection() {
     list.appendChild(card);
   });
   announce(`${items.length} ramen in your collection`);
+}
+
+function renderWishlist() {
+  document.getElementById('collection-list').classList.add('hidden');
+  document.getElementById('collection-empty').classList.add('hidden');
+  const list = document.getElementById('wishlist-list');
+  const empty = document.getElementById('wishlist-empty');
+  list.classList.remove('hidden');
+
+  const brandFilter = document.getElementById('collection-brand').value;
+  const countryFilter = document.getElementById('collection-country').value;
+  const styleFilter = document.getElementById('collection-style').value;
+  const searchQuery = document.getElementById('collection-search').value.trim().toLowerCase();
+  const wishlist = storage.getWishlist();
+  const keys = Object.keys(wishlist);
+
+  if (keys.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    updateWishlistCount();
+    return;
+  }
+  empty.classList.add('hidden');
+
+  let items = keys.map(key => {
+    const entry = wishlist[key];
+    const numId = isNaN(Number(key)) ? key : Number(key);
+    let ramen = data.getRamenById(numId);
+    if (!ramen && entry.custom) {
+      ramen = { id: numId, ...entry.custom, custom: true };
+    }
+    if (!ramen) return null;
+    return { ...ramen, _wishlistAdded: entry.added };
+  }).filter(Boolean);
+
+  if (brandFilter) items = items.filter(r => data.brandMatches(r.brand, brandFilter));
+  if (countryFilter) items = items.filter(r => r.country === countryFilter);
+  if (styleFilter) items = items.filter(r => r.style === styleFilter);
+  if (searchQuery.length >= 2) {
+    const numId = /^\d+$/.test(searchQuery) ? Number(searchQuery) : null;
+    if (numId !== null) {
+      items = items.filter(r => r.id === numId);
+    } else {
+      const terms = searchQuery.split(/\s+/);
+      items = items.filter(r => {
+        const haystack = `${r.variety} ${r.brand} ${r.country}`.toLowerCase();
+        return terms.every(t => haystack.includes(t));
+      });
+    }
+  }
+
+  items.sort((a, b) => (b._wishlistAdded || '').localeCompare(a._wishlistAdded || ''));
+
+  list.innerHTML = '';
+  items.forEach(item => {
+    const wrap = document.createElement('div');
+    wrap.className = 'wishlist-card-wrap';
+    const card = renderRamenCard(item, { showStars: true, showUserScore: false });
+    card.addEventListener('click', () => openRatingModal(item));
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRatingModal(item); } });
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'wishlist-remove';
+    removeBtn.setAttribute('aria-label', `Remove ${item.variety} from Want to Try`);
+    removeBtn.innerHTML = '&times;';
+    removeBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      storage.removeFromWishlist(item.id);
+      renderWishlist();
+      updateWishlistCount();
+    });
+    wrap.appendChild(card);
+    wrap.appendChild(removeBtn);
+    list.appendChild(wrap);
+  });
+  updateWishlistCount();
+  announce(`${items.length} ramen in your want-to-try list`);
 }
 
 /* ---- Discover View ---- */
@@ -1480,7 +1637,16 @@ function populateSharedFilters(decoded) {
   for (const entry of decoded.entries) {
     const ramen = entry.custom ? entry : data.getRamenById(entry.id);
     if (!ramen) continue;
-    if (ramen.brand) brands.add(ramen.brand);
+    if (ramen.brand) {
+      if (ramen.brand.includes('/')) {
+        for (const part of ramen.brand.split('/')) {
+          const trimmed = part.trim();
+          if (trimmed) brands.add(trimmed);
+        }
+      } else {
+        brands.add(ramen.brand);
+      }
+    }
     if (ramen.country) countries.add(ramen.country);
     if (ramen.style) styles.add(ramen.style);
   }
@@ -1537,7 +1703,7 @@ export function renderSharedCollection() {
     return ramen;
   }).filter(Boolean);
 
-  if (brandFilter) items = items.filter(r => r.brand === brandFilter);
+  if (brandFilter) items = items.filter(r => data.brandMatches(r.brand, brandFilter));
   if (countryFilter) items = items.filter(r => r.country === countryFilter);
   if (styleFilter) items = items.filter(r => r.style === styleFilter);
   if (searchQuery.length >= 2) {
@@ -1648,6 +1814,30 @@ function openSharedDetailModal(ramen) {
   } else {
     const url = ramen.url || `https://www.theramenrater.com/?s=%23${ramen.id}%3A`;
     creditEl.innerHTML = `<a href="${url}" target="_blank" rel="noopener" class="rater-link">View on The Ramen Rater \u2197</a>`;
+  }
+
+  const wishBtn = document.getElementById('shared-detail-wishlist');
+  if (storage.isRated(ramen.id)) {
+    wishBtn.classList.add('hidden');
+  } else {
+    wishBtn.classList.remove('hidden');
+    const wishlisted = storage.isWishlisted(ramen.id);
+    wishBtn.classList.toggle('active', wishlisted);
+    wishBtn.innerHTML = wishlisted ? '&#x2665; On Your List' : '&#x2661; Want to Try';
+    wishBtn.onclick = () => {
+      if (storage.isWishlisted(ramen.id)) {
+        storage.removeFromWishlist(ramen.id);
+        wishBtn.classList.remove('active');
+        wishBtn.innerHTML = '&#x2661; Want to Try';
+      } else {
+        const customPayload = ramen.custom
+          ? { variety: ramen.variety, brand: ramen.brand, style: ramen.style || '', country: ramen.country || '', imageData: ramen.imageData || null }
+          : undefined;
+        storage.addToWishlist(ramen.id, customPayload);
+        wishBtn.classList.add('active');
+        wishBtn.innerHTML = '&#x2665; On Your List';
+      }
+    };
   }
 
   modal.classList.remove('hidden');

@@ -13,6 +13,7 @@ function defaultData() {
       hideRaterScore: false,
     },
     customRamen: {},
+    wishlist: {},
   };
 }
 
@@ -31,6 +32,7 @@ export function load() {
     if (data.settings.lastBackupReminder === undefined) data.settings.lastBackupReminder = new Date().toISOString();
     if (data.settings.ratingsAtLastReminder === undefined) data.settings.ratingsAtLastReminder = 0;
     if (!data.customRamen) data.customRamen = {};
+    if (!data.wishlist) data.wishlist = {};
   } catch {
     data = defaultData();
   }
@@ -67,6 +69,7 @@ export function setRating(id, flavor, noodle) {
       dates: [today],
     };
   }
+  delete d.wishlist[key];
   save();
 }
 
@@ -130,7 +133,7 @@ export function getScore(id) {
   // With few ratings, compress the range so grades stay reasonable
   // (no misleading F's when you've only rated 3 ramen).
   // Floor starts at C (7.3) and drops toward 0; ceiling starts at A (9.3) and rises to 10.
-  const minScore = Math.max(0, 7.3 - (n - 2) * 0.6);
+  const minScore = Math.max(5.8, 7.3 - (n - 2) * 0.15);
   const maxScore = Math.min(10.0, 9.3 + (n - 2) * 0.07);
   const score = minScore + rawPct * (maxScore - minScore);
 
@@ -202,6 +205,42 @@ export function deleteCustomRamen(id) {
   const idx = d.rankedList.indexOf(id);
   if (idx !== -1) d.rankedList.splice(idx, 1);
   save();
+}
+
+/* ---- Wishlist (Want to Try) ---- */
+
+export function getWishlist() {
+  return getData().wishlist;
+}
+
+export function addToWishlist(id, customData) {
+  const d = getData();
+  const key = String(id);
+  const entry = { added: new Date().toISOString().slice(0, 10) };
+  if (customData) entry.custom = customData;
+  d.wishlist[key] = entry;
+  save();
+}
+
+export function removeFromWishlist(id) {
+  const d = getData();
+  delete d.wishlist[String(id)];
+  save();
+}
+
+export function isWishlisted(id) {
+  return String(id) in getData().wishlist;
+}
+
+export function getWishlistCount() {
+  return Object.keys(getData().wishlist).length;
+}
+
+export function getWishlistIds() {
+  return new Set(Object.keys(getData().wishlist).map(k => {
+    const n = Number(k);
+    return isNaN(n) ? k : n;
+  }));
 }
 
 /* ---- Backup Reminder ---- */

@@ -2,11 +2,11 @@
   "rename": [
     {
       "id": 4813,
-      "replace_variety": "Cup Noodle Chicken Flavour - Singapore"
+      "replace_variety": "Cup Noodle Chicken Flavor - Singapore"
     },
     {
       "id": 265,
-      "replace_variety": "Cup Noodles Chicken Flavour"
+      "replace_variety": "Cup Noodles Chicken Flavor"
     },
     {
       "id": 935,
@@ -14,11 +14,23 @@
     },
     {
       "id": 53,
-      "replace_variety": "Cup Noodle Chicken Flavour - Indonesia"
+      "replace_variety": "Cup Noodle Chicken Flavor - Indonesia"
     },
     {
       "id": 1456,
-      "replace_variety": "Cup Noodles Chicken Flavour - Singapore"
+      "replace_variety": "Cup Noodles Chicken Flavor - Singapore"
+    },
+    {
+      "id": 5133,
+      "replace_variety": "Myojo Yuzu Shio Ramen – United States"
+    },
+    {
+      "id": 257,
+      "replace_variety": "Cup Noodles Beef Flavor"
+    },
+    {
+      "id": 4983,
+      "replace_stars": 5.0
     }
   ],
   "style": {
@@ -31,7 +43,20 @@
     "Nssin": "Nissin",
     "Maruhan": "Maruchan",
     "Kiki Noodle": "Kiki",
-    "Koba": "Kobe"
+    "Koba": "Kobe",
+    "ABC President": "ABC",
+    "Mi ABC": "ABC",
+    "Chil Kab Farm Products": "Chil Kab",
+    "Hi Li Foods": "Hi-Li Foods",
+    "Wu Mu": "Wu-Mu",
+    "7 Eleven": "7-Eleven",
+    "Baixiang Noodles": "Baixiang",
+    "Goku Uma": "Goku-Uma",
+    "Jinmailiang": "JML",
+    "Jinmailang": "JML",
+    "La Liu tou": "La Liu Tou",
+    "O'taste": "O'Taste",
+    "A-Sha Dry Noodle": "A-Sha"
   },
   "text": {
     "Japanese Home Style Noodles": "",

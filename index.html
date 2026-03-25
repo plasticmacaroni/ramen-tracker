@@ -41,6 +41,10 @@
 
     <!-- COLLECTION VIEW -->
     <section id="view-collection" class="view" role="tabpanel" aria-labelledby="tab-collection" aria-label="My rated ramen" aria-hidden="true">
+      <div class="collection-toggle" role="tablist" aria-label="Switch between rankings and want-to-try list">
+        <button id="toggle-rankings" class="toggle-seg active" role="tab" aria-selected="true">Rankings</button>
+        <button id="toggle-wishlist" class="toggle-seg" role="tab" aria-selected="false">Want to Try <span id="wishlist-count" class="toggle-count hidden">0</span></button>
+      </div>
       <div class="search-box" role="search">
         <svg aria-hidden="true" class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input type="text" id="collection-search" placeholder="Search your ramen..." autocomplete="off" aria-label="Search your rated ramen">
@@ -73,6 +77,13 @@
         <h2>NO RAMEN YET</h2>
         <p>You haven't rated any ramen! Head to the Rate tab to get started.</p>
         <button class="btn btn-primary" data-goto="rate">RATE YOUR FIRST</button>
+      </div>
+      <div id="wishlist-list" class="card-list hidden" role="list" aria-label="Your want-to-try ramen"></div>
+      <div id="wishlist-empty" class="empty-state hidden" aria-live="polite">
+        <div class="empty-icon" aria-hidden="true">&#x2661;</div>
+        <h2>NOTHING YET</h2>
+        <p>Browse ramen on Discover or Rate and tap "Want to Try" to save them here.</p>
+        <button class="btn btn-primary" data-goto="discover">DISCOVER RAMEN</button>
       </div>
     </section>
 
@@ -190,6 +201,7 @@
             <p id="rating-ramen-meta" class="text-muted"></p>
             <div id="rating-details" class="rating-details" aria-label="Ramen details"></div>
             <p id="rating-ramen-credit"></p>
+            <button id="rating-wishlist" class="wishlist-btn hidden" aria-label="Add to Want to Try list">&#x2661; Want to Try</button>
           </div>
         </div>
         <div class="rating-section">
@@ -370,6 +382,7 @@
           <p id="shared-detail-meta" class="text-muted"></p>
           <div id="shared-detail-chips" class="rating-details" aria-label="Ramen details"></div>
           <p id="shared-detail-credit"></p>
+          <button id="shared-detail-wishlist" class="wishlist-btn hidden" aria-label="Add to Want to Try list">&#x2661; Want to Try</button>
         </div>
       </div>
     </div>
@@ -398,6 +411,8 @@
       <span class="tab-label" id="tab-shared-label">Shared</span>
     </button>
   </nav>
+
+  <button id="scroll-top" class="scroll-top-btn hidden" aria-label="Scroll to top"><img src="images/return-to-top.png" alt="Return to top"></button>
 
   <div id="a11y-announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   <script type="module" src="js/app.js"></script>

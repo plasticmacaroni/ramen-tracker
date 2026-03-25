@@ -46,7 +46,10 @@ CACHE_DIR = ROOT_DIR / "tools" / ".cache"
 XLSX_PATH = CACHE_DIR / "big-list.xlsx"
 XLSX_ETAG_PATH = CACHE_DIR / ".big-list-etag"
 
-HEADERS = {"User-Agent": "RamenRaterFanApp/1.0 (personal project; respectful scraping)"}
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+}
 
 def _load_typos():
     typo_path = Path(__file__).resolve().parent / "typos.json"
@@ -63,8 +66,7 @@ RENAMES = {r['id']: r for r in _TYPOS.get('rename', [])}
 
 
 def download_xlsx():
-    """Download the xlsx, skipping if the server copy hasn't changed.
-    Returns True if the file was updated, False if unchanged."""
+    """Download the xlsx, using ETag to avoid redundant downloads."""
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     headers = dict(HEADERS)
 
@@ -72,17 +74,12 @@ def download_xlsx():
         saved_etag = XLSX_ETAG_PATH.read_text().strip()
         headers['If-None-Match'] = saved_etag
 
-    if XLSX_PATH.exists():
-        from email.utils import formatdate
-        mtime = os.path.getmtime(XLSX_PATH)
-        headers['If-Modified-Since'] = formatdate(mtime, usegmt=True)
-
     print(f"Checking xlsx at {XLSX_URL}...")
     resp = requests.get(XLSX_URL, headers=headers, timeout=60)
 
     if resp.status_code == 304:
         print("  xlsx unchanged, skipping download.")
-        return False
+        return
 
     resp.raise_for_status()
     XLSX_PATH.write_bytes(resp.content)
@@ -91,8 +88,6 @@ def download_xlsx():
     etag = resp.headers.get('ETag')
     if etag:
         XLSX_ETAG_PATH.write_text(etag)
-
-    return True
 
 
 def parse_xlsx():
@@ -178,6 +173,8 @@ def parse_xlsx():
                 style = rename['replace_style']
             if 'replace_country' in rename:
                 country = rename['replace_country']
+            if 'replace_stars' in rename:
+                stars = float(rename['replace_stars'])
 
         ramen_list.append({
             'id': review_id,
@@ -639,7 +636,7 @@ def _bing_web_result_count(page, query, brand):
 def _maybe_click_result(page, engine):
     """40% chance to click a random organic result, dwell 3-12s, then go back.
     Prefers The Ramen Rater links if present."""
-    if random.random() > 0.4:
+    if random.random() > 0.2:
         return
     try:
         if engine == "google":
@@ -1030,12 +1027,16 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
 
     any_need_popularity = any(r['id'] not in pop_map for r in needed)
 
+    total_ramen = len(ramen_list)
+    covered = len(existing)
+
     if limit is not None:
         batch = needed[:limit]
         print(f"Processing: {len(needed)} need work -- doing {len(batch)} this run")
     else:
         batch = needed
         print(f"Processing: {len(batch)} ramen need images and/or popularity")
+    print(f"Coverage: {covered}/{total_ramen} have images ({100 * covered / total_ramen:.1f}%)")
 
     pw, context, page = None, None, None
     if any_need_popularity:
@@ -1069,14 +1070,26 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
         _debug(f"--- #{r['id']} {r['brand']} - {r['variety']}")
         _debug(f"  existing popularity value: {repr(existing_pop)} -> needs_popularity={needs_popularity}")
 
+        todo = []
+        if needs_image:
+            todo.append("image")
+        if needs_popularity:
+            todo.append("popularity")
+        if has_image and has_pillow:
+            todo.append("orientation check")
+
+        reason = ", ".join(todo) if todo else "up to date"
+
         if panel:
             panel.set_progress(f"{progress_prefix} {r['variety'][:30]}")
             panel.set_status(f"Engine: {_get_engine().title()}")
 
         print(f"    {progress_prefix} #{r['id']} {r['brand']} - {r['variety']}")
+        print(f"      Needs: {reason}")
 
         # --- Image ---
         if needs_image:
+            print(f"      Searching Bing for image...")
             query = f'{r["brand"]} {r["variety"]} the ramen rater'
             candidates = _search_bing(query)
 
@@ -1086,24 +1099,21 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
             else:
                 saved = False
                 for j, img_url in enumerate(candidates):
-                    print(f"      Image: trying {j+1}/{len(candidates)}: {img_url[:100]}")
+                    print(f"      Image: trying {j+1}/{len(candidates)}: {img_url[:80]}")
                     if _download_image(img_url, out_path, has_pillow, Image):
                         saved = True
                         downloaded += 1
                         has_image = True
-                        print(f"      Image: downloaded")
+                        print(f"      Image: saved")
                         break
                 if not saved:
                     errors += 1
                     print(f"      Image: FAILED (all {len(candidates)} candidates failed)")
 
             time.sleep(0.3)
-        else:
-            print(f"      Image: ok")
 
         # --- Orientation ---
         if has_image and has_pillow:
-            # EXIF pass first (free, no OCR needed)
             from PIL import ImageOps
             try:
                 pil_img = Image.open(out_path)
@@ -1117,38 +1127,32 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                     pil_img = pil_img.convert('RGB')
                     pil_img.info.pop('exif', None)
                     pil_img.save(out_path, 'WEBP', quality=WEBP_QUALITY)
-                    print(f"      Orientation (EXIF): FIXED (tag={exif_orient})")
+                    print(f"      EXIF: rotated (tag={exif_orient})")
                     oriented += 1
-                else:
-                    print(f"      Orientation (EXIF): ok")
                 pil_img.close()
             except Exception as e:
                 _debug(f"  EXIF error for {out_path.name}: {e}")
-                print(f"      Orientation (EXIF): error ({e})")
 
-            # PaddleOCR orientation detection pass
             if ori_model:
+                print(f"      ML orientation: checking...")
                 status, detail = _check_orientation(ori_model, out_path, Image)
                 if status == "fixed":
-                    print(f"      Orientation (ML): FIXED — {detail}")
+                    print(f"      ML orientation: FIXED — {detail}")
                     oriented += 1
                 elif status == "ok":
-                    print(f"      Orientation (ML): ok")
+                    print(f"      ML orientation: ok")
                 elif status == "skip":
-                    print(f"      Orientation (ML): skipped ({detail})")
+                    print(f"      ML orientation: skipped ({detail})")
                 else:
-                    print(f"      Orientation (ML): error ({detail})")
-            else:
-                print(f"      Orientation (ML): UNAVAILABLE — {_ori_model_error}")
-
-        else:
-            print(f"      Orientation: no image")
+                    print(f"      ML orientation: error ({detail})")
 
         # --- Popularity ---
         if needs_popularity and page:
-            pop_query = f'"{r["brand"]}" {r["variety"]}'
             engine = _get_engine()
-            time.sleep(random.uniform(3, 12))
+            wait = random.uniform(3, 12)
+            print(f"      Popularity: searching {engine} (waiting {wait:.0f}s to avoid rate limit)...")
+            pop_query = f'"{r["brand"]}" {r["variety"]}'
+            time.sleep(wait)
             if engine == "google":
                 count = _google_web_result_count(page, pop_query, r["brand"])
             else:
@@ -1157,15 +1161,13 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                 pop_map[r['id']] = count
                 scored += 1
                 save_popularity(pop_map)
-                print(f"      Popularity: {count:,} ({engine})")
+                print(f"      Popularity: {count:,}")
                 if panel:
                     panel.set_status(f"{r['variety'][:25]}: {count:,}")
             else:
-                print(f"      Popularity: no results ({engine})")
+                print(f"      Popularity: no results")
         elif existing_pop:
-            print(f"      Popularity: {existing_pop:,}")
-        else:
-            print(f"      Popularity: —")
+            print(f"      Popularity: {existing_pop:,} (cached)")
 
     try:
         idx = 0
@@ -1183,7 +1185,7 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                     found = next((x for x in ramen_list if x.get("id") == req), None)
                     if found:
                         print(f"    [single] #{found['id']} {found['brand']} - {found['variety']}")
-                        _do_one(found, "[single]")
+                        _do_one(found, f"[single] ({covered + downloaded}/{total_ramen})")
                         if panel:
                             panel.set_progress(f"[single] #{found['id']} done")
                             panel.set_status("Single done — paused. Click Resume all scraping to continue.")
@@ -1203,7 +1205,7 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                 break
 
             r = batch[idx]
-            _do_one(r, f"[{idx + 1}/{n_batch}]")
+            _do_one(r, f"[{idx + 1}/{n_batch}] ({covered + downloaded}/{total_ramen})")
             idx += 1
     finally:
         if context:
@@ -1226,19 +1228,13 @@ def main():
                         help='Process up to N ramen that still need images/popularity (omit to do all)')
     args = parser.parse_args()
 
-    xlsx_changed = download_xlsx()
+    download_xlsx()
 
-    json_path = DATA_DIR / "ramen.json"
-    if not xlsx_changed and json_path.exists():
-        print("XLSX unchanged -- loading existing ramen.json")
-        with open(json_path, 'r', encoding='utf-8') as f:
-            ramen_list = json.load(f)
-    else:
-        ramen_list = parse_xlsx()
-        if not ramen_list:
-            print("No data parsed. Exiting.")
-            sys.exit(1)
-        save_json(ramen_list)
+    ramen_list = parse_xlsx()
+    if not ramen_list:
+        print("No data parsed. Exiting.")
+        sys.exit(1)
+    save_json(ramen_list)
 
     existing_images = sum(1 for f in IMAGES_DIR.glob("*.webp") if f.stem.isdigit()) if IMAGES_DIR.exists() else 0
     print(f"  {existing_images} ramen already have images")

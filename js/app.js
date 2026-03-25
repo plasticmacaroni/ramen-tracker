@@ -255,3 +255,17 @@ window.addEventListener('pageshow', () => {
     if (input && btn) btn.classList.toggle('hidden', !input.value.trim());
   });
 });
+
+const scrollTopBtn = document.getElementById('scroll-top');
+let scrollTopTick = false;
+window.addEventListener('scroll', () => {
+  if (scrollTopTick) return;
+  scrollTopTick = true;
+  requestAnimationFrame(() => {
+    scrollTopBtn.classList.toggle('hidden', window.scrollY < 400);
+    scrollTopTick = false;
+  });
+}, { passive: true });
+scrollTopBtn.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});

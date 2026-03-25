@@ -23,7 +23,20 @@ export async function loadRamenData() {
 
   countries = [...new Set(allRamen.map(r => r.country).filter(Boolean))].sort();
   styles = [...new Set(allRamen.map(r => r.style).filter(Boolean))].sort();
-  brands = [...new Set(allRamen.map(r => r.brand).filter(Boolean))].sort();
+
+  const brandSet = new Set();
+  for (const r of allRamen) {
+    if (!r.brand) continue;
+    if (r.brand.includes('/')) {
+      for (const part of r.brand.split('/')) {
+        const trimmed = part.trim();
+        if (trimmed) brandSet.add(trimmed);
+      }
+    } else {
+      brandSet.add(r.brand);
+    }
+  }
+  brands = [...brandSet].sort();
 
   return allRamen;
 }
@@ -32,6 +45,15 @@ export function getAllRamen() { return allRamen; }
 export function getCountries() { return countries; }
 export function getStyles() { return styles; }
 export function getBrands() { return brands; }
+
+export function brandMatches(ramenBrand, filterBrand) {
+  if (!filterBrand) return true;
+  if (ramenBrand === filterBrand) return true;
+  if (ramenBrand && ramenBrand.includes('/')) {
+    return ramenBrand.split('/').some(p => p.trim() === filterBrand);
+  }
+  return false;
+}
 
 export function getRamenById(id) {
   if (typeof id === 'string' && id.startsWith('c-')) {
@@ -99,7 +121,7 @@ export function filterAndSort(options = {}) {
     }
   }
 
-  if (brand) list = list.filter(r => r.brand === brand);
+  if (brand) list = list.filter(r => brandMatches(r.brand, brand));
   if (country) list = list.filter(r => r.country === country);
   if (style) list = list.filter(r => r.style === style);
   if (hideRated) list = list.filter(r => !ratedIds.has(r.id));

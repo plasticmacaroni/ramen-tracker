@@ -947,6 +947,26 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  cursor: zoom-in;
+}
+
+.rating-header-image::after {
+  content: '🔍';
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  font-size: 0.75rem;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 4px;
+  padding: 2px 5px;
+  pointer-events: none;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.rating-header-image:hover::after {
+  opacity: 1;
 }
 
 .rating-header-image img {
@@ -1462,6 +1482,172 @@ a:hover {
   font-style: italic;
 }
 
+/* ---- COLLECTION TOGGLE (Rankings / Want to Try) ---- */
+
+.collection-toggle {
+  display: flex;
+  gap: 0;
+  margin-bottom: 14px;
+  border: 2px solid var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.toggle-seg {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.toggle-seg.active {
+  background: var(--bg-elevated);
+  color: var(--yellow);
+}
+
+.toggle-seg:hover:not(.active) {
+  color: var(--text);
+}
+
+.toggle-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--yellow);
+  color: #0d0d0d;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* ---- WISHLIST BUTTON (in modals) ---- */
+
+.wishlist-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 14px;
+  border: 2px solid var(--text-dim);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 6px;
+}
+
+.wishlist-btn:hover {
+  border-color: var(--pink);
+  color: var(--pink);
+}
+
+.wishlist-btn.active {
+  border-color: var(--pink);
+  background: rgba(255, 51, 102, 0.12);
+  color: var(--pink);
+}
+
+/* ---- WISHLIST BADGE (on cards) ---- */
+
+.badge-wishlist {
+  background: rgba(255, 51, 102, 0.12);
+  color: var(--pink);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* ---- WISHLIST CARD WRAP (remove button overlay) ---- */
+
+.wishlist-card-wrap {
+  position: relative;
+}
+
+.wishlist-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(13, 13, 13, 0.8);
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  z-index: 2;
+  line-height: 1;
+  padding: 0;
+}
+
+.wishlist-remove:hover {
+  background: var(--pink);
+  color: #fff;
+}
+
+/* ---- SCROLL TO TOP ---- */
+
+.scroll-top-btn {
+  position: fixed;
+  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 16px);
+  right: 16px;
+  z-index: 99;
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--yellow);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.6));
+}
+
+.scroll-top-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.scroll-top-btn:hover {
+  transform: scale(1.12);
+}
+
+.scroll-top-btn:active {
+  transform: scale(0.95);
+}
+
+.scroll-top-btn.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+}
+
 /* ---- LIGHTBOX ---- */
 
 .lightbox {
@@ -1610,6 +1796,13 @@ a:hover {
 /* ---- DESKTOP RESPONSIVE ---- */
 
 @media (min-width: 768px) {
+  .scroll-top-btn {
+    width: 72px;
+    height: 72px;
+    bottom: 24px;
+    right: 24px;
+  }
+
   #tab-nav {
     position: fixed;
     top: 0;
