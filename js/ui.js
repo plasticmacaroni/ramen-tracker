@@ -1894,23 +1894,21 @@ function openBarcodeScanner(context) {
     ],
   };
 
+  let handled = false;
   html5Qrcode.start(
     { facingMode: 'environment' },
     config,
     (decodedText) => {
-      try {
-        const ramen = data.lookupBarcode(decodedText);
-        alert(`DEBUG: scanned=${decodedText}, found=${ramen ? '#' + ramen.id : 'null'}`);
-        if (ramen) {
-          closeBarcodeScanner();
-          if (scannerContext === 'rate') openRatingModal(ramen);
-          else expandCard(ramen);
-        } else {
-          statusEl.textContent = `No match: ${decodedText}`;
-          statusEl.className = 'barcode-status barcode-not-found';
-        }
-      } catch (e) {
-        alert(`Scanner error: ${e.message}`);
+      if (handled) return;
+      const ramen = data.lookupBarcode(decodedText);
+      if (ramen) {
+        handled = true;
+        closeBarcodeScanner();
+        if (scannerContext === 'rate') openRatingModal(ramen);
+        else expandCard(ramen);
+      } else {
+        statusEl.textContent = `No match: ${decodedText}`;
+        statusEl.className = 'barcode-status barcode-not-found';
       }
     },
     () => {}
