@@ -703,7 +703,10 @@ class BarcodePanel:
         jump_btn_frame.pack(pady=(0, 4))
         tk.Button(jump_btn_frame, text="Jump to selected", command=self._on_jump_go,
                   font=("Segoe UI", 9), bg="#16213e", fg="#e0e0e0",
-                  activebackground="#0f3460", activeforeground="#f7d354").pack()
+                  activebackground="#0f3460", activeforeground="#f7d354").pack(side=tk.LEFT, padx=4)
+        tk.Button(jump_btn_frame, text="Apply barcode to selected", command=self._on_apply_barcode,
+                  font=("Segoe UI", 9, "bold"), bg="#2a6041", fg="#e0e0e0",
+                  activebackground="#1e8449", activeforeground="#fff").pack(side=tk.LEFT, padx=4)
 
         # --- Sources toggle + go-to buttons ---
         tk.Frame(root, bg="#333", height=1).pack(fill=tk.X, padx=12, pady=(6, 4))
@@ -923,6 +926,36 @@ class BarcodePanel:
             self._jump_id = rid
             self._action = "jump"
         self._action_event.set()
+
+    def _on_apply_barcode(self):
+        sel = self._jump_list.curselection()
+        if not sel:
+            return
+        rid = self._jump_ids[sel[0]]
+        barcode = self._barcode_var.get().strip()
+        if not barcode:
+            return
+        btype = _detect_barcode_type(barcode)
+        bl = load_barcodes()
+        dupe_id = _barcode_already_used(bl, barcode, rid)
+        if dupe_id:
+            _log_duplicate(rid, dupe_id, barcode)
+            self._search_var.set(f"DUPLICATE: {barcode} already used by #{dupe_id}")
+            print(f"    DUPLICATE: {barcode} already belongs to #{dupe_id}, not saving for #{rid}")
+            return
+        existing = next((e for e in bl if e["id"] == rid), None)
+        if existing:
+            existing[btype] = barcode
+        else:
+            bl.append({"id": rid, btype: barcode})
+        save_barcodes(bl)
+        r = next((r for r in self._ramen_list if r["id"] == rid), None)
+        label = f"#{rid}"
+        if r:
+            label = f"#{rid} {r.get('brand','')} — {r.get('variety','')}"
+        self.set_last_saved(rid, barcode, btype)
+        self._search_var.set(f"Applied {barcode} ({btype}) to {label}")
+        print(f"    APPLIED: {barcode} ({btype}) to {label}")
 
     def is_source_enabled(self, name):
         var = self._source_vars.get(name)

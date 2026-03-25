@@ -1,0 +1,2441 @@
+[
+  {
+    "id": 1431,
+    "brand": "Maggi",
+    "variety": "Extra Spicy Curry Instant Noodles",
+    "found": [
+      "Meet The Manufacturer: #1431: Maggi Extra Spicy Curry Instant Noodles"
+    ]
+  },
+  {
+    "id": 1432,
+    "brand": "Maggi",
+    "variety": "Senses Laksa Instant Noodles",
+    "found": [
+      "Meet The Manufacturer: #1432: Maggi Senses Laksa Instant Noodles"
+    ]
+  },
+  {
+    "id": 1433,
+    "brand": "Maggi",
+    "variety": "2 Minute Noodles Curry Flavor",
+    "found": [
+      "Meet The Manufacturer: #1433: Maggi 2 Minute Noodles Curry Flavour"
+    ]
+  },
+  {
+    "id": 1434,
+    "brand": "Maggi",
+    "variety": "Hot Cup Perisa Kari",
+    "found": [
+      "Meet The Manufacturer: #1434: Maggi Hot Cup Perisa Kari"
+    ]
+  },
+  {
+    "id": 1435,
+    "brand": "Maggi",
+    "variety": "2 Minute Noodles Assam Laksa Flavor",
+    "found": [
+      "Meet The Manufacturer: #1435: Maggi 2 Minute Noodles Assam Laksa Flavour"
+    ]
+  },
+  {
+    "id": 1442,
+    "brand": "Maggi",
+    "variety": "2 Minute Noodles Tom Yam Flavor",
+    "found": [
+      "Meet The Manufacturer: #1442: Maggi 2 Minute Noodles Tom Yam Flavour"
+    ]
+  },
+  {
+    "id": 1447,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Cream Of Chicken Flavor",
+    "found": [
+      "Meet The Manufacturer: #1447: Nissin Cup Noodles Cream Of Chicken Flavour"
+    ]
+  },
+  {
+    "id": 1448,
+    "brand": "Nissin",
+    "variety": "Premium Instant Noodles Roasted Beef Flavor",
+    "found": [
+      "Meet The Manufacturer: #1448: Nissin Premium Instant Noodles Roasted Beef Flavou"
+    ]
+  },
+  {
+    "id": 1449,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Seafood Curry Flavor",
+    "found": [
+      "Meet The Manufacturer: #1449: Nissin Cup Noodles Seafood Curry Flavour"
+    ]
+  },
+  {
+    "id": 1450,
+    "brand": "Nissin",
+    "variety": "Japanese Ramen Tokyo Shoyu Instant Noodles with Soup Base",
+    "found": [
+      "Meet The Manufacturer: #1450: Nissin Japanese Ramen Tokyo Shoyu Instant Noodles "
+    ]
+  },
+  {
+    "id": 1451,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Tom Yam Seafood Flavor",
+    "found": [
+      "Meet The Manufacturer: #1451: Nissin Cup Noodles Tom Yam Seafood Flavour"
+    ]
+  },
+  {
+    "id": 1452,
+    "brand": "Nissin",
+    "variety": "Premium Instant Noodles Spicy Beef Flavor",
+    "found": [
+      "Meet The Manufacturer: #1452: Nissin Premium Instant Noodles Spicy Beef Flavour"
+    ]
+  },
+  {
+    "id": 1453,
+    "brand": "Nissin",
+    "variety": "Japanese Ramen Kyushu Black Instant Noodles with Soup Base",
+    "found": [
+      "Meet The Manufacturer: #1453: Nissin Japanese Ramen Kyushu Black Instant Noodles"
+    ]
+  },
+  {
+    "id": 1454,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Chili Crab Flavor",
+    "found": [
+      "Meet The Manufacturer: #1454: Nissin Cup Noodles Chilli Crab Flavour"
+    ]
+  },
+  {
+    "id": 1455,
+    "brand": "Nissin",
+    "variety": "Premium Instant Noodles XO Sauce Seafood Flavor",
+    "found": [
+      "Meet The Manufacturer: #1455: Nissin Premium Instant Noodles XO Sauce Seafood Fl"
+    ]
+  },
+  {
+    "id": 1457,
+    "brand": "Nissin",
+    "variety": "Chu Qian Yi Ding Sesame Oil Flavor",
+    "found": [
+      "Meet The Manufacturer: #1457: Nissin Chu Qian Yi Ding Sesame Oil Flavour Instant"
+    ]
+  },
+  {
+    "id": 1458,
+    "brand": "Nissin",
+    "variety": "Premium Instant Noodles Roasted Beef Flavor",
+    "found": [
+      "Meet The Manufacturer: #1458: Nissin Premium Instant Noodles Roast Beef Flavour"
+    ]
+  },
+  {
+    "id": 1459,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Tom Yam Veg Flavor",
+    "found": [
+      "Meet The Manufacturer: #1459: Nissin Cup Noodles Tom Yam Veg Flavour"
+    ]
+  },
+  {
+    "id": 1460,
+    "brand": "Nissin",
+    "variety": "Premium Instant Noodles Spicy Beef Flavor",
+    "found": [
+      "Meet The Manufacturer: #1460: Nissin Premium Instant Noodles Spicy Beef Flavour"
+    ]
+  },
+  {
+    "id": 1461,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Black Pepper Crab Flavor",
+    "found": [
+      "Meet The Manufacturer: #1461: Nissin Cup Noodles Black Pepper Crab Flavour"
+    ]
+  },
+  {
+    "id": 1465,
+    "brand": "Thai Chef",
+    "variety": "Shrimp \"Tom Yum\" Instant Nudelsuppe",
+    "found": [
+      "Meet The Manufacturer: #1465: Thai Chef Shrimp “Tom Yum” Instant Nudelsuppe"
+    ]
+  },
+  {
+    "id": 1466,
+    "brand": "Mama",
+    "variety": "Oriental Style Instant Noodles Green Curry Flavor Jumbo Pack",
+    "found": [
+      "Meet The Manufacturer: #1466: MAMA Oriental Style Instant Noodles Green Curry Fl"
+    ]
+  },
+  {
+    "id": 1467,
+    "brand": "Ruski",
+    "variety": "Creamy Tom Yam Instant Noodles",
+    "found": [
+      "Meet The Manufacturer: #1467: Ruski Creamy Tom Yam Instant Noodles"
+    ]
+  },
+  {
+    "id": 1468,
+    "brand": "Mama",
+    "variety": "Instant Cup Noodles Seafood Pad Kee Mao Flavor",
+    "found": [
+      "Meet The Manufacturer: #1468: MAMA Instant Cup Noodles Seafood Pad Kee Mao Flavo"
+    ]
+  },
+  {
+    "id": 1470,
+    "brand": "Mama",
+    "variety": "Instant Cup Noodles Spicy Cheese Flavor",
+    "found": [
+      "Meet The Manufacturer: #1470: MAMA Instant Cup Noodles Spicy Cheese Flavour"
+    ]
+  },
+  {
+    "id": 1471,
+    "brand": "Mama",
+    "variety": "Instant Noodles Shrimp Creamy Tom Yum Flavor Jumbo Pack",
+    "found": [
+      "Meet The Manufacturer: #1471: MAMA Instant Noodles Shrimp Creamy Tom Yum Flavour"
+    ]
+  },
+  {
+    "id": 1472,
+    "brand": "Ruski",
+    "variety": "Chicken Masala Flavor Instant Fried Noodles",
+    "found": [
+      "Meet The Manufacturer: #1472: Ruski Chicken Masala Flavour Instant Fried Noodles"
+    ]
+  },
+  {
+    "id": 1473,
+    "brand": "Mama",
+    "variety": "Instant Cup Noodles Shrimp Tom Yum Flavor (Extreme)",
+    "found": [
+      "Meet The Manufacturer: #1473: MAMA Instant Cup Noodles Shrimp Tom Yum Flavour (E"
+    ]
+  },
+  {
+    "id": 1474,
+    "brand": "Mama",
+    "variety": "Instant Noodle Shrimp Tom Yum Flavor Jumbo Pack",
+    "found": [
+      "Meet The Manufacturer: #1474: MAMA Instant Noodle Shrimp (Tom Yum) Flavour Jumbo"
+    ]
+  },
+  {
+    "id": 1475,
+    "brand": "Bamee",
+    "variety": "Cup Oriental Style Instant Noodles Chicken Flavor",
+    "found": [
+      "Meet The Manufacturer: #1475: Bamee Cup Oriental Style Instant Noodles Chicken F"
+    ]
+  },
+  {
+    "id": 1476,
+    "brand": "Thai Chef",
+    "variety": "Instant Nudelsuppe Shrimp Flavor",
+    "found": [
+      "Meet The Manufacturer: #1476: Thai Chef Shrimp Instant Nudelsuppe"
+    ]
+  },
+  {
+    "id": 1477,
+    "brand": "Mama",
+    "variety": "Instant Noodles Moo Nam Tok Flavor",
+    "found": [
+      "Meet The Manufacturer: #1477: MAMA Instant Noodles Moo Nam Tok Flavour"
+    ]
+  },
+  {
+    "id": 1478,
+    "brand": "Ruski",
+    "variety": "Tom Yam Flavor Instant Noodles",
+    "found": [
+      "Meet The Manufacturer: #1478: Ruski Tom Yam Flavour Instant Noodles"
+    ]
+  },
+  {
+    "id": 1526,
+    "brand": "Lucky Me!",
+    "variety": "La Paz Batchoy Instant Noodle Soup",
+    "found": [
+      "Meet The Manufacturer: #1526: Lucky Me! La Paz Batchoy Instant Noodle Soup"
+    ]
+  },
+  {
+    "id": 1527,
+    "brand": "Lucky Me!",
+    "variety": "Special Baked Mac Style Instant Macaroni",
+    "found": [
+      "Meet The Manufacturer: #1527: Lucky Me! Special Baked Mac Style Instant Macaroni"
+    ]
+  },
+  {
+    "id": 1528,
+    "brand": "Lucky Me!",
+    "variety": "Supreme Pinoy Chicken Instant Noodles",
+    "found": [
+      "Meet The Manufacturer: #1528: Lucky Me! Supreme Pinoy Chicken Instant Noodles"
+    ]
+  },
+  {
+    "id": 1529,
+    "brand": "Lucky Me!",
+    "variety": "Special Instant Curly Spaghetti with Yummy Red Sauce",
+    "found": [
+      "Meet The Manufacturer: #1529: Lucky Me! Special Instant Curly Spaghetti With Yum"
+    ]
+  },
+  {
+    "id": 1530,
+    "brand": "Lucky Me!",
+    "variety": "Spicy Beef Mami Instant Noodle Soup",
+    "found": [
+      "Meet The Manufacturer: #1530: Lucky Me! Spicy Beef Mami Instant Noodle Soup"
+    ]
+  },
+  {
+    "id": 1531,
+    "brand": "Lucky Me!",
+    "variety": "Special Instant sopas Chicken Flavor",
+    "found": [
+      "Meet The Manufacturer: #1531: Lucky Me! Special Instant Sopas Chicken Flavor"
+    ]
+  },
+  {
+    "id": 1532,
+    "brand": "Lucky Me!",
+    "variety": "Special Instant Noodles Jjamppong Flavor",
+    "found": [
+      "Meet The Manufacturer: #1532: Lucky Me! Special Instant Noodles Jjamppong Flavor"
+    ]
+  },
+  {
+    "id": 1567,
+    "brand": "Nissin",
+    "variety": "Emergency Cup Noodle",
+    "found": [
+      "4th Annual Momofuku Ando Day: #1567: Nissin Emergency Cup Noodle"
+    ]
+  },
+  {
+    "id": 1582,
+    "brand": "Mi E-Zee",
+    "variety": "Perisa Kari / Curry Flavor",
+    "found": [
+      "Meet The Manufacturer: #1582: Mi E-Zee Perisa Kari Curry Flavour"
+    ]
+  },
+  {
+    "id": 1583,
+    "brand": "J.J.",
+    "variety": "Snek Mi Perisa BBQ",
+    "found": [
+      "Meet The Manufacturer: #1583: J.J. Snek Mi Perisa BBQ"
+    ]
+  },
+  {
+    "id": 1584,
+    "brand": "E-mi",
+    "variety": "Mi Perencah Asam Pedas",
+    "found": [
+      "Meet The Manufacturer: #1584: E-mi Mi Perencah Asam Pedas"
+    ]
+  },
+  {
+    "id": 1585,
+    "brand": "CarJEN",
+    "variety": "Nyonya Curry Laksa",
+    "found": [
+      "Meet The Manufacturer: #1585: CarJEN Nyonya Curry Laksa"
+    ]
+  },
+  {
+    "id": 1586,
+    "brand": "J.J.",
+    "variety": "Snek Mi Perisa Ayam",
+    "found": [
+      "Meet The Manufacturer: #1586: J.J. Snek Mi Perisa Ayam"
+    ]
+  },
+  {
+    "id": 1587,
+    "brand": "Mi E-Zee",
+    "variety": "Plain Noodles",
+    "found": [
+      "Meet The Manufacturer: #1587: Mi E-Zee Plain Noodles Mee Goreng"
+    ]
+  },
+  {
+    "id": 1588,
+    "brand": "Mi E-Zee",
+    "variety": "Perisa Bayam",
+    "found": [
+      "Meet The Manufacturer: #1588: Mi E-Zee Perisa Bayam"
+    ]
+  },
+  {
+    "id": 1589,
+    "brand": "E-mi",
+    "variety": "Mi Perencah Ayam Jagung",
+    "found": [
+      "Meet The Manufacturer: #1589: E-mi Mi Perencah Ayam Jagung"
+    ]
+  },
+  {
+    "id": 1590,
+    "brand": "Mi E-Zee",
+    "variety": "Perisa Kari Sayuran",
+    "found": [
+      "Meet The Manufacturer: #1590: Mi E-Zee Perisa Kari Sayuran"
+    ]
+  },
+  {
+    "id": 1591,
+    "brand": "Mi E-Zee",
+    "variety": "Perisa Sayuran",
+    "found": [
+      "Meet The Manufacturer: #1591: Mi E-Zee Perisa Sayuran"
+    ]
+  },
+  {
+    "id": 1652,
+    "brand": "MyOri",
+    "variety": "Malaysia Penang White Curry Noodle Original",
+    "found": [
+      "Meet The Manufacturer: #1652: MyOri Malaysia Penang White Curry Noodle Original"
+    ]
+  },
+  {
+    "id": 1653,
+    "brand": "MyOri",
+    "variety": "Malaysia Penang Green Curry Rice Vermicelli",
+    "found": [
+      "Meet The Manufacturer: #1653: MyOri Malaysia Penang Green Curry Rice Vermicelli"
+    ]
+  },
+  {
+    "id": 1654,
+    "brand": "MyOri",
+    "variety": "Malaysia Penang White Curry Noodle Super Spicy",
+    "found": [
+      "Meet The Manufacturer: #1654: MyOri Malaysia Penang White Curry Noodle Super Spi"
+    ]
+  },
+  {
+    "id": 1659,
+    "brand": "United",
+    "variety": "Xi Gon Satay Onion Flavor",
+    "found": []
+  },
+  {
+    "id": 1661,
+    "brand": "Chencun",
+    "variety": "Senior Food Rice Noodle Fragrant Peppery Beef",
+    "found": []
+  },
+  {
+    "id": 1662,
+    "brand": "Mama",
+    "variety": "Non-Fried Instant Noodles Ramen Tonkotsu Flavor",
+    "found": []
+  },
+  {
+    "id": 1663,
+    "brand": "Vina Acecook",
+    "variety": "King Chef Authentic Kimchi Flavor",
+    "found": []
+  },
+  {
+    "id": 1664,
+    "brand": "Mamee",
+    "variety": "Oriental Noodles Prawn Flavor",
+    "found": []
+  },
+  {
+    "id": 1665,
+    "brand": "Paldo Vina",
+    "variety": "Koreno Premium Mushroom Flavor",
+    "found": []
+  },
+  {
+    "id": 1666,
+    "brand": "Vifon",
+    "variety": "Curry Instant Noodle with Chicken",
+    "found": []
+  },
+  {
+    "id": 1667,
+    "brand": "Deshome",
+    "variety": "Aloe Thin Noodles with Camelia Oil Vegetable Sauce Flavor",
+    "found": []
+  },
+  {
+    "id": 1681,
+    "brand": "Wugudaochang",
+    "variety": "Sea Tangle and Sparerins Flavor Noodles",
+    "found": [
+      "Meet The Manufacturer: #1681: Wugudaochang Sea Tangle & Spareribs Flavor Noodles"
+    ]
+  },
+  {
+    "id": 1682,
+    "brand": "Wugudaochang",
+    "variety": "Sour Bamboo Shoot and Beef If Hot Pot Flavor Noodles",
+    "found": [
+      "Meet The Manufacturer: #1682: Wugudaochang Sour Bamboo Shoot & Beef In Hot Pot F"
+    ]
+  },
+  {
+    "id": 1683,
+    "brand": "Wugudaochang",
+    "variety": "Sour Soup and Minced Meat Flavor Chef's Grain Naked Oat Noodles",
+    "found": [
+      "Meet The Manufacturer: #1683: Wugudaochang Sour Soup & Minced Meat Flavor Chef’s"
+    ]
+  },
+  {
+    "id": 1684,
+    "brand": "Wugudaochang",
+    "variety": "Sichuan Pepper and Chicken Flavor Noodle",
+    "found": [
+      "Meet The Manufacturer: #1684: Wugudaochang Sichuan Pepper & Chicken Flavor Noodl"
+    ]
+  },
+  {
+    "id": 1685,
+    "brand": "Wugudaochang",
+    "variety": "Chef's Grains Pea Noodle",
+    "found": [
+      "Meet The Manufacturer: #1685: Wugudaochang Chef’s Grains Pea Noodle"
+    ]
+  },
+  {
+    "id": 1686,
+    "brand": "Wugudaochang",
+    "variety": "Chef's Grains Buckwheat Noodle",
+    "found": [
+      "Meet The Manufacturer: #1686: Wugudaochang Chef’s Grains Buckwheat Noodle"
+    ]
+  },
+  {
+    "id": 1687,
+    "brand": "Wugudaochang",
+    "variety": "Chef's Grains Millet Noodle",
+    "found": [
+      "Meet The Manufacturer: #1687: Wugudaochang Chef’s Grains Millet Noodle"
+    ]
+  },
+  {
+    "id": 1688,
+    "brand": "Wugudaochang",
+    "variety": "Sea Tangle and Sparerins Flavor Noodles",
+    "found": [
+      "Meet The Manufacturer: #1688: Wugudaochang Sea Tangle & Spareribs Flavor Noodles"
+    ]
+  },
+  {
+    "id": 1689,
+    "brand": "Wugudaochang",
+    "variety": "Tomato Beef Brisket Flavor Purple Potato Noodle",
+    "found": []
+  },
+  {
+    "id": 1690,
+    "brand": "Wugudaochang",
+    "variety": "Sour Bamboo Shoot and Beef If Hot Pot Flavor Noodles",
+    "found": [
+      "Meet The Manufacturer: #1690: Wugudaochang Sour Bamboo Shoot & Beef In Hot Pot F"
+    ]
+  },
+  {
+    "id": 1699,
+    "brand": "Vit's",
+    "variety": "Mi goreng Pedas Chewy and springy",
+    "found": []
+  },
+  {
+    "id": 1700,
+    "brand": "A-Sha",
+    "variety": "Hakka Flat Noodle with Za Jiang Sauce",
+    "found": []
+  },
+  {
+    "id": 1701,
+    "brand": "Sakurai Foods",
+    "variety": "Organic Shoyu Ramen",
+    "found": [
+      "NCC #1701: Sakurai Foods Organic Shoyu Ramen"
+    ]
+  },
+  {
+    "id": 1710,
+    "brand": "Chering Chang",
+    "variety": "Instant Non-Fried Noodles Vegetable Curry Flavor",
+    "found": []
+  },
+  {
+    "id": 1715,
+    "brand": "Yum Yum",
+    "variety": "Instant Noodles Minced Pork Flavor",
+    "found": []
+  },
+  {
+    "id": 1718,
+    "brand": "Vina Acecook",
+    "variety": "Hao Hao Sate Onion Flavor",
+    "found": []
+  },
+  {
+    "id": 1722,
+    "brand": "CarJEN",
+    "variety": "Otentiq Cheezy Curry Instant Noodles",
+    "found": []
+  },
+  {
+    "id": 1724,
+    "brand": "Pirkka",
+    "variety": "Nuudeli Liha Nudlar Kott",
+    "found": []
+  },
+  {
+    "id": 1727,
+    "brand": "Wei Lih",
+    "variety": "Jah Jan Men",
+    "found": []
+  },
+  {
+    "id": 1728,
+    "brand": "Yamadai",
+    "variety": "Tenobe Somen",
+    "found": []
+  },
+  {
+    "id": 1729,
+    "brand": "Vedan",
+    "variety": "Zan Vegetarian Instant Noodle Series Shiitake Mushroom Flavor",
+    "found": []
+  },
+  {
+    "id": 1730,
+    "brand": "Wu-Mu",
+    "variety": "BBQ Pork Flavor Chow Mein",
+    "found": []
+  },
+  {
+    "id": 1734,
+    "brand": "Koka",
+    "variety": "Laksa Singapura",
+    "found": []
+  },
+  {
+    "id": 1735,
+    "brand": "Master Kong",
+    "variety": "Tomato Sauce Instant Noodle",
+    "found": []
+  },
+  {
+    "id": 1737,
+    "brand": "Mi Sedaap",
+    "variety": "Instant Cup Mi Goreng",
+    "found": []
+  },
+  {
+    "id": 1745,
+    "brand": "Unox",
+    "variety": "Good Noodles Kerrie",
+    "found": []
+  },
+  {
+    "id": 1748,
+    "brand": "Azami",
+    "variety": "Chili Chicken Flavor Noodle Soup",
+    "found": []
+  },
+  {
+    "id": 1749,
+    "brand": "Yum Yum",
+    "variety": "Jumbo Instant Noodles Tom Yum Kung Creamy Flavor",
+    "found": []
+  },
+  {
+    "id": 1758,
+    "brand": "Vit's",
+    "variety": "Duck Instant Noodles",
+    "found": []
+  },
+  {
+    "id": 1764,
+    "brand": "Pirkka",
+    "variety": "Nuudeli Tom Yum Katkarapu",
+    "found": []
+  },
+  {
+    "id": 1770,
+    "brand": "JML",
+    "variety": "Spicy King Bowl Noodle Spicy Pork",
+    "found": [
+      "Meet The Manufacturer: #1770: JML Spicy King Bowl Noodle Spicy Pork"
+    ]
+  },
+  {
+    "id": 1771,
+    "brand": "JML",
+    "variety": "Supreme Bowl Noodles with Stewed Egg Braised Beef Flavor",
+    "found": [
+      "Meet The Manufacturer: #1771: JML Supreme Bowl Noodles With Stewed Egg Braised B"
+    ]
+  },
+  {
+    "id": 1772,
+    "brand": "JML",
+    "variety": "Spicy King Spicy Beef",
+    "found": [
+      "Meet The Manufacturer: #1772: JML Spicy King Spicy Beef"
+    ]
+  },
+  {
+    "id": 1773,
+    "brand": "JML",
+    "variety": "Supreme Bowl Noodles with Stewed Egg Sour Beans with Pork Flavor",
+    "found": []
+  },
+  {
+    "id": 1774,
+    "brand": "JML",
+    "variety": "Spicy King Spicy Pork",
+    "found": [
+      "Meet The Manufacturer: #1774: JML Spicy King Spicy Pork Noodle"
+    ]
+  },
+  {
+    "id": 1775,
+    "brand": "JML",
+    "variety": "Spicy King Bowl Noodle Spicy Beef",
+    "found": [
+      "Meet The Manufacturer: #1775: JML Spicy King Bowl Noodle Spicy Beef Noodle"
+    ]
+  },
+  {
+    "id": 1776,
+    "brand": "JML",
+    "variety": "Spicy King Bowl Noodle Spicy Chicken",
+    "found": [
+      "Meet The Manufacturer: #1776: JML Spicy King Bowl Noodle Spicy Chicken Noodle"
+    ]
+  },
+  {
+    "id": 1777,
+    "brand": "JML",
+    "variety": "Supereme Bowl Noodles with Stewed Egg Spicy Flavor",
+    "found": [
+      "Meet The Manufacturer: #1777: JML Supreme Bowl Noodles With Stewed Egg Spicy Fla"
+    ]
+  },
+  {
+    "id": 1778,
+    "brand": "JML",
+    "variety": "Spicy King Spicy Chicken",
+    "found": [
+      "Meet The Manufacturer: #1778: JML Spicy King Spicy Chicken Noodle"
+    ]
+  },
+  {
+    "id": 1801,
+    "brand": "Baijia",
+    "variety": "Spicy Artificial Fei Chang Instant Vermicelli (New Recipe)",
+    "found": []
+  },
+  {
+    "id": 1802,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Ramen Noodles Ramen Noodle Soup Beef Flavor (New Package)",
+    "found": []
+  },
+  {
+    "id": 1804,
+    "brand": "Thai Chef",
+    "variety": "Oriental Style Instant Noodles Shrimp Creamy Tom Yum Flavor",
+    "found": []
+  },
+  {
+    "id": 1812,
+    "brand": "Master Kong",
+    "variety": "Mushroom Instant Noodle",
+    "found": []
+  },
+  {
+    "id": 1820,
+    "brand": "Ten-In",
+    "variety": "Veggie King Buddha Jump Instant Noodles",
+    "found": []
+  },
+  {
+    "id": 1828,
+    "brand": "Tseng Noodles",
+    "variety": "Scallion with Sichuan Pepper  Flavor",
+    "found": []
+  },
+  {
+    "id": 1829,
+    "brand": "Tseng Noodles",
+    "variety": "Hu Sesame Flavor",
+    "found": [
+      "Meet The Manufacturer: #1829: Zeng Noodles Hu Sesame Flavor"
+    ]
+  },
+  {
+    "id": 1830,
+    "brand": "Tseng Noodles",
+    "variety": "Sichuan Pepper Flavor",
+    "found": [
+      "Meet The Manufacturer: #1830: Zeng Noodles Sichuan Pepper Flavor"
+    ]
+  },
+  {
+    "id": 1833,
+    "brand": "Vit's",
+    "variety": "Instant Noodles with Chicken Flavor",
+    "found": [
+      "Meet The Manufacturer: #1833: Vit’s Instant Noodles With Chicken Flavour"
+    ]
+  },
+  {
+    "id": 1834,
+    "brand": "Vit's",
+    "variety": "Taste Of Malaysia Penang Hokkien Mee Fried Instant Noodle",
+    "found": [
+      "Meet The Manufacturer: #1834: Vit’s Taste Of Malaysia Penang Hokkien Mee Fried I"
+    ]
+  },
+  {
+    "id": 1835,
+    "brand": "Vit's",
+    "variety": "Taste Of Malaysia Penang Asam Laksa Ramen",
+    "found": [
+      "Meet The Manufacturer: #1835: Vit’s Taste Of Malaysia Penang Asam Laksa Ramen"
+    ]
+  },
+  {
+    "id": 1836,
+    "brand": "Vit's",
+    "variety": "Taste Of Malaysia Penang White Curry Fried Instant Noodle",
+    "found": [
+      "Meet The Manufacturer: #1836: Vit’s Taste Of Malaysia Penang White Curry Fried I"
+    ]
+  },
+  {
+    "id": 1837,
+    "brand": "Vit's",
+    "variety": "Taste Of Malaysia Penang Hokkien Mee Ramen",
+    "found": [
+      "Meet The Manufacturer: #1837: Vit’s Taste Of Malaysia Penang Hokkien Mee Ramen"
+    ]
+  },
+  {
+    "id": 1838,
+    "brand": "Vit's",
+    "variety": "Taste Of Malaysia Penang Asam Laksa Fried Instant Noodle",
+    "found": [
+      "Meet The Manufacturer: #1838: Vit’s Taste Of Malaysia Penang Asam Laksa Fried In"
+    ]
+  },
+  {
+    "id": 1839,
+    "brand": "Vit's",
+    "variety": "Taste Of Malaysia Penang White Curry Ramen",
+    "found": [
+      "Meet The Manufacturer: #1839: Vit’s Taste Of Malaysia Penang White Curry Ramen"
+    ]
+  },
+  {
+    "id": 1840,
+    "brand": "Forest Noodles",
+    "variety": "Sweet Potato Noodles with Sesame Paste Sauce",
+    "found": [
+      "Meet The Manufacturer: #1840: Forest Noodles Sweet Potato Noodles With Sesame Pa"
+    ]
+  },
+  {
+    "id": 1841,
+    "brand": "Forest Noodles",
+    "variety": "Sunbaked Noodles with Spicy Sauce",
+    "found": [
+      "Meet The Manufacturer: #1841: Forest Noodles Sunbaked Noodles With Spicy Sauce"
+    ]
+  },
+  {
+    "id": 1842,
+    "brand": "Forest Noodles",
+    "variety": "Purple Sweet Potato Noodles with Taiwanese Sauce",
+    "found": [
+      "Meet The Manufacturer: #1842: Forest Noodles Purple Sweet Potato Noodle With Tai"
+    ]
+  },
+  {
+    "id": 1843,
+    "brand": "Forest Noodles",
+    "variety": "Sunbaked Noodles with Sesame Sauce",
+    "found": [
+      "Meet The Manufacturer: #1843: Forest Noodles Sunbaked Noodle With Sesame Oil Sau"
+    ]
+  },
+  {
+    "id": 1851,
+    "brand": "Fujiwara",
+    "variety": "Snow Crab Flavor Shio Ramen",
+    "found": []
+  },
+  {
+    "id": 1863,
+    "brand": "Baijia",
+    "variety": "Broad Noodle Pickled Vegetable Artificial Beef Flavor",
+    "found": [
+      "ERROR – RE-REVIEW NECESSARY – #1863: Sichuan Baijia Broad Noodle Pickled Vegetab"
+    ]
+  },
+  {
+    "id": 1870,
+    "brand": "Asia Gold",
+    "variety": "Instant Noodles with Beef Flavoring",
+    "found": []
+  },
+  {
+    "id": 1876,
+    "brand": "Myojo",
+    "variety": "Chicken Flavor",
+    "found": [
+      "Meet The Manufacturer: #1876: Myojo Chicken Flavour"
+    ]
+  },
+  {
+    "id": 1877,
+    "brand": "Myojo",
+    "variety": "La Ramen Spicy Mushroom Flavor",
+    "found": [
+      "Meet The Manufacturer: #1877: Myojo La Ramen Spicy Mushroom Flavour"
+    ]
+  },
+  {
+    "id": 1878,
+    "brand": "Myojo",
+    "variety": "Extra Spicy Singapore Curry Big Bowl",
+    "found": [
+      "Meet The Manufacturer: #1878: Myojo Extra Spicy Singapore Curry Big Bowl"
+    ]
+  },
+  {
+    "id": 1879,
+    "brand": "Myojo",
+    "variety": "Chicken Tanmen Flavor",
+    "found": [
+      "Meet The Manufacturer: #1879: Myojo Chicken Tanmen Flavour"
+    ]
+  },
+  {
+    "id": 1880,
+    "brand": "Myojo",
+    "variety": "Thai Tom Yam Flavor",
+    "found": [
+      "Meet The Manufacturer: #1880: Myojo Thai Tom Yam Flavour"
+    ]
+  },
+  {
+    "id": 1881,
+    "brand": "Myojo",
+    "variety": "Chicken Abalone Flavor",
+    "found": [
+      "Meet The Manufacturer: #1881: Myojo Chicken Abalone Flavour"
+    ]
+  },
+  {
+    "id": 1882,
+    "brand": "Myojo",
+    "variety": "La Ramen Spicy Lobster Hot Pot Flavor Big Bowl",
+    "found": [
+      "Meet The Manufacturer: #1882: Myojo La Ramen Spicy Lobster Hot Pot Flavour Big B"
+    ]
+  },
+  {
+    "id": 1883,
+    "brand": "Myojo",
+    "variety": "Mee Goreng",
+    "found": [
+      "Meet The Manufacturer: #1883: Myojo Mee Goreng"
+    ]
+  },
+  {
+    "id": 1884,
+    "brand": "Myojo",
+    "variety": "La Ramen Spicy Mushroom Flavor Big Bowl",
+    "found": [
+      "Meet The Manufacturer: #1884: Myojo La Ramen Spicy Mushroom Flavour Big Bowl"
+    ]
+  },
+  {
+    "id": 1885,
+    "brand": "Myojo",
+    "variety": "Ramen Char Mee 100",
+    "found": [
+      "Meet The Manufacturer: #1885: Myojo Ramen Char Mee 100"
+    ]
+  },
+  {
+    "id": 1886,
+    "brand": "Myojo",
+    "variety": "Chicken Abalone Flavor",
+    "found": [
+      "Meet The Manufacturer: #1886: Myojo Chicken Abalone Flavour"
+    ]
+  },
+  {
+    "id": 1887,
+    "brand": "Myojo",
+    "variety": "Mee Poh Dry",
+    "found": [
+      "Meet The Manufacturer: #1887: Myojo Mee Poh Dry"
+    ]
+  },
+  {
+    "id": 1890,
+    "brand": "Kuriki",
+    "variety": "Beef Tongue Shio Mayo Ramen",
+    "found": []
+  },
+  {
+    "id": 1891,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Homestyle Chicken",
+    "found": []
+  },
+  {
+    "id": 1895,
+    "brand": "Maruchan",
+    "variety": "Seimen Houjyun Koku Shoyu",
+    "found": []
+  },
+  {
+    "id": 1904,
+    "brand": "Bonasia",
+    "variety": "Instant Noodles Duck Flavor",
+    "found": []
+  },
+  {
+    "id": 1911,
+    "brand": "Nissin",
+    "variety": "Emergency Chicken Ramen Cup Noodle",
+    "found": []
+  },
+  {
+    "id": 1932,
+    "brand": "Love Cook",
+    "variety": "Guanmiao Dried Noodles with Shallot Flavor",
+    "found": [
+      "Meet The Manufacturer: #1932: Love Cook Guanmiao Dried Noodles With Shallot Flav"
+    ]
+  },
+  {
+    "id": 1933,
+    "brand": "Love Cook",
+    "variety": "Guanmiao Dried Noodles with Authentic Sauce",
+    "found": [
+      "Meet The Manufacturer: #1933: Love Cook Guanmiao Dried Noodles With Authentic Sa"
+    ]
+  },
+  {
+    "id": 1934,
+    "brand": "Love Cook",
+    "variety": "Guanmiao Dried Noodles with Spicy Sauce",
+    "found": [
+      "Meet The Manufacturer: #1934: Love Cook Guanmiao Dried Noodles With Spicy Sauce"
+    ]
+  },
+  {
+    "id": 1935,
+    "brand": "Love Cook",
+    "variety": "Guanmiao Dried Noodles with Oleum Sesami",
+    "found": [
+      "Meet The Manufacturer: #1935: Love Cook Guanmiao Dried Noodles With Oleum Sesami"
+    ]
+  },
+  {
+    "id": 1951,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Ramen Noodle Soup Hearty Chicken Flavor [New Package]",
+    "found": []
+  },
+  {
+    "id": 1960,
+    "brand": "Kabuto Noodles",
+    "variety": "Chili Chicken Ramen",
+    "found": [
+      "Meet The Manufacturer: #1960: Kabuto Noodles Chilli Chicken Ramen"
+    ]
+  },
+  {
+    "id": 1961,
+    "brand": "Kabuto Noodles",
+    "variety": "Chicken Ramen",
+    "found": [
+      "Meet The Manufacturer: #1961: Kabuto Noodles Chicken Ramen"
+    ]
+  },
+  {
+    "id": 1962,
+    "brand": "Kabuto Noodles",
+    "variety": "Rice Noodles Chicken Pho",
+    "found": [
+      "Meet The Manufacturer: #1962: Kabuto Rice Noodles Chicken Pho"
+    ]
+  },
+  {
+    "id": 1963,
+    "brand": "Kabuto Noodles",
+    "variety": "Rice Noodles Vegetable Laksa",
+    "found": [
+      "Meet The Manufacturer: #1963: Kabuto Rice Noodles Vegetable Laksa"
+    ]
+  },
+  {
+    "id": 1990,
+    "brand": "Nissin",
+    "variety": "Cup Noodle",
+    "found": [
+      "Meet The Manufacturer: #1990: Nissin Cup Noodle"
+    ]
+  },
+  {
+    "id": 1992,
+    "brand": "Nissin",
+    "variety": "Cup Noodle Light Plus Ratatouille",
+    "found": [
+      "Meet The Manufacturer: #1992: Nissin Cup Noodle Light Ratatouille"
+    ]
+  },
+  {
+    "id": 1993,
+    "brand": "Nissin",
+    "variety": "Raoh Tonkotsu",
+    "found": [
+      "Meet The Manufacturer: #1993: Nissin Raoh Tonkotsu"
+    ]
+  },
+  {
+    "id": 1994,
+    "brand": "Nissin",
+    "variety": "Gyoretsu-no-Dekiru-Mise-no-Ramen (Shrimp Tantanmen)",
+    "found": [
+      "Meet The Manufacturer: #1994: Nissin Gyoretsu-no-Dekiru-Mise-no- Ramen (Shrimp T"
+    ]
+  },
+  {
+    "id": 1995,
+    "brand": "Nissin",
+    "variety": "Cup Noodle Big Cheese Mexican Chili",
+    "found": [
+      "Meet The Manufacturer: #1995: Nissin Cup Noodle Big Cheese Mexican Chili"
+    ]
+  },
+  {
+    "id": 1996,
+    "brand": "Nissin",
+    "variety": "Cup Noodle Pasta Style Tarako Spaghetti",
+    "found": [
+      "Meet The Manufacturer: #1996: Nissin Cup Noodle Pasta Style Tarako Spaghetti"
+    ]
+  },
+  {
+    "id": 1997,
+    "brand": "Nissin",
+    "variety": "Cup Noodle Vegeta Buta-kyabetsu Tonkotsu",
+    "found": [
+      "Meet The Manufacturer: #1997: Nissin Cup Noodle Vegeta Buta-kyabetsu Tonkotsu"
+    ]
+  },
+  {
+    "id": 1998,
+    "brand": "Nissin",
+    "variety": "Men Shokunin Shoyu",
+    "found": [
+      "Meet The Manufacturer: #1998: Nissin Men Shokunin Shoyu"
+    ]
+  },
+  {
+    "id": 1999,
+    "brand": "Nissin",
+    "variety": "Curry Udon",
+    "found": [
+      "Meet The Manufacturer: #1999: Nissin Curry Udon"
+    ]
+  },
+  {
+    "id": 2000,
+    "brand": "Nissin",
+    "variety": "Chicken Ramen Donburi",
+    "found": [
+      "Meet The Manufacturer: #2000: Nissin Chikin Ramen Donburi"
+    ]
+  },
+  {
+    "id": 2001,
+    "brand": "Nissin",
+    "variety": "Cup Noodle Big Seafood Clam Chowder",
+    "found": [
+      "Meet The Manufacturer: #2001: Nissin BIG Cup Noodle Seafood Clam Chowder"
+    ]
+  },
+  {
+    "id": 2002,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Tom Yum Goong",
+    "found": [
+      "Meet The Manufacturer: #2002: Nissin Cup Noodles Tom Yum Goong"
+    ]
+  },
+  {
+    "id": 2003,
+    "brand": "Nissin",
+    "variety": "Raoh Rich Miso Flavor",
+    "found": [
+      "Meet The Manufacturer: #2003: Nissin Raoh Rich Miso Flavor"
+    ]
+  },
+  {
+    "id": 2004,
+    "brand": "Nissin",
+    "variety": "Donbei Dashi Shoyu Yakiudon",
+    "found": [
+      "Meet The Manufacturer: #2004: Nissin Donbei Dashi Shoyu Yakiudon"
+    ]
+  },
+  {
+    "id": 2007,
+    "brand": "Nongshim",
+    "variety": "Rice Fettuccini Alfredo",
+    "found": []
+  },
+  {
+    "id": 2011,
+    "brand": "Trident",
+    "variety": "2 Minute Laksa Flavor Noodles",
+    "found": []
+  },
+  {
+    "id": 2014,
+    "brand": "Oni Hot Pot",
+    "variety": "Ghost Pepper Noodle",
+    "found": []
+  },
+  {
+    "id": 2016,
+    "brand": "Great Value",
+    "variety": "Chicken Style Noodles with Vegetables",
+    "found": []
+  },
+  {
+    "id": 2019,
+    "brand": "Acecook",
+    "variety": "Seabura Tonkotsu Ramen",
+    "found": []
+  },
+  {
+    "id": 2021,
+    "brand": "Urban Noodle",
+    "variety": "Authentic Street Food Satay",
+    "found": [
+      "Meet The Manufacturer: #2021: Urban Noodle Authentic Street Food Satay"
+    ]
+  },
+  {
+    "id": 2022,
+    "brand": "Urban Noodle",
+    "variety": "Authentic Street Food Thai Red Curry",
+    "found": [
+      "Meet The Manufacturer: #2022: Urban Noodle Authentic Street Food Thai Red Curry"
+    ]
+  },
+  {
+    "id": 2023,
+    "brand": "Urban Noodle",
+    "variety": "Authentic Street Food Black Bean",
+    "found": [
+      "Meet The Manufacturer: #2023: Urban Noodle Authentic Street Food Black Bean"
+    ]
+  },
+  {
+    "id": 2024,
+    "brand": "Urban Noodle",
+    "variety": "Authentic Street Food Pad Thai",
+    "found": [
+      "Meet The Manufacturer: #2024: Urban Noodle Authentic Street Food Pad Thai"
+    ]
+  },
+  {
+    "id": 2025,
+    "brand": "Urban Noodle",
+    "variety": "Authentic Street Food Chow Mein",
+    "found": [
+      "Meet The Manufacturer: #2025: Urban Noodle Authentic Street Food Chow Mein"
+    ]
+  },
+  {
+    "id": 2027,
+    "brand": "Nissin",
+    "variety": "Shinshu Miso Ramen",
+    "found": []
+  },
+  {
+    "id": 2033,
+    "brand": "Chaudhary's Wai Wai",
+    "variety": "Instant Noodles Artificial Chicken and Shrimp Flavored",
+    "found": []
+  },
+  {
+    "id": 2040,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Sabor Franhp Com Requeijao",
+    "found": []
+  },
+  {
+    "id": 2066,
+    "brand": "Marutai",
+    "variety": "Hakata Tonkotsu Ramen",
+    "found": [
+      "Washoku Explorer Kit: #2066: Marutai Hakata Tonkotsu Ramen"
+    ]
+  },
+  {
+    "id": 2076,
+    "brand": "Nissin",
+    "variety": "Demae Iccho Black Garlic Oil Tonkotsu",
+    "found": [
+      "Meet The Manufacturer: #2076: Nissin Demae Iccho Black Garlic Oil Tonkotsu Flavo"
+    ]
+  },
+  {
+    "id": 2077,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Big Spicy Seafood Flavor",
+    "found": [
+      "Meet The Manufacturer: #2077: Nissin Cup Noodles Big Spicy Seafood Flavour"
+    ]
+  },
+  {
+    "id": 2078,
+    "brand": "Nissin",
+    "variety": "Demae Iccho Curry Beef Flavor",
+    "found": [
+      "Meet The Manufacturer: #2078: Nissin Demae Iccho Curry Beef Flavour Instant Nood"
+    ]
+  },
+  {
+    "id": 2079,
+    "brand": "Nissin",
+    "variety": "Nupasta Carbonara Flavor Instant Noodle",
+    "found": [
+      "Meet The Manufacturer: #2079: Nissin Nupasta Carbonara Flavour Instant Noodle"
+    ]
+  },
+  {
+    "id": 2080,
+    "brand": "Fuku",
+    "variety": "Non-Fried Superior Soup Noodle",
+    "found": [
+      "Meet The Manufacturer: #2080: Fuku Non-Fried Superior Soup Noodle"
+    ]
+  },
+  {
+    "id": 2081,
+    "brand": "Nissin",
+    "variety": "Cup Mifun Spicy Beef Flavor",
+    "found": [
+      "Meet The Manufacturer: #2081: Nissin Cup Mifun Spicy Beef Flavour"
+    ]
+  },
+  {
+    "id": 2082,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Pork Chowder Flavor",
+    "found": [
+      "Meet The Manufacturer: #2082: Nissin Cup Noodles Pork Chowder Flavour"
+    ]
+  },
+  {
+    "id": 2083,
+    "brand": "Nissin",
+    "variety": "Taisho Fried Noodle Sesame Paste Flavor Instant Noodle",
+    "found": [
+      "Meet The Manufacturer: #2083: Nissin Taisho Fried Noodle Sesame Paste Flavour In"
+    ]
+  },
+  {
+    "id": 2084,
+    "brand": "Nissin",
+    "variety": "Demae Ramen Straight Noodle Kyushu Tonkotsu Instant Noodle",
+    "found": []
+  },
+  {
+    "id": 2085,
+    "brand": "Fuku",
+    "variety": "Superior Soup Instant Rice Vermicelli",
+    "found": [
+      "Meet The Manufacturer: #2085: Fuku Superior Soup Instant Rice Vermicelli"
+    ]
+  },
+  {
+    "id": 2086,
+    "brand": "Nissin",
+    "variety": "Demae Ramen Sesame Flavor Instant Noodles",
+    "found": [
+      "Meet The Manufacturer: #2086: Nissin Demae Ramen Sesame Oil Flavour Instant Nood"
+    ]
+  },
+  {
+    "id": 2087,
+    "brand": "Nissin",
+    "variety": "Mie Goreng Indonesia Stir Noodle Original Flavor",
+    "found": [
+      "Meet The Manufacturer: #2087: Nissin Mie Goreng Indonesia Stir Noodle Original F"
+    ]
+  },
+  {
+    "id": 2088,
+    "brand": "Nissin",
+    "variety": "Demae Iccho Beef Flavor Instant Noodle",
+    "found": [
+      "Meet The Manufacturer: #2088: Nissin Demae Iccho Beef Flavour Instant Noodle"
+    ]
+  },
+  {
+    "id": 2089,
+    "brand": "Nissin",
+    "variety": "Big Cup Noodles Seafood Curry Flavor",
+    "found": [
+      "Meet The Manufacturer: #2089: Nissin Cup Noodles Big Seafood Curry Flavour"
+    ]
+  },
+  {
+    "id": 2090,
+    "brand": "Nissin",
+    "variety": "Nupasta Salmon In White Sauce Flavor Instant Noodle",
+    "found": [
+      "Meet The Manufacturer: #2090: Nissin Nupasta Salmon In White Sauce Flavor Instan"
+    ]
+  },
+  {
+    "id": 2110,
+    "brand": "Great Value",
+    "variety": "Vegetarian Flavor Ramen Noodles",
+    "found": []
+  },
+  {
+    "id": 2112,
+    "brand": "Nissin",
+    "variety": "Chili Noodles Spicy Tom Yum Flavor",
+    "found": [
+      "Meet The Manufacturer: #2112: Nissin Chilli Noodle Spicy Tom Yum Shrimp Flavour"
+    ]
+  },
+  {
+    "id": 2113,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Seafood Creamy Flavor",
+    "found": [
+      "Meet The Manufacturer: #2113: Nissin Cup Noodles Seafood Creamy Flavour"
+    ]
+  },
+  {
+    "id": 2114,
+    "brand": "Nissin",
+    "variety": "Instant Noodles Minced Pork Flavor",
+    "found": [
+      "Meet The Manufacturer: #2114: Nissin Instant Noodles Minced Pork Flavour"
+    ]
+  },
+  {
+    "id": 2115,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Moo Manao Flavor",
+    "found": []
+  },
+  {
+    "id": 2116,
+    "brand": "Nissin",
+    "variety": "Instant Noodles Tom Yum Shrimp Saab Flavor",
+    "found": []
+  },
+  {
+    "id": 2117,
+    "brand": "7 Select",
+    "variety": "Nissin Instant Noodles Shrimp Ma Nao Lui Suan Flavor King Cup",
+    "found": []
+  },
+  {
+    "id": 2118,
+    "brand": "Nissin",
+    "variety": "Chili Noodles Tom Yum Shrimp Creamy Soup Flavor",
+    "found": []
+  },
+  {
+    "id": 2119,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Minced Pork Flavor",
+    "found": [
+      "Meet The Manufacturer: #2119: Nissin Cup Noodles Minced Pork Flavour"
+    ]
+  },
+  {
+    "id": 2120,
+    "brand": "Nissin",
+    "variety": "Super Tom Yum Shrimp",
+    "found": [
+      "Meet The Manufacturer: #2120: Nissin Super Tom Yum Shrimp"
+    ]
+  },
+  {
+    "id": 2121,
+    "brand": "Nissin",
+    "variety": "Instant Noodles Moo Manao Flavor",
+    "found": [
+      "Meet The Manufacturer: #2121: Nissin Instant Noodles Moo Manao Flavour"
+    ]
+  },
+  {
+    "id": 2122,
+    "brand": "Nissin",
+    "variety": "Chili Noodles Stir Fried Holy Basil Flavor",
+    "found": [
+      "Meet The Manufacturer: #2122: Nissin Chilli Noodles Stir Fried Holy Basil Flavou"
+    ]
+  },
+  {
+    "id": 2123,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Tom Yum Shrimp Sabb Flavor",
+    "found": [
+      "Meet The Manufacturer: #2123: Nissin Cup Noodles Tom Yum Shrimp Sabb Flavour"
+    ]
+  },
+  {
+    "id": 2124,
+    "brand": "7 Select",
+    "variety": "Nissin Instant Noodles Tom Yum Seafood Creamy Flavor King Cup",
+    "found": [
+      "Meet The Manufacturer: #2124: 7 Select Nissin Instant Noodles Tom Yum Seafood Cr"
+    ]
+  },
+  {
+    "id": 2148,
+    "brand": "Jingqi",
+    "variety": "Black Eyes Bean Pumpkin Noodles with Basil Sauce",
+    "found": [
+      "Meet The Manufacturer: #2148: Jingqi Black Eyes Bean Pumpkin Noodles With Basil "
+    ]
+  },
+  {
+    "id": 2149,
+    "brand": "Jingqi",
+    "variety": "Aloe Vera Guan Mian Cyanobacteria Noodle with Ginger Oil Sauce",
+    "found": [
+      "Meet The Manufacturer: #2149: Jingqi Aloe Vera Guan Mian Cyanobacteria Noodles W"
+    ]
+  },
+  {
+    "id": 2150,
+    "brand": "Jingqi",
+    "variety": "Black Eyes Bean Purple Sweet Potato Noodle with Spicy Miso Sauce",
+    "found": [
+      "Meet The Manufacturer: #2150: Jingqi Black Eyes Bean Purple Sweet Potato Noodles"
+    ]
+  },
+  {
+    "id": 2151,
+    "brand": "Jingqi",
+    "variety": "Aloe Vera Guan Mian Original Noodle with Sesame Sauce",
+    "found": [
+      "Meet The Manufacturer: #2151: Jingqi Aloe Vera Guan Mian Original Noodles With S"
+    ]
+  },
+  {
+    "id": 2152,
+    "brand": "Jingqi",
+    "variety": "Black Eyes Bean Cyanobacteria Noodle with Ginger Oil Sauce",
+    "found": [
+      "Meet The Manufacturer: #2152: Jingqi Black Eyes Bean Cyanobacteria Noodles With "
+    ]
+  },
+  {
+    "id": 2153,
+    "brand": "Jingqi",
+    "variety": "Aloe Vera Guan Mian Pumpkin Noodle with Basil Sauce",
+    "found": [
+      "Meet The Manufacturer: #2153: Jingqi Aloe Vera Guan Mian Pumpkin Noodles With Ba"
+    ]
+  },
+  {
+    "id": 2154,
+    "brand": "Jingqi",
+    "variety": "Black Eyes Bean Original Noodle with Sesame Sauce",
+    "found": [
+      "Meet The Manufacturer: #2154: Jingqi Black Eyes Bean Original Noodles With Sesam"
+    ]
+  },
+  {
+    "id": 2155,
+    "brand": "Jingqi",
+    "variety": "Aloe Vera Guan Mian Purple Sweet Potato Noodle with Spicy Miso Sauce",
+    "found": [
+      "Meet The Manufacturer: #2155: Jingqi Aloe Vera Guan Mian Purple Sweet Potato Noo"
+    ]
+  },
+  {
+    "id": 2171,
+    "brand": "MAMA",
+    "variety": "Instant Flat Noodles Tom Yam Flavor",
+    "found": [
+      "Meet The Manufacturer: #2171: MAMA Instant Flat Noodles Tom Yum Flavour"
+    ]
+  },
+  {
+    "id": 2172,
+    "brand": "MAMA",
+    "variety": "Instant Rice Noodles Phnom Penh Style",
+    "found": [
+      "Meet The Manufacturer: #2172: MAMA Instant Rice Noodles Phnom Penh Style"
+    ]
+  },
+  {
+    "id": 2173,
+    "brand": "MAMA",
+    "variety": "Instant Rice Noodles Stew Beef Flavor",
+    "found": [
+      "Meet The Manufacturer #2173: MAMA Instant Rice Noodles Stew Beef Flavour"
+    ]
+  },
+  {
+    "id": 2174,
+    "brand": "MAMA",
+    "variety": "Cup Rice Noodles Tom Saab Flavor",
+    "found": [
+      "Meet The Manufacturer: #2174: MAMA Cup Rice Noodles Tom Saab Flavour"
+    ]
+  },
+  {
+    "id": 2175,
+    "brand": "MAMA",
+    "variety": "Instant Flat Noodles Clear Soup",
+    "found": [
+      "Meet The Manufacturer: #2175: MAMA Instant Flat Noodles Clear Soup"
+    ]
+  },
+  {
+    "id": 2176,
+    "brand": "MAMA",
+    "variety": "Instant Rice Vermicelli Yentafo Tom Yam Mohfai",
+    "found": [
+      "Meet The Manufacturer: #2176: MAMA Instant Rice Vermicelli Yentafo Tom Yam Mohfa"
+    ]
+  },
+  {
+    "id": 2177,
+    "brand": "MAMA",
+    "variety": "Instant Rice Noodles Vegetable Flavor",
+    "found": []
+  },
+  {
+    "id": 2178,
+    "brand": "MAMA",
+    "variety": "Instant Tom Yam Rice Noodles",
+    "found": [
+      "Meet The Manufacturer: #2178: MAMA Instant Tom Yam Rice Noodles"
+    ]
+  },
+  {
+    "id": 2179,
+    "brand": "MAMA",
+    "variety": "Oriental Kitchen Instant Rice Vermicelli In Gravy",
+    "found": [
+      "Meet The Manufacturer: #2179: MAMA Oriental Kitchen Instant Rice Vermicelli In G"
+    ]
+  },
+  {
+    "id": 2180,
+    "brand": "MAMA",
+    "variety": "Pho Ga Rice Noodles with Artificial Chicken Flavor",
+    "found": [
+      "Meet The Manufacturer: #2180: MAMA Pho Ga Rice Noodles With Artificial Chicken F"
+    ]
+  },
+  {
+    "id": 2181,
+    "brand": "MAMA",
+    "variety": "Instant Rice Noodles Chicken Flavor",
+    "found": [
+      "Meet The Manufacturer: #2181: MAMA Instant Rice Noodles Chicken Flavour"
+    ]
+  },
+  {
+    "id": 2182,
+    "brand": "MAMA",
+    "variety": "Instant Rice Vermicelli Clear Soup",
+    "found": [
+      "Meet The Manufacturer: #2182: MAMA Instant Rice Vermicelli Clear Soup"
+    ]
+  },
+  {
+    "id": 2183,
+    "brand": "MAMA",
+    "variety": "Instant Rice Noodles Moo Nam Tok Flavor",
+    "found": [
+      "Meet The Manufacturer: #2183: MAMA Instant Rice Noodles Moo Nam Tok Flavour"
+    ]
+  },
+  {
+    "id": 2184,
+    "brand": "President Rice",
+    "variety": "Coriander Instant Rice Noodles",
+    "found": [
+      "Meet The Manufacturer: #2184: President Rice Coriander Instant Rice Noodles"
+    ]
+  },
+  {
+    "id": 2188,
+    "brand": "Singa-Me",
+    "variety": "Instant Noodles Chicken Flavor",
+    "found": []
+  },
+  {
+    "id": 2193,
+    "brand": "Knorr",
+    "variety": "Chicken Flavored Instant Noodles",
+    "found": []
+  },
+  {
+    "id": 2196,
+    "brand": "Mr. Lee's Noodles",
+    "variety": "Warrior Fighting Shrimp",
+    "found": [
+      "Meet The Manufacturer: #2196: Mr. Lee’s Noodles Warrior Fighting Shrimp"
+    ]
+  },
+  {
+    "id": 2197,
+    "brand": "Mr. Lee's Noodles",
+    "variety": "Hong Kong Street Beef",
+    "found": [
+      "Meet The Manufacturer: #2197: Mr. Lee’s Noodles Hong Kong Street Beef"
+    ]
+  },
+  {
+    "id": 2198,
+    "brand": "Mr. Lee's Noodles",
+    "variety": "Dragon Fire Mushroom",
+    "found": [
+      "Meet The Manufacturer: #2198: Mr. Lee’s Noodles Dragon Fire Mushroom"
+    ]
+  },
+  {
+    "id": 2199,
+    "brand": "Mr. Lee's Noodles",
+    "variety": "Tai Chi Chicken",
+    "found": [
+      "Meet The Manufacturer: #2199: Mr. Lee’s Noodles Tai Chi Chicken"
+    ]
+  },
+  {
+    "id": 2200,
+    "brand": "Mr. Lee's Noodles",
+    "variety": "Shaolin Monk Vegetables",
+    "found": [
+      "Meet The Manufacturer: #2200: Mr. Lee’s Noodles Shaolin Monk Vegetables"
+    ]
+  },
+  {
+    "id": 2201,
+    "brand": "Mr. Lee's Noodles",
+    "variety": "Penang Chicken Curry Laksa",
+    "found": [
+      "Meet The Manufacturer: #2201: Mr. Lee’s Noodles Penang Chicken Curry Laksa"
+    ]
+  },
+  {
+    "id": 2210,
+    "brand": "Morre",
+    "variety": "Instant Noodles Masala",
+    "found": []
+  },
+  {
+    "id": 2242,
+    "brand": "Great Value",
+    "variety": "Beef Style Noodles with Vegetables",
+    "found": []
+  },
+  {
+    "id": 2246,
+    "brand": "Dream Kitchen",
+    "variety": "Soy Sauce",
+    "found": []
+  },
+  {
+    "id": 2276,
+    "brand": "Nissin",
+    "variety": "Cup Noodles with Shrimp Ramen Noodle Soup (New Recipe)",
+    "found": []
+  },
+  {
+    "id": 2278,
+    "brand": "Nissin",
+    "variety": "Raoh Tantanmen",
+    "found": []
+  },
+  {
+    "id": 2307,
+    "brand": "Otoki",
+    "variety": "Ramyun Sabor Pollo",
+    "found": []
+  },
+  {
+    "id": 2311,
+    "brand": "Xiao Ban Mian",
+    "variety": "Sesame Sauce Matcha Noodle",
+    "found": [
+      "Meet The Manufacturer: #2311: Xiao Ban Mian Sesame Sauce Matcha Noodle"
+    ]
+  },
+  {
+    "id": 2312,
+    "brand": "Xiao Ban Mian",
+    "variety": "Traditional Shallot and Onion Oil Noodle",
+    "found": [
+      "Meet The Manufacturer: #2312: Xiao Ban Mian Traditional Shallot & Onion Oil Nood"
+    ]
+  },
+  {
+    "id": 2313,
+    "brand": "Xiao Ban Mian",
+    "variety": "Sesame Oil with Garlic Flavor Thin Noodle",
+    "found": [
+      "Meet The Manufacturer: #2313: Xiao Ban Mian Sesame Oil With Garlic Flavor Thin N"
+    ]
+  },
+  {
+    "id": 2330,
+    "brand": "Ve Wong",
+    "variety": "Little Prince(ss) Brand Snack Noodles Artificial Mexican Pizza Flavor",
+    "found": []
+  },
+  {
+    "id": 2331,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Sopa Nissin Hot Sauce Sabor A Pollo",
+    "found": [
+      "Meet The Manufacturer: #2331: Nissin Cup Noodles Sopa Nissin Hot Sauce Sabor A P"
+    ]
+  },
+  {
+    "id": 2332,
+    "brand": "Nissin",
+    "variety": "Sopa Nissin Sabor A Res Instantanea Tipo Ramen",
+    "found": [
+      "Meet The Manufacturer: #2332: Nissin Sopa Nissin Sabor A Res Sopa Instantanea Ti"
+    ]
+  },
+  {
+    "id": 2333,
+    "brand": "Nissin",
+    "variety": "Maxi Sopa Nissin Cuchareable Sabor A Pollo",
+    "found": [
+      "Meet The Manufacturer: #2333: Nissin Maxi Sopa Nissin Cuchareable Sabor A Pollo"
+    ]
+  },
+  {
+    "id": 2334,
+    "brand": "Nissin",
+    "variety": "Sopa Nissin Sabor Mariscos, Habanero Y Limon",
+    "found": [
+      "Meet The Manufacturer: #2334: Nissin Cup Noodles Sopa Nissin Sabor Mariscos, Hab"
+    ]
+  },
+  {
+    "id": 2335,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Gourmet Sabor A Caldo De Camaron",
+    "found": [
+      "Meet The Manufacturer: #2335: Nissin Cup Noodles Gourmet Sabor A Caldo De Camaro"
+    ]
+  },
+  {
+    "id": 2336,
+    "brand": "Nissin",
+    "variety": "Maxi Sopa Nissin Cuchareable Sabor A Camaron Picante",
+    "found": [
+      "Meet The Manufacturer: #2336: Nissin Maxi Sopa Nissin Cuchareable Sabor A Camaro"
+    ]
+  },
+  {
+    "id": 2337,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Sopa Nissin Con Camaron",
+    "found": [
+      "Meet The Manufacturer: #2337: Nissin Cup Noodles Sopa Nissin Con Camaron"
+    ]
+  },
+  {
+    "id": 2338,
+    "brand": "Nissin",
+    "variety": "Sopa Nissin Sabor A Pollo Sopa Instantanea Tipo Ramen",
+    "found": [
+      "Meet The Manufacturer: #2338: Nissin Sopa Nissin Sabor A Pollo Sopa Instantanea "
+    ]
+  },
+  {
+    "id": 2339,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Sopa Nissin Sabor Camaron, Habanero Y Limon",
+    "found": [
+      "Meet The Manufacturer: #2339: Nissin Cup Noodles Sopa Nissin Sabor Camaron, Haba"
+    ]
+  },
+  {
+    "id": 2340,
+    "brand": "Nissin",
+    "variety": "RapiFideo Sabor A Tomate Y Pollo",
+    "found": [
+      "Meet The Manufacturer: #2340: Nissin RapiFideo Sabor A Tomate Y Pollo"
+    ]
+  },
+  {
+    "id": 2341,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Sopa Nissin Sabor A Carne De Res",
+    "found": [
+      "Meet The Manufacturer: #2341: Nissin Cup Noodles Sopa Nissin Sabor A Carne De Re"
+    ]
+  },
+  {
+    "id": 2342,
+    "brand": "Nissin",
+    "variety": "Sopa Nissin Sabor A Camaron Sopa Instantanea Tipo Ramen",
+    "found": [
+      "Meet The Manufacturer: #2342: Nissin Sopa Nissin Sabor A Camaron Sopa Instantane"
+    ]
+  },
+  {
+    "id": 2343,
+    "brand": "Nissin",
+    "variety": "Maxi Sopa Nissin Cuchareable Sabor A Jugo De Carne",
+    "found": [
+      "Meet The Manufacturer: #2343: Nissin Maxi Sopa Nissin Cuchareable Sabor A Jugo D"
+    ]
+  },
+  {
+    "id": 2344,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Sopa Nissin Sabor A Pollo",
+    "found": []
+  },
+  {
+    "id": 2353,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Rich Garlic, Egg Yolk and Oxtail",
+    "found": []
+  },
+  {
+    "id": 2408,
+    "brand": "Mama Pat's",
+    "variety": "Chicken Taco Flavor Instant Ramen Noodles",
+    "found": []
+  },
+  {
+    "id": 2409,
+    "brand": "Mama Pat's",
+    "variety": "Seafood Gumbo Flavor Instant Ramen Noodles",
+    "found": [
+      "Meet The Manufacturer: #2409: Mama Pat’s Seafood Gumbo Flavor Instant Ramen Nood"
+    ]
+  },
+  {
+    "id": 2410,
+    "brand": "Mama Pat's",
+    "variety": "Lamb Stew Flavor Instant Ramen Noodles",
+    "found": [
+      "Meet The Manufacturer: #2410: Mama Pat’s Lamb Stew Flavor Instant Ramen Noodles"
+    ]
+  },
+  {
+    "id": 2411,
+    "brand": "Mama Pat's",
+    "variety": "Chicken Fajita Flavor Instant Ramen Noodles",
+    "found": [
+      "Meet The Manufacturer: #2411: Mama Pat’s Chicken Fajita Flavor Instant Ramen Noo"
+    ]
+  },
+  {
+    "id": 2443,
+    "brand": "KOKA",
+    "variety": "Signature Chicken Flavor Instant Noodles",
+    "found": [
+      "Meet The Manufacturer: #2443: KOKA Signature Chicken Flavor Instant Noodles"
+    ]
+  },
+  {
+    "id": 2444,
+    "brand": "KOKA",
+    "variety": "Silk Spicy Marinara Instant Rice Fettuccine",
+    "found": [
+      "Meet The Manufacturer: #2444: KOKA Silk Spicy Marinara Instant Rice Fettuccine"
+    ]
+  },
+  {
+    "id": 2445,
+    "brand": "KOKA",
+    "variety": "Delight Laksa Singapura Flavor Instant Non-Fried Noodles",
+    "found": [
+      "Met The Manufacturer: #2445: KOKA Delight Laksa Singapura Flavor Instant Non-Fri"
+    ]
+  },
+  {
+    "id": 2446,
+    "brand": "KOKA",
+    "variety": "Creamy Soup with Crushed Noodles Curry Flavor",
+    "found": [
+      "Meet The Manufacturer: #2446: KOKA Creamy Soup With Crushed Noodles Curry Flavor"
+    ]
+  },
+  {
+    "id": 2447,
+    "brand": "KOKA",
+    "variety": "Signature Stir-Fry Original Flavor Instant Noodles",
+    "found": [
+      "Meet The Manufacturer: #2447: KOKA Signature Stir-Fry Original Flavor Instant No"
+    ]
+  },
+  {
+    "id": 2448,
+    "brand": "KOKA",
+    "variety": "Seafood Flavor Instant Noodles",
+    "found": [
+      "Meet The Manufacturer: #2448: KOKA Seafood Flavor Instant Noodles"
+    ]
+  },
+  {
+    "id": 2449,
+    "brand": "KOKA",
+    "variety": "Delight Tomato Flavor Instant Non-Fried Noodles",
+    "found": [
+      "Meet The Manufacturer: #2449: KOKA Delight Tomato Flavor Instant Non-Fried Noodl"
+    ]
+  },
+  {
+    "id": 2450,
+    "brand": "KOKA",
+    "variety": "Purple Wheat Noodles Chili and Lime Flavor",
+    "found": [
+      "Meet The Manufacturer: #2450: KOKA Purple Wheat Noodles Chili & Lime Flavor"
+    ]
+  },
+  {
+    "id": 2451,
+    "brand": "KOKA",
+    "variety": "Delight Spicy Black Pepper Flavor Instant Non-Fried Noodles",
+    "found": [
+      "Meet The Manufacturer: #2451: KOKA Delight Spicy Black Pepper Flavor Instant Non"
+    ]
+  },
+  {
+    "id": 2452,
+    "brand": "KOKA",
+    "variety": "Signature Laksa Singapura Instant Noodles",
+    "found": [
+      "Meet The Manufacturer: #2452: KOKA Signature Laksa Singapura Flavor Instant Nood"
+    ]
+  },
+  {
+    "id": 2454,
+    "brand": "KOKA",
+    "variety": "Silk Beef Pho Flavor Instant Rice Fettuccine",
+    "found": [
+      "Meet The Manufacturer: #2454: KOKA Silk Beef Pho Flavor Instant Rice Fettuccine"
+    ]
+  },
+  {
+    "id": 2455,
+    "brand": "KOKA",
+    "variety": "Creamy Soup with Crushed Noodles Sweet Corn Flavor",
+    "found": [
+      "Meet The Manufacturer: #2455: KOKA Creamy Soup With Crushed Noodles Sweet Corn F"
+    ]
+  },
+  {
+    "id": 2456,
+    "brand": "KOKA",
+    "variety": "Signature Spicy Singapore Fried Noodles Instant Noodles",
+    "found": [
+      "Meet The Manufacturer: #2456: KOKA Signature Spicy Singapore Fried Noodles Insta"
+    ]
+  },
+  {
+    "id": 2457,
+    "brand": "KOKA",
+    "variety": "Instant Noodles Chicken Satay Flavor",
+    "found": [
+      "Meet The Manufacturer: #2457: KOKA Instant Noodles Chicken Satay Flavour"
+    ]
+  },
+  {
+    "id": 2471,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Mini Seafood Flavor",
+    "found": []
+  },
+  {
+    "id": 2472,
+    "brand": "GGE",
+    "variety": "Noodle Snack Wheat Cracks Seaweed Flavor",
+    "found": []
+  },
+  {
+    "id": 2477,
+    "brand": "Kiki",
+    "variety": "Sichuan Spices Flavor Noodle",
+    "found": [
+      "Meet The Manufacturer: #2477: Kiki Noodles Sichuan Spices Flavor Noodle"
+    ]
+  },
+  {
+    "id": 2478,
+    "brand": "Kiki",
+    "variety": "Scallion Oil and Soy Sauce Noodle",
+    "found": [
+      "Meet The Manufacturer: #2478: Kiki Noodles Scallion Oil & Soy Sauce Flavor Noodl"
+    ]
+  },
+  {
+    "id": 2480,
+    "brand": "Acecook",
+    "variety": "Pork Wantan Men",
+    "found": []
+  },
+  {
+    "id": 2484,
+    "brand": "Nissin",
+    "variety": "Demae Ramen Tokyo Soy Sauce",
+    "found": [
+      "Meet The Manufacturer: #2484: Nissin Demae Ramen Tokyo Soy Sauce"
+    ]
+  },
+  {
+    "id": 2485,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Shrimps",
+    "found": [
+      "Meet The Manufacturer: #2485: Nissin Cup Noodles Shrimps"
+    ]
+  },
+  {
+    "id": 2486,
+    "brand": "Nissin",
+    "variety": "Demae Ramen Spicy",
+    "found": [
+      "Meet The Manufacturer: #2486: Nissin Demae Ramen Spicy"
+    ]
+  },
+  {
+    "id": 2487,
+    "brand": "Nissin",
+    "variety": "Soba Sukiyaki Beef",
+    "found": [
+      "Meet The Manufacturer: #2487: Nissin Soba Nudeln Mit Yakisoba Sauce Sukiyaki Bee"
+    ]
+  },
+  {
+    "id": 2488,
+    "brand": "Nissin",
+    "variety": "Demae Ramen Thai Tom Yum",
+    "found": [
+      "Meet The Manufacturer: #2488: Nissin Demae Ramen Thai Tom Yum"
+    ]
+  },
+  {
+    "id": 2489,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Ente (Duck)",
+    "found": [
+      "Meet The Manufacturer: #2489: Nissin Cup Noodles Ente (Duck)"
+    ]
+  },
+  {
+    "id": 2490,
+    "brand": "Nissin",
+    "variety": "Demae Ramen Garlic Chicken",
+    "found": [
+      "Meet The Manufacturer: #2490: Nissin Demae Ramen Garlic Chicken Flavour"
+    ]
+  },
+  {
+    "id": 2491,
+    "brand": "Nissin",
+    "variety": "Soba Yakitori Chicken",
+    "found": [
+      "Meet The Manufacturer: #2491: Nissin Soba Nudeln Mit Yakisoba Sauce Yakitori Chi"
+    ]
+  },
+  {
+    "id": 2492,
+    "brand": "Nissin",
+    "variety": "Smack Chili",
+    "found": [
+      "Meet The Manufacturer: #2492: Nissin Smack Chili"
+    ]
+  },
+  {
+    "id": 2493,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Curry",
+    "found": [
+      "Meet The Manufacturer: #2493: Nissin Cup Noodles Curry"
+    ]
+  },
+  {
+    "id": 2494,
+    "brand": "Nissin",
+    "variety": "Demae Ramen Korean Kimchi",
+    "found": [
+      "Meet The Manufacturer: #2494: Nissin Demae Ramen Korean Kimchi Flavour"
+    ]
+  },
+  {
+    "id": 2495,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Huhn (Chicken)",
+    "found": [
+      "Meet The Manufacturer: #2495: Nissin Cup Noodles Huhn (Chicken)"
+    ]
+  },
+  {
+    "id": 2496,
+    "brand": "Nissin",
+    "variety": "Soba Thai",
+    "found": [
+      "Meet The Manufacturer: #2496: Nissin Soba Gebratene Nudeln Thai"
+    ]
+  },
+  {
+    "id": 2497,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Spicy",
+    "found": [
+      "Meet The Manufacturer: #2497: Nissin Cup Noodles Spicy"
+    ]
+  },
+  {
+    "id": 2498,
+    "brand": "Nissin",
+    "variety": "Demae Ramen Spicy Beef",
+    "found": [
+      "Meet The Manufacturer: #2498: Nissin Demae Ramen Spicy Beef Flavour"
+    ]
+  },
+  {
+    "id": 2499,
+    "brand": "KOKA",
+    "variety": "Creamy Soup with Crushed Noodles Chicken Flavor",
+    "found": []
+  },
+  {
+    "id": 2508,
+    "brand": "Samyang Foods",
+    "variety": "Mala Buldak Bokkeummyun",
+    "found": []
+  },
+  {
+    "id": 2515,
+    "brand": "Uni-President",
+    "variety": "Man Han Feast Spicy Beef Flavor Instant Noodles",
+    "found": []
+  },
+  {
+    "id": 2549,
+    "brand": "Nissin",
+    "variety": "Gekikara Ramen Extra Hot Ramen Goreng",
+    "found": []
+  },
+  {
+    "id": 2566,
+    "brand": "Nissin",
+    "variety": "Demae Ramen Bar Noodle Aka Tonkotsu Flavor Instant Noodle",
+    "found": []
+  },
+  {
+    "id": 2581,
+    "brand": "Samyang Foods",
+    "variety": "Curry Buldak Bokkeummyun",
+    "found": []
+  },
+  {
+    "id": 2585,
+    "brand": "Blount",
+    "variety": "Thai Inspired Coconut Chicken and Noodle Bowl",
+    "found": [
+      "Meet The Manufacturer #2585: Blount Thai Inspired Coconut Chicken & Noodle Bowl",
+      "#2508: Samyang Foods Mala Buldak Bokkeummyun"
+    ]
+  },
+  {
+    "id": 2586,
+    "brand": "Blount",
+    "variety": "Chicken Ramen Bowl",
+    "found": [
+      "Meet The Manufacturer #2586: Blount Chicken Ramen Bowl",
+      "#2512: Mom’s Dry Noodle Dan Dan Noodle"
+    ]
+  },
+  {
+    "id": 2627,
+    "brand": "Nissin",
+    "variety": "Men Shokunin Sesame Miso Ramen",
+    "found": []
+  },
+  {
+    "id": 2638,
+    "brand": "Nissin",
+    "variety": "Demae Ramen Straight Noodle Miso Flavor Instant Noodle",
+    "found": []
+  },
+  {
+    "id": 2643,
+    "brand": "KOKA",
+    "variety": "Creamy Soup with Crushed Noodles Vegetable Flavor",
+    "found": []
+  },
+  {
+    "id": 2651,
+    "brand": "Alhami",
+    "variety": "Mi Goreng Spesial",
+    "found": [
+      "Meet The Manufacturer: #2651: Alhami Mi Instan Mi Goreng Spesial",
+      "Meet The Manufacturer: #2665: Alhami Instant Noodle Chicken Flavor"
+    ]
+  },
+  {
+    "id": 2652,
+    "brand": "Maitri",
+    "variety": "Vegetarian Rasa Soto",
+    "found": [
+      "Meet The Manufacturer: #2652: Maitri Vegetarian Rasa Soto"
+    ]
+  },
+  {
+    "id": 2653,
+    "brand": "Mikka",
+    "variety": "Noodle Snack Sambal Balado Chili Sauce Flavor",
+    "found": [
+      "Meet The Manufacturer: #2653: Mikka Noodle Snack Sambal Balado Chilli Sauce Flav"
+    ]
+  },
+  {
+    "id": 2654,
+    "brand": "Maitri",
+    "variety": "Vegetarian Hot Curry",
+    "found": [
+      "Meet The Manufacturer: #2654: Maitri Vegetarian Hot Curry Flavor",
+      "Meet The Manufacturer: #2661: Maitri Vegetarian Mie Goreng"
+    ]
+  },
+  {
+    "id": 2655,
+    "brand": "Alhami",
+    "variety": "Prawn Instant Noodles",
+    "found": []
+  },
+  {
+    "id": 2656,
+    "brand": "Mikka",
+    "variety": "Noodle Snack Roast Corn Flavor",
+    "found": [
+      "Meet The Manufacturer: #2656: Mikka Noodle Snack Roasted Corn Flavour"
+    ]
+  },
+  {
+    "id": 2657,
+    "brand": "Maitri",
+    "variety": "Extra Hot Vegetarian Mie Goreng",
+    "found": [
+      "Meet The Manufacturer: #2657: Maitri Vegetarian Extra Hot Mie Goreng",
+      "#2667: Nissin Okinawa Soba"
+    ]
+  },
+  {
+    "id": 2658,
+    "brand": "Mikka",
+    "variety": "Noodle Snack Barbecue Flavor",
+    "found": [
+      "Meet The Manufacturer: #2658: Mikka Noodle Snack Barbeque Flavour"
+    ]
+  },
+  {
+    "id": 2659,
+    "brand": "Alhami",
+    "variety": "Instant Noodle Beef Flavor",
+    "found": [
+      "Meet The Manufacturer: #2659: Alhami Instant Noodle Beef Flavour"
+    ]
+  },
+  {
+    "id": 2660,
+    "brand": "Alhami",
+    "variety": "Instant Noodle Chicken Curry Flavor",
+    "found": [
+      "Meet The Manufacturer: #2660: Alhami Instant Noodles Chicken Curry Flavor"
+    ]
+  },
+  {
+    "id": 2661,
+    "brand": "Maitri",
+    "variety": "Vegetarian Mie Goreng",
+    "found": [
+      "Meet The Manufacturer: #2661: Maitri Vegetarian Mie Goreng"
+    ]
+  },
+  {
+    "id": 2662,
+    "brand": "Alhami",
+    "variety": "Instant Noodle Chicken Curry Flavor",
+    "found": [
+      "Meet The Manufacturer: #2662: Alhami Instant Noodle Chicken Curry Flavor"
+    ]
+  },
+  {
+    "id": 2663,
+    "brand": "Alhami",
+    "variety": "Instant Noodle Soto Flavor",
+    "found": [
+      "Meet The Manufacturer: #2663: Alhami Instant Noodle Soto Flavor"
+    ]
+  },
+  {
+    "id": 2664,
+    "brand": "Maitri",
+    "variety": "Instant Noodle Vegetarian Soup",
+    "found": [
+      "Meet The Manufacturer: #2664: Maitri Instant Noodle Vegetarian Soup Flavor"
+    ]
+  },
+  {
+    "id": 2665,
+    "brand": "Alhami",
+    "variety": "Instant Noodle Instant Noodle Chicken Flavor",
+    "found": [
+      "Meet The Manufacturer: #2665: Alhami Instant Noodle Chicken Flavor"
+    ]
+  }
+]

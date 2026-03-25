@@ -16,3 +16,4 @@ tools/.cache/
 # PaddleOCR / ML model files
 *.traineddata
 
+tools/s*

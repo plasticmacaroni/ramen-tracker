@@ -53,5 +53,745 @@
     "id": 3084,
     "existing_id": 4373,
     "barcode": "4901104132245"
+  },
+  {
+    "id": 4586,
+    "existing_id": 3914,
+    "barcode": "4711106930011"
+  },
+  {
+    "id": 4536,
+    "existing_id": 3642,
+    "barcode": "4901104133259"
+  },
+  {
+    "id": 5254,
+    "existing_id": 4560,
+    "barcode": "6970631040109"
+  },
+  {
+    "id": 4407,
+    "existing_id": 4402,
+    "barcode": "193937000516"
+  },
+  {
+    "id": 3122,
+    "existing_id": 4567,
+    "barcode": "9555022306698"
+  },
+  {
+    "id": 2748,
+    "existing_id": 3840,
+    "barcode": "9555655005227"
+  },
+  {
+    "id": 4077,
+    "existing_id": 3687,
+    "barcode": "4967448173313"
+  },
+  {
+    "id": 4686,
+    "existing_id": 5278,
+    "barcode": "4902881048651"
+  },
+  {
+    "id": 4707,
+    "existing_id": 3541,
+    "barcode": "4901734030119"
+  },
+  {
+    "id": 3223,
+    "existing_id": 2911,
+    "barcode": "4903088009537"
+  },
+  {
+    "id": 2675,
+    "existing_id": 3235,
+    "barcode": "4902881426480"
+  },
+  {
+    "id": 4446,
+    "existing_id": 4441,
+    "barcode": "193937000523"
+  },
+  {
+    "id": 4403,
+    "existing_id": 4708,
+    "barcode": "8809054402400"
+  },
+  {
+    "id": 3954,
+    "existing_id": 4602,
+    "barcode": "9555022310381"
+  },
+  {
+    "id": 4099,
+    "existing_id": 3116,
+    "barcode": "4901071239824"
+  },
+  {
+    "id": 4450,
+    "existing_id": 4098,
+    "barcode": "011152630007"
+  },
+  {
+    "id": 3503,
+    "existing_id": 2392,
+    "barcode": "9555655005357"
+  },
+  {
+    "id": 4524,
+    "existing_id": 3614,
+    "barcode": "4901071246204"
+  },
+  {
+    "id": 4332,
+    "existing_id": 3893,
+    "barcode": "4901071239930"
+  },
+  {
+    "id": 3159,
+    "existing_id": 4293,
+    "barcode": "6926410338165"
+  },
+  {
+    "id": 3783,
+    "existing_id": 3737,
+    "barcode": "4979397999050"
+  },
+  {
+    "id": 4630,
+    "existing_id": 4642,
+    "barcode": "4711216201131"
+  },
+  {
+    "id": 3709,
+    "existing_id": 3382,
+    "barcode": "4901726014400"
+  },
+  {
+    "id": 4086,
+    "existing_id": 4841,
+    "barcode": "4902881452762"
+  },
+  {
+    "id": 5098,
+    "existing_id": 3614,
+    "barcode": "4901071246204"
+  },
+  {
+    "id": 3950,
+    "existing_id": 2671,
+    "barcode": "4901071222253"
+  },
+  {
+    "id": 3800,
+    "existing_id": 2994,
+    "barcode": "4901734032007"
+  },
+  {
+    "id": 4715,
+    "existing_id": 4417,
+    "barcode": "8809054402394"
+  },
+  {
+    "id": 3987,
+    "existing_id": 2967,
+    "barcode": "4973044020128"
+  },
+  {
+    "id": 553,
+    "existing_id": 4739,
+    "barcode": "8801073210134"
+  },
+  {
+    "id": 863,
+    "existing_id": 4649,
+    "barcode": "089686040647"
+  },
+  {
+    "id": 996,
+    "existing_id": 4274,
+    "barcode": "041789003011"
+  },
+  {
+    "id": 1011,
+    "existing_id": 4285,
+    "barcode": "041789003028"
+  },
+  {
+    "id": 1082,
+    "existing_id": 4583,
+    "barcode": "089686010718"
+  },
+  {
+    "id": 1260,
+    "existing_id": 810,
+    "barcode": "8992388112401"
+  },
+  {
+    "id": 1253,
+    "existing_id": 4095,
+    "barcode": "070662087299"
+  },
+  {
+    "id": 1856,
+    "existing_id": 725,
+    "barcode": "089686180657"
+  },
+  {
+    "id": 2053,
+    "existing_id": 2892,
+    "barcode": "041789001505"
+  },
+  {
+    "id": 351,
+    "existing_id": 2816,
+    "barcode": "070662010129"
+  },
+  {
+    "id": 353,
+    "existing_id": 2950,
+    "barcode": "070662010174"
+  },
+  {
+    "id": 359,
+    "existing_id": 5130,
+    "barcode": "070662096338"
+  },
+  {
+    "id": 373,
+    "existing_id": 3112,
+    "barcode": "070662030066"
+  },
+  {
+    "id": 626,
+    "existing_id": 4930,
+    "barcode": "645175570714"
+  },
+  {
+    "id": 635,
+    "existing_id": 4353,
+    "barcode": "645175550013"
+  },
+  {
+    "id": 638,
+    "existing_id": 4123,
+    "barcode": "8850987139253"
+  },
+  {
+    "id": 641,
+    "existing_id": 4346,
+    "barcode": "8934563805159"
+  },
+  {
+    "id": 702,
+    "existing_id": 3899,
+    "barcode": "4897878830015"
+  },
+  {
+    "id": 704,
+    "existing_id": 3846,
+    "barcode": "070662087251"
+  },
+  {
+    "id": 731,
+    "existing_id": 4846,
+    "barcode": "089686011289"
+  },
+  {
+    "id": 738,
+    "existing_id": 5116,
+    "barcode": "4902105022122"
+  },
+  {
+    "id": 746,
+    "existing_id": 3740,
+    "barcode": "6921555583951"
+  },
+  {
+    "id": 750,
+    "existing_id": 202,
+    "barcode": "031146250301"
+  },
+  {
+    "id": 756,
+    "existing_id": 3918,
+    "barcode": "4904511004174"
+  },
+  {
+    "id": 772,
+    "existing_id": 4514,
+    "barcode": "031146250103"
+  },
+  {
+    "id": 799,
+    "existing_id": 4628,
+    "barcode": "031146007622"
+  },
+  {
+    "id": 867,
+    "existing_id": 4771,
+    "barcode": "089686043051"
+  },
+  {
+    "id": 932,
+    "existing_id": 3967,
+    "barcode": "648436100729"
+  },
+  {
+    "id": 937,
+    "existing_id": 5045,
+    "barcode": "052066000036"
+  },
+  {
+    "id": 944,
+    "existing_id": 3463,
+    "barcode": "8850100101105"
+  },
+  {
+    "id": 957,
+    "existing_id": 4220,
+    "barcode": "4960813312911"
+  },
+  {
+    "id": 960,
+    "existing_id": 2838,
+    "barcode": "070662096345"
+  },
+  {
+    "id": 994,
+    "existing_id": 4938,
+    "barcode": "8850100002495"
+  },
+  {
+    "id": 998,
+    "existing_id": 751,
+    "barcode": "031146014408"
+  },
+  {
+    "id": 1010,
+    "existing_id": 739,
+    "barcode": "6921555571569"
+  },
+  {
+    "id": 1036,
+    "existing_id": 775,
+    "barcode": "6921555571767"
+  },
+  {
+    "id": 1045,
+    "existing_id": 5281,
+    "barcode": "070662087213"
+  },
+  {
+    "id": 1085,
+    "existing_id": 4346,
+    "barcode": "8934563805159"
+  },
+  {
+    "id": 1213,
+    "existing_id": 2961,
+    "barcode": "6938618411076"
+  },
+  {
+    "id": 1235,
+    "existing_id": 3752,
+    "barcode": "4897878800018"
+  },
+  {
+    "id": 1271,
+    "existing_id": 3196,
+    "barcode": "8886350067908"
+  },
+  {
+    "id": 1301,
+    "existing_id": 4749,
+    "barcode": "4898828051313"
+  },
+  {
+    "id": 1364,
+    "existing_id": 758,
+    "barcode": "6921555571668"
+  },
+  {
+    "id": 1400,
+    "existing_id": 714,
+    "barcode": "8801114119068"
+  },
+  {
+    "id": 1414,
+    "existing_id": 3985,
+    "barcode": "648436100934"
+  },
+  {
+    "id": 1421,
+    "existing_id": 2743,
+    "barcode": "6920238081067"
+  },
+  {
+    "id": 1445,
+    "existing_id": 3481,
+    "barcode": "9555655005258"
+  },
+  {
+    "id": 1480,
+    "existing_id": 3516,
+    "barcode": "8809296882411"
+  },
+  {
+    "id": 1500,
+    "existing_id": 3840,
+    "barcode": "9555655005227"
+  },
+  {
+    "id": 1580,
+    "existing_id": 925,
+    "barcode": "8801073110564"
+  },
+  {
+    "id": 1597,
+    "existing_id": 709,
+    "barcode": "070662087244"
+  },
+  {
+    "id": 1601,
+    "existing_id": 745,
+    "barcode": "8801043017916"
+  },
+  {
+    "id": 1617,
+    "existing_id": 3481,
+    "barcode": "9555655005258"
+  },
+  {
+    "id": 1623,
+    "existing_id": 2741,
+    "barcode": "9555655005197"
+  },
+  {
+    "id": 1658,
+    "existing_id": 1657,
+    "barcode": "788821003805"
+  },
+  {
+    "id": 1674,
+    "existing_id": 1236,
+    "barcode": "8801073210011"
+  },
+  {
+    "id": 1678,
+    "existing_id": 3845,
+    "barcode": "031146013524"
+  },
+  {
+    "id": 1732,
+    "existing_id": 2877,
+    "barcode": "8888240100153"
+  },
+  {
+    "id": 1740,
+    "existing_id": 1504,
+    "barcode": "6900873058624"
+  },
+  {
+    "id": 1765,
+    "existing_id": 284,
+    "barcode": "070662030028"
+  },
+  {
+    "id": 1781,
+    "existing_id": 3469,
+    "barcode": "9555655005340"
+  },
+  {
+    "id": 1783,
+    "existing_id": 3803,
+    "barcode": "8858829601128"
+  },
+  {
+    "id": 1798,
+    "existing_id": 3806,
+    "barcode": "8858829601111"
+  },
+  {
+    "id": 1810,
+    "existing_id": 2741,
+    "barcode": "9555655005197"
+  },
+  {
+    "id": 1850,
+    "existing_id": 4060,
+    "barcode": "070662500026"
+  },
+  {
+    "id": 1859,
+    "existing_id": 1199,
+    "barcode": "8850987144370"
+  },
+  {
+    "id": 1864,
+    "existing_id": 3973,
+    "barcode": "070662500033"
+  },
+  {
+    "id": 1866,
+    "existing_id": 2757,
+    "barcode": "9555655005265"
+  },
+  {
+    "id": 1888,
+    "existing_id": 2747,
+    "barcode": "8888279103002"
+  },
+  {
+    "id": 1910,
+    "existing_id": 379,
+    "barcode": "070662087268"
+  },
+  {
+    "id": 1919,
+    "existing_id": 3458,
+    "barcode": "4901990522991"
+  },
+  {
+    "id": 1921,
+    "existing_id": 265,
+    "barcode": "070662030035"
+  },
+  {
+    "id": 1952,
+    "existing_id": 4934,
+    "barcode": "4710008211617"
+  },
+  {
+    "id": 1965,
+    "existing_id": 3481,
+    "barcode": "9555655005258"
+  },
+  {
+    "id": 1968,
+    "existing_id": 3945,
+    "barcode": "070662010037"
+  },
+  {
+    "id": 1981,
+    "existing_id": 3840,
+    "barcode": "9555655005227"
+  },
+  {
+    "id": 1985,
+    "existing_id": 3210,
+    "barcode": "8886350068066"
+  },
+  {
+    "id": 1989,
+    "existing_id": 2741,
+    "barcode": "9555655005197"
+  },
+  {
+    "id": 2061,
+    "existing_id": 928,
+    "barcode": "6920363402218"
+  },
+  {
+    "id": 2098,
+    "existing_id": 3750,
+    "barcode": "031146033492"
+  },
+  {
+    "id": 2097,
+    "existing_id": 1713,
+    "barcode": "9557226083054"
+  },
+  {
+    "id": 2106,
+    "existing_id": 3717,
+    "barcode": "4901104132269"
+  },
+  {
+    "id": 2139,
+    "existing_id": 2138,
+    "barcode": "4897878650019"
+  },
+  {
+    "id": 2189,
+    "existing_id": 5128,
+    "barcode": "4897878150014"
+  },
+  {
+    "id": 2203,
+    "existing_id": 792,
+    "barcode": "031146262571"
+  },
+  {
+    "id": 2212,
+    "existing_id": 3429,
+    "barcode": "8809296883180"
+  },
+  {
+    "id": 2214,
+    "existing_id": 2940,
+    "barcode": "4901734025351"
+  },
+  {
+    "id": 2239,
+    "existing_id": 265,
+    "barcode": "070662030035"
+  },
+  {
+    "id": 2250,
+    "existing_id": 1158,
+    "barcode": "4897878120055"
+  },
+  {
+    "id": 2275,
+    "existing_id": 2166,
+    "barcode": "6921555509982"
+  },
+  {
+    "id": 2300,
+    "existing_id": 3980,
+    "barcode": "4897878800049"
+  },
+  {
+    "id": 2306,
+    "existing_id": 5215,
+    "barcode": "4897878150083"
+  },
+  {
+    "id": 2327,
+    "existing_id": 699,
+    "barcode": "070662031025"
+  },
+  {
+    "id": 2361,
+    "existing_id": 1211,
+    "barcode": "4897878120017"
+  },
+  {
+    "id": 2367,
+    "existing_id": 3047,
+    "barcode": "8801073113435"
+  },
+  {
+    "id": 2369,
+    "existing_id": 4286,
+    "barcode": "8801073113404"
+  },
+  {
+    "id": 2379,
+    "existing_id": 769,
+    "barcode": "070662030127"
+  },
+  {
+    "id": 2387,
+    "existing_id": 1007,
+    "barcode": "4897878120000"
+  },
+  {
+    "id": 2391,
+    "existing_id": 4533,
+    "barcode": "8801045522555"
+  },
+  {
+    "id": 2397,
+    "existing_id": 2291,
+    "barcode": "8801073210967"
+  },
+  {
+    "id": 2400,
+    "existing_id": 4603,
+    "barcode": "8888279102098"
+  },
+  {
+    "id": 2424,
+    "existing_id": 2364,
+    "barcode": "8801073113268"
+  },
+  {
+    "id": 2439,
+    "existing_id": 3183,
+    "barcode": "4710088412089"
+  },
+  {
+    "id": 2524,
+    "existing_id": 2095,
+    "barcode": "8888279660055"
+  },
+  {
+    "id": 2527,
+    "existing_id": 890,
+    "barcode": "073217060068"
+  },
+  {
+    "id": 2531,
+    "existing_id": 788,
+    "barcode": "6925303773915"
+  },
+  {
+    "id": 2537,
+    "existing_id": 4603,
+    "barcode": "8888279102098"
+  },
+  {
+    "id": 2556,
+    "existing_id": 4766,
+    "barcode": "8901595963362"
+  },
+  {
+    "id": 2571,
+    "existing_id": 1068,
+    "barcode": "8888056708109"
+  },
+  {
+    "id": 2578,
+    "existing_id": 3112,
+    "barcode": "070662030066"
+  },
+  {
+    "id": 2584,
+    "existing_id": 2552,
+    "barcode": "9555655005333"
+  },
+  {
+    "id": 2594,
+    "existing_id": 3335,
+    "barcode": "8801073101449"
+  },
+  {
+    "id": 2601,
+    "existing_id": 1042,
+    "barcode": "6920238087014"
+  },
+  {
+    "id": 2606,
+    "existing_id": 2605,
+    "barcode": "859792002316"
+  },
+  {
+    "id": 2608,
+    "existing_id": 2607,
+    "barcode": "859792002354"
+  },
+  {
+    "id": 2617,
+    "existing_id": 4843,
+    "barcode": "8888279102081"
+  },
+  {
+    "id": 2626,
+    "existing_id": 4779,
+    "barcode": "8901014004737"
+  },
+  {
+    "id": 2629,
+    "existing_id": 4789,
+    "barcode": "4904511005027"
+  },
+  {
+    "id": 2630,
+    "existing_id": 1852,
+    "barcode": "011152257709"
   }
 ]
