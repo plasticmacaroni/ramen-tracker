@@ -1692,13 +1692,21 @@ a:hover {
   border-radius: var(--radius);
 }
 
-#barcode-canvas {
+#barcode-scan-line {
   position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
+  left: 5%;
+  right: 5%;
+  height: 2px;
+  background: var(--yellow);
+  box-shadow: 0 0 8px var(--yellow);
+  opacity: 0.8;
+  animation: scanBounce 2s ease-in-out infinite;
   pointer-events: none;
+}
+
+@keyframes scanBounce {
+  0%, 100% { top: 20%; }
+  50% { top: 80%; }
 }
 
 .barcode-status {

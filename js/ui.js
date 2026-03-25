@@ -1867,6 +1867,8 @@ let _scannerStream = null;
 let _scannerRafId = null;
 let _scannerHandled = false;
 let _lastNoMatch = null;
+let _offCanvas = null;
+let _offCtx = null;
 
 function _copyBarcode(decodedText, codeSpan) {
   navigator.clipboard.writeText(decodedText).then(() => {
@@ -1899,20 +1901,29 @@ function _showNoMatch(statusEl, decodedText) {
   statusEl.appendChild(codeSpan);
 }
 
-function _scanFrame(video, canvas, ctx, statusEl) {
+function _getOffscreenCtx(w, h) {
+  if (!_offCanvas || _offCanvas.width !== w || _offCanvas.height !== h) {
+    _offCanvas = document.createElement('canvas');
+    _offCanvas.width = w;
+    _offCanvas.height = h;
+    _offCtx = _offCanvas.getContext('2d');
+  }
+  return _offCtx;
+}
+
+function _scanFrame(video, statusEl) {
   if (_scannerHandled || !_scannerStream) return;
 
   const vw = video.videoWidth;
   const vh = video.videoHeight;
   if (!vw || !vh) {
-    _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+    _scannerRafId = requestAnimationFrame(() => _scanFrame(video, statusEl));
     return;
   }
 
   let imageData;
   try {
-    canvas.width = vw;
-    canvas.height = vh;
+    const ctx = _getOffscreenCtx(vw, vh);
     ctx.drawImage(video, 0, 0, vw, vh);
     imageData = ctx.getImageData(0, 0, vw, vh);
   } catch (err) {
@@ -1924,7 +1935,7 @@ function _scanFrame(video, canvas, ctx, statusEl) {
   zbarWasm.scanImageData(imageData).then(symbols => {
     if (_scannerHandled || !_scannerStream) return;
     if (!symbols || !symbols.length) {
-      _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+      _scannerRafId = requestAnimationFrame(() => _scanFrame(video, statusEl));
       return;
     }
     for (const sym of symbols) {
@@ -1940,13 +1951,13 @@ function _scanFrame(video, canvas, ctx, statusEl) {
       }
       _showNoMatch(statusEl, decoded);
     }
-    _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+    _scannerRafId = requestAnimationFrame(() => _scanFrame(video, statusEl));
   }).catch(err => {
     console.error('Barcode scan error:', err);
     statusEl.textContent = `Scanner error: ${err.message || err}`;
     statusEl.className = 'barcode-status barcode-error';
     if (!_scannerHandled && _scannerStream) {
-      _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+      _scannerRafId = requestAnimationFrame(() => _scanFrame(video, statusEl));
     }
   });
 }
@@ -1960,16 +1971,16 @@ function openBarcodeScanner(context) {
   const modal = document.getElementById('modal-barcode');
   const statusEl = document.getElementById('barcode-status');
   const video = document.getElementById('barcode-video');
-  const canvas = document.getElementById('barcode-canvas');
-  const ctx = canvas.getContext('2d');
+  const scanLine = document.getElementById('barcode-scan-line');
 
-  statusEl.textContent = '';
+  statusEl.textContent = 'Starting camera...';
   statusEl.className = 'barcode-status';
   modal.classList.remove('hidden');
   trapFocus(modal);
 
   _scannerHandled = false;
   _lastNoMatch = null;
+  if (scanLine) scanLine.style.display = 'block';
 
   navigator.mediaDevices.getUserMedia({
     audio: false,
@@ -1979,11 +1990,14 @@ function openBarcodeScanner(context) {
     video.srcObject = stream;
     video.onloadedmetadata = () => {
       video.play();
-      _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+      statusEl.textContent = 'Scanning...';
+      statusEl.className = 'barcode-status';
+      _scannerRafId = requestAnimationFrame(() => _scanFrame(video, statusEl));
     };
   }).catch(err => {
     statusEl.textContent = `Camera error: ${err.message || err}`;
     statusEl.className = 'barcode-status barcode-error';
+    if (scanLine) scanLine.style.display = 'none';
   });
 }
 
@@ -1999,6 +2013,8 @@ function closeBarcodeScanner() {
   }
   const video = document.getElementById('barcode-video');
   if (video) video.srcObject = null;
+  const scanLine = document.getElementById('barcode-scan-line');
+  if (scanLine) scanLine.style.display = 'none';
   modal.classList.add('hidden');
   releaseFocus(modal);
 }
