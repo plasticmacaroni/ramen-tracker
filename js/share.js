@@ -80,6 +80,7 @@ function readString(view, offset) {
 export async function encode(name, rankedList, ratings, customRamen) {
   const dbEntries = [];
   const customEntries = [];
+  const order = [];
 
   for (const id of rankedList) {
     const rating = ratings[String(id)];
@@ -90,16 +91,17 @@ export async function encode(name, rankedList, ratings, customRamen) {
     if (typeof id === 'string' && id.startsWith('c-')) {
       const cr = customRamen[id];
       if (!cr) continue;
+      order.push(0x80 | customEntries.length);
       customEntries.push({ variety: cr.variety, brand: cr.brand, style: cr.style || '', country: cr.country || '', flavor, noodle });
     } else {
+      order.push(dbEntries.length);
       dbEntries.push({ id: Number(id), flavor, noodle });
     }
   }
 
-  // Calculate buffer size
   let size = 1; // version
   const nameBytes = new TextEncoder().encode(name);
-  size += 1 + nameBytes.length; // name length-prefixed
+  size += 1 + nameBytes.length;
   size += 2; // db count
   size += dbEntries.length * 3;
   size += 1; // custom count
@@ -109,6 +111,8 @@ export async function encode(name, rankedList, ratings, customRamen) {
     const cBytes = new TextEncoder().encode(c.country);
     size += 1 + vBytes.length + 1 + bBytes.length + 1 + 1 + cBytes.length + 1;
   }
+  const canOrder = dbEntries.length <= 127 && customEntries.length <= 127;
+  if (canOrder) size += order.length;
 
   const buf = new Uint8Array(size);
   let off = 0;
@@ -117,7 +121,6 @@ export async function encode(name, rankedList, ratings, customRamen) {
 
   off = writeString(buf, off, name);
 
-  // DB entries (big-endian ID + packed flavor/noodle)
   buf[off++] = (dbEntries.length >> 8) & 0xff;
   buf[off++] = dbEntries.length & 0xff;
 
@@ -127,7 +130,6 @@ export async function encode(name, rankedList, ratings, customRamen) {
     buf[off++] = ((e.flavor - 1) << 4) | (e.noodle - 1);
   }
 
-  // Custom entries
   buf[off++] = customEntries.length & 0xff;
 
   for (const c of customEntries) {
@@ -136,6 +138,10 @@ export async function encode(name, rankedList, ratings, customRamen) {
     buf[off++] = Math.max(0, STYLE_ENUM.indexOf(c.style || 'Other'));
     off = writeString(buf, off, c.country);
     buf[off++] = ((c.flavor - 1) << 4) | (c.noodle - 1);
+  }
+
+  if (canOrder) {
+    for (const o of order) buf[off++] = o;
   }
 
   const compressed = await deflate(buf);
@@ -159,7 +165,7 @@ export async function decode(base64str) {
   const dbCount = (buf[off] << 8) | buf[off + 1];
   off += 2;
 
-  const entries = [];
+  const dbEntries = [];
 
   for (let i = 0; i < dbCount; i++) {
     const id = (buf[off] << 8) | buf[off + 1];
@@ -167,10 +173,11 @@ export async function decode(base64str) {
     const packed = buf[off++];
     const flavor = ((packed >> 4) & 0xf) + 1;
     const noodle = (packed & 0xf) + 1;
-    entries.push({ id, flavor, noodle, custom: false });
+    dbEntries.push({ id, flavor, noodle, custom: false });
   }
 
   const customCount = buf[off++] || 0;
+  const customEntries = [];
 
   for (let i = 0; i < customCount; i++) {
     const variety = readString(buf, off);
@@ -184,7 +191,7 @@ export async function decode(base64str) {
     const flavor = ((packed >> 4) & 0xf) + 1;
     const noodle = (packed & 0xf) + 1;
 
-    entries.push({
+    customEntries.push({
       id: `shared-custom-${i}`,
       variety: variety.value,
       brand: brand.value,
@@ -196,5 +203,20 @@ export async function decode(base64str) {
     });
   }
 
-  return { name, entries };
+  // Trailing bytes encode interleaved rank order (newer shares only)
+  if (off < buf.length) {
+    const ordered = [];
+    while (off < buf.length) {
+      const b = buf[off++];
+      if (b & 0x80) {
+        const idx = b & 0x7f;
+        if (idx < customEntries.length) ordered.push(customEntries[idx]);
+      } else {
+        if (b < dbEntries.length) ordered.push(dbEntries[b]);
+      }
+    }
+    if (ordered.length > 0) return { name, entries: ordered };
+  }
+
+  return { name, entries: [...dbEntries, ...customEntries] };
 }

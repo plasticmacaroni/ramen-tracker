@@ -1670,7 +1670,7 @@ function populateSharedFilters(decoded) {
 function sharedScoreFromPosition(idx, total) {
   if (total <= 1) return 7.0;
   const rawPct = (total - 1 - idx) / (total - 1);
-  const minScore = Math.max(0, 7.3 - (total - 2) * 0.6);
+  const minScore = Math.max(5.8, 7.3 - (total - 2) * 0.15);
   const maxScore = Math.min(10.0, 9.3 + (total - 2) * 0.07);
   return parseFloat((minScore + rawPct * (maxScore - minScore)).toFixed(1));
 }

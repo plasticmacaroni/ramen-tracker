@@ -472,6 +472,7 @@ a:hover {
 .ramen-card {
   display: flex;
   gap: 12px;
+  min-height: 90px;
   background: var(--bg-card);
   border-radius: var(--radius);
   overflow: hidden;
@@ -495,15 +496,14 @@ a:hover {
   min-height: 90px;
   align-self: stretch;
   background: var(--bg-elevated);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
   position: relative;
 }
 
 .card-image img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -512,6 +512,11 @@ a:hover {
 .card-image .placeholder-icon {
   font-size: 2rem;
   opacity: 0.4;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card-body {
@@ -1605,6 +1610,10 @@ a:hover {
   position: relative;
 }
 
+.wishlist-card-wrap .ramen-card {
+  height: 100%;
+}
+
 .wishlist-remove {
   position: absolute;
   top: 6px;
@@ -1979,6 +1988,7 @@ a:hover {
 
   body[data-card-size="large"] .ramen-card {
     gap: 16px;
+    min-height: 170px;
     max-height: 400px;
   }
 
