@@ -8,16 +8,20 @@ let barcodeMap = {};
 
 export async function loadRamenData() {
   try {
-    const [ramenRes, popRes, barcodeRes] = await Promise.all([
+    const [ramenRes, popRes, barcodeRes, urlsRes] = await Promise.all([
       fetch('data/ramen.json'),
       fetch('data/popularity.json'),
       fetch('data/barcodes.json'),
+      fetch('data/urls.json'),
     ]);
     allRamen = ramenRes.ok ? await ramenRes.json() : [];
     const popMap = popRes.ok ? await popRes.json() : {};
+    const urlMap = urlsRes.ok ? await urlsRes.json() : {};
     for (const r of allRamen) {
       const pop = popMap[r.id];
       if (pop) r.popularity = pop;
+      const directUrl = urlMap[r.id];
+      if (directUrl) r.url = directUrl;
     }
     const barcodeList = barcodeRes.ok ? await barcodeRes.json() : [];
     barcodeMap = {};
@@ -97,7 +101,12 @@ export function lookupBarcode(code) {
 
 export function searchRamen(query, list = allRamen) {
   if (!query || query.length < 2) return [];
-  const numId = /^\d+$/.test(query.trim()) ? Number(query.trim()) : null;
+  const trimmed = query.trim();
+  if (/^\d{8,14}$/.test(trimmed)) {
+    const match = lookupBarcode(trimmed);
+    if (match) return [match];
+  }
+  const numId = /^\d+$/.test(trimmed) ? Number(trimmed) : null;
   if (numId !== null) {
     const exact = list.filter(r => r.id === numId);
     if (exact.length) return exact;
@@ -142,8 +151,13 @@ export function filterAndSort(options = {}) {
   let list = [...allRamen, ...storage.getAllCustomRamenList()];
 
   if (search && search.length >= 2) {
-    const numId = /^\d+$/.test(search.trim()) ? Number(search.trim()) : null;
-    if (numId !== null) {
+    const trimmed = search.trim();
+    if (/^\d{8,14}$/.test(trimmed)) {
+      const match = lookupBarcode(trimmed);
+      if (match) { list = [match]; }
+      else { list = []; }
+    } else if (/^\d+$/.test(trimmed)) {
+      const numId = Number(trimmed);
       list = list.filter(r => r.id === numId);
     } else {
       const terms = search.toLowerCase().split(/\s+/);

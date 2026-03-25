@@ -37,7 +37,10 @@ IMAGES_DIR = ROOT_DIR / "images" / "ramen"
 CACHE_DIR = ROOT_DIR / "tools" / ".cache"
 RAMEN_JSON = DATA_DIR / "ramen.json"
 BARCODES_JSON = DATA_DIR / "barcodes.json"
+URLS_JSON = DATA_DIR / "urls.json"
 POPULARITY_JSON = DATA_DIR / "popularity.json"
+SKIPS_JSON = DATA_DIR / "skips.json"
+DUPES_LOG = DATA_DIR / "duplicates.json"
 
 OFF_SEARCH_URL = "https://world.openfoodfacts.org/cgi/search.pl"
 
@@ -48,11 +51,12 @@ PW_VERSION_FILE = CACHE_DIR / "playwright-version"
 
 BROWSER_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                  "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                  "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
 }
 
 BARCODE_RE = re.compile(r'\b(\d{8}|\d{12,14})\b')
 BARCODE_SPACED_RE = re.compile(r'\b(\d[\d \-]{6,16}\d)\b')
+BARCODE_BLACKLIST = {"43299267"}  # Ramen Rater Jetpack Stats blog ID
 
 SOURCE_NAMES = ["Open Food Facts", "UPCitemdb", "Google", "The Ramen Rater"]
 
@@ -179,7 +183,10 @@ def _create_browser():
         args=[
             f"--disable-extensions-except={ext_path}",
             f"--load-extension={ext_path}",
+            "--disable-blink-features=AutomationControlled",
         ],
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                   "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
     )
     page = context.new_page()
     return pw, context, page
@@ -235,13 +242,67 @@ def load_barcodes():
 
 
 def save_barcodes(barcode_list):
+    barcode_list.sort(key=lambda e: e.get("id", 0))
     with open(BARCODES_JSON, "w", encoding="utf-8") as f:
         json.dump(barcode_list, f, indent=2, ensure_ascii=False)
         f.write("\n")
 
 
+def _barcode_already_used(barcode_list, barcode, rid):
+    """Check if a barcode is already assigned to a different ramen ID.
+    Returns the other ID if found, or None if safe to use."""
+    for entry in barcode_list:
+        if entry.get("id") == rid:
+            continue
+        for key, val in entry.items():
+            if key == "id":
+                continue
+            if str(val) == str(barcode):
+                return entry["id"]
+    return None
+
+
+def _log_duplicate(rid, dupe_id, barcode):
+    """Append a duplicate barcode entry to duplicates.json for later review."""
+    dupes = []
+    if DUPES_LOG.exists():
+        try:
+            with open(DUPES_LOG, "r", encoding="utf-8") as f:
+                dupes = json.load(f)
+        except Exception:
+            pass
+    entry = {"id": rid, "existing_id": dupe_id, "barcode": barcode}
+    if entry not in dupes:
+        dupes.append(entry)
+        with open(DUPES_LOG, "w", encoding="utf-8") as f:
+            json.dump(dupes, f, indent=2, ensure_ascii=False)
+            f.write("\n")
+
+
 def barcoded_ids(barcode_list):
     return {entry["id"] for entry in barcode_list}
+
+
+def load_urls():
+    if URLS_JSON.exists():
+        try:
+            with open(URLS_JSON, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return data
+        except (json.JSONDecodeError, ValueError):
+            pass
+    return {}
+
+
+def save_url(rid, url):
+    """Save a direct review URL for a ramen ID."""
+    urls = load_urls()
+    urls[str(rid)] = url
+    sorted_urls = dict(sorted(urls.items(), key=lambda kv: int(kv[0])))
+    with open(URLS_JSON, "w", encoding="utf-8") as f:
+        json.dump(sorted_urls, f, indent=2, ensure_ascii=False)
+        f.write("\n")
 
 
 def load_popularity():
@@ -254,11 +315,35 @@ def load_popularity():
     return {}
 
 
+def load_skips():
+    if SKIPS_JSON.exists():
+        try:
+            with open(SKIPS_JSON, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+
+def record_skip(rid):
+    """Increment the skip count for a ramen ID and persist to disk."""
+    skips = load_skips()
+    key = str(rid)
+    skips[key] = skips.get(key, 0) + 1
+    sorted_skips = dict(sorted(skips.items(), key=lambda kv: int(kv[0])))
+    with open(SKIPS_JSON, "w", encoding="utf-8") as f:
+        json.dump(sorted_skips, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    return skips[key]
+
+
 def sort_by_popularity(ramen_list):
-    """Sort ramen by popularity (highest first). Re-reads popularity.json each call."""
+    """Sort ramen by popularity (highest first), excluding previously skipped items."""
     pop = load_popularity()
+    skipped = set(load_skips().keys())
     has_image_set = {r["id"] for r in ramen_list if (IMAGES_DIR / f"{r['id']}.webp").exists()}
-    return sorted(ramen_list, key=lambda r: (
+    filtered = [r for r in ramen_list if str(r["id"]) not in skipped]
+    return sorted(filtered, key=lambda r: (
         0 if r["id"] in has_image_set else 1,
         -(pop.get(str(r["id"]), 0)),
         r["id"],
@@ -322,13 +407,22 @@ def _fuzzy_rank_ramen(query, ramen_list, limit=50):
     return [r for s, r in scored[:limit] if s >= cutoff]
 
 
+def _quote_brand(brand):
+    """Quote each slash-separated part of a brand for search queries.
+    'Acecook / Vina Acecook' → '"Acecook" "Vina Acecook"'"""
+    if '/' not in brand:
+        return f'"{brand}"'
+    parts = [p.strip() for p in brand.split('/') if p.strip()]
+    return ' '.join(f'"{p}"' for p in parts)
+
+
 # ---------------------------------------------------------------------------
 # Search: Open Food Facts (requests, no browser)
 # ---------------------------------------------------------------------------
 
 def search_openfoodfacts(page, brand, variety):
     """Navigate OFF search — scanning is handled by the poll loop."""
-    query = f"{brand} {variety}"
+    query = f"{_quote_brand(brand)} {variety}"
     url = f"{OFF_SEARCH_URL}?search_terms={quote_plus(query)}&search_simple=1&action=process"
     try:
         page.goto(url, wait_until="domcontentloaded", timeout=15000)
@@ -343,13 +437,16 @@ def search_openfoodfacts(page, brand, variety):
 
 def search_upcitemdb(page, brand, variety):
     """Navigate upcitemdb.com search — scanning is handled by the poll loop."""
-    query = f"{brand} {variety}"
+    query = f"{_quote_brand(brand)} {variety}"
     url = f"https://www.upcitemdb.com/query?s={quote_plus(query)}&type=2"
     try:
         page.goto(url, wait_until="domcontentloaded", timeout=15000)
     except Exception:
         pass
     return []
+
+
+_logged_rejections = set()
 
 
 def scan_current_page(page):
@@ -371,27 +468,57 @@ def scan_current_page(page):
             return results
 
     hits = []
+    rejected = []
     for m in BARCODE_RE.finditer(body_text):
         code = m.group(1)
-        if len(code) in (8, 12, 13, 14) and code not in seen and _valid_barcode(code):
-            ctx = body_text[max(0, m.start()-40):m.end()+40].replace("\n", " ").strip()
-            seen.add(code)
-            hits.append((m.start(), code, ctx[:80]))
+        if len(code) in (8, 12, 13, 14) and code not in seen and code not in BARCODE_BLACKLIST:
+            if _valid_barcode(code):
+                ctx = body_text[max(0, m.start()-40):m.end()+40].replace("\n", " ").strip()
+                seen.add(code)
+                hits.append((m.start(), code, ctx[:80]))
+            else:
+                digits = [int(d) for d in code]
+                payload = digits[:-1]
+                total = sum(d * (3 if i % 2 == 0 else 1) for i, d in enumerate(reversed(payload)))
+                expected = (10 - (total % 10)) % 10
+                rejected.append(f"{code} (check digit {code[-1]}≠{expected})")
+                seen.add(code)
 
     for m in BARCODE_SPACED_RE.finditer(body_text):
         digits = re.sub(r'[\s\-]', '', m.group(1))
-        if len(digits) in (8, 12, 13, 14) and digits not in seen and _valid_barcode(digits):
-            ctx = body_text[max(0, m.start()-40):m.end()+40].replace("\n", " ").strip()
-            seen.add(digits)
-            hits.append((m.start(), digits, ctx[:80]))
+        if len(digits) in (8, 12, 13, 14) and digits not in seen and digits not in BARCODE_BLACKLIST:
+            if _valid_barcode(digits):
+                ctx = body_text[max(0, m.start()-40):m.end()+40].replace("\n", " ").strip()
+                seen.add(digits)
+                hits.append((m.start(), digits, ctx[:80]))
+            else:
+                dlist = [int(d) for d in digits]
+                payload = dlist[:-1]
+                total = sum(d * (3 if i % 2 == 0 else 1) for i, d in enumerate(reversed(payload)))
+                expected = (10 - (total % 10)) % 10
+                rejected.append(f"{digits} (check digit {digits[-1]}≠{expected})")
+                seen.add(digits)
+
+    try:
+        current_url = page.url
+    except Exception:
+        current_url = ""
+    new_rejected = [r for r in rejected if (current_url, r) not in _logged_rejections]
+    if new_rejected:
+        for r in new_rejected:
+            _logged_rejections.add((current_url, r))
+        print(f"      [scan] REJECTED {len(new_rejected)}: {', '.join(new_rejected)}")
 
     hits.sort(key=lambda h: h[0])
-    return [(code, ctx) for _, code, ctx in hits]
+    results = [(code, ctx) for _, code, ctx in hits]
+    if results:
+        print(f"      [scan] {len(results)} barcode(s): {', '.join(c for c, _ in results)}")
+    return results
 
 
 def search_google_barcode(page, brand, variety):
     """Navigate Google barcode search — scanning is handled by the poll loop."""
-    query = f"{brand} {variety} barcode UPC EAN"
+    query = f"{_quote_brand(brand)} {variety} barcode UPC EAN"
     url = f"https://www.google.com/search?q={quote_plus(query)}"
     try:
         page.goto(url, wait_until="domcontentloaded", timeout=15000)
@@ -404,13 +531,19 @@ def search_google_barcode(page, brand, variety):
 # Search: theramenrater.com review page (Playwright, last resort)
 # ---------------------------------------------------------------------------
 
+def _ramen_url(ramen):
+    """Get the best URL for a ramen: direct from urls.json, or derived search link."""
+    rid = ramen.get("id", "")
+    urls = load_urls()
+    direct = urls.get(str(rid))
+    if direct:
+        return direct
+    return f"https://www.theramenrater.com/?s=%23{rid}%3A"
+
+
 def search_ramenrater(page, ramen):
     """Visit the ramen rater review URL and look for barcodes in the page text."""
-    url = ramen.get("url", "")
-    if not url:
-        return []
-
-    search_url = url
+    search_url = _ramen_url(ramen)
     try:
         page.goto(search_url, wait_until="domcontentloaded", timeout=15000)
     except Exception:
@@ -455,8 +588,11 @@ class BarcodePanel:
         text_frame = tk.Frame(info_frame, bg="#1a1a2e")
         text_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self._id_text = self._make_copyable(text_frame, font=("Segoe UI", 9), fg="#888", height=1)
+        self._id_text = self._make_copyable(text_frame, font=("Segoe UI", 9, "underline"), fg="#88bbff", height=1)
+        self._id_text.configure(cursor="hand2")
+        self._id_text.bind("<Button-1>", lambda e: self._open_ramen_url())
         self._id_text.pack(fill=tk.X)
+        self._current_url = None
 
         self._name_text = self._make_copyable(text_frame, font=("Segoe UI", 11, "bold"), fg="#f7d354", height=2)
         self._name_text.pack(fill=tk.X, pady=(2, 2))
@@ -518,6 +654,17 @@ class BarcodePanel:
         tk.Button(btn_row, text="Skip Item", command=self._on_skip_item,
                   font=("Segoe UI", 10), bg="#3a1a1a", fg="#e0e0e0",
                   activebackground="#5a2020", activeforeground="#f7d354", width=10).pack(side=tk.LEFT, padx=6)
+
+        # --- Automate toggle ---
+        auto_frame = tk.Frame(root, bg="#1a1a2e")
+        auto_frame.pack(fill=tk.X, padx=12, pady=(4, 2))
+        self._automate_var = tk.BooleanVar(value=False)
+        self._automate_var.trace_add("write", lambda *_: self._on_automate_toggled())
+        tk.Checkbutton(auto_frame, text="Automate (Ramen Rater only)",
+                       variable=self._automate_var,
+                       font=("Segoe UI", 9, "bold"), fg="#f0ad4e", bg="#1a1a2e",
+                       selectcolor="#16213e", activebackground="#1a1a2e",
+                       activeforeground="#f0ad4e").pack(side=tk.LEFT)
 
         # --- Separator ---
         tk.Frame(root, bg="#333", height=1).pack(fill=tk.X, padx=12, pady=(6, 6))
@@ -616,6 +763,11 @@ class BarcodePanel:
 
     # --- Display methods (called from worker thread via root.after) ---
 
+    def _open_ramen_url(self):
+        import webbrowser
+        if self._current_url:
+            webbrowser.open(self._current_url)
+
     def show_ramen(self, ramen, remaining, found_so_far):
         def _update():
             rid = ramen.get("id", "?")
@@ -623,6 +775,7 @@ class BarcodePanel:
             variety = ramen.get("variety", "")
             country = ramen.get("country", "")
             style = ramen.get("style", "")
+            self._current_url = _ramen_url(ramen)
 
             self._set_copyable(self._id_text, f"#{rid}")
             self._set_copyable(self._name_text, f"{brand} — {variety}")
@@ -671,13 +824,15 @@ class BarcodePanel:
     def set_candidates(self, candidates, source):
         """candidates: list of (barcode, label)."""
         def _update():
+            old_codes = {c for c, _ in self._candidates}
             self._cand_list.delete(0, tk.END)
             self._candidates = list(candidates)
             for code, label in candidates:
                 self._cand_list.insert(tk.END, f"{code}  —  {label}")
             if candidates:
                 current = self._barcode_var.get().strip()
-                if not current:
+                typed_custom = current and current not in old_codes
+                if not typed_custom:
                     self._barcode_var.set(candidates[0][0])
                     self._cand_list.selection_set(0)
                 self._source_var.set(f"Source: {source}")
@@ -711,6 +866,12 @@ class BarcodePanel:
         with self._lock:
             self._action = "skip"
         self._action_event.set()
+
+    def _on_automate_toggled(self):
+        if self._automate_var.get():
+            with self._lock:
+                self._action = "skip_item"
+            self._action_event.set()
 
     def _on_skip_item(self):
         with self._lock:
@@ -766,6 +927,9 @@ class BarcodePanel:
     def is_source_enabled(self, name):
         var = self._source_vars.get(name)
         return var.get() if var else True
+
+    def is_automate(self):
+        return self._automate_var.get()
 
     def get_barcode(self):
         return self._barcode_var.get().strip()
@@ -853,8 +1017,120 @@ class BarcodePanel:
 
 
 # ---------------------------------------------------------------------------
+# Image grab helper (purely via requests, no Playwright)
+# ---------------------------------------------------------------------------
+
+def _grab_image_if_missing(rid, page_url):
+    """Download the first content image from a Ramen Rater review page if we
+    don't already have one locally.  Uses requests only — never touches Playwright."""
+    img_path = IMAGES_DIR / f"{rid}.webp"
+    if img_path.exists() or not page_url:
+        return
+    try:
+        resp = requests.get(page_url, headers=BROWSER_HEADERS, timeout=15)
+        if resp.status_code != 200:
+            return
+        match = re.search(
+            r'<div[^>]*class="[^"]*entry-content[^"]*"[^>]*>.*?<img[^>]+src=["\']([^"\']+)',
+            resp.text, re.DOTALL)
+        if not match:
+            match = re.search(r'<article[^>]*>.*?<img[^>]+src=["\']([^"\']+)', resp.text, re.DOTALL)
+        if not match:
+            return
+        src = match.group(1)
+        if src.startswith("data:"):
+            return
+        img_resp = requests.get(src, headers=BROWSER_HEADERS, timeout=15)
+        if img_resp.status_code == 200 and len(img_resp.content) > 1000:
+            img_path.parent.mkdir(parents=True, exist_ok=True)
+            img_path.write_bytes(img_resp.content)
+            print(f"    [auto] *** IMAGE SAVED: {img_path.name} ({len(img_resp.content)//1024}KB) ***")
+    except Exception as e:
+        print(f"    [auto] Image grab failed: {e}")
+
+
+# ---------------------------------------------------------------------------
 # Main processing loop
 # ---------------------------------------------------------------------------
+
+def _automate_ramen_rater(panel, context, ramen):
+    """Automate mode: navigate to Ramen Rater, click first result, detect barcode.
+    Returns (barcode, btype) tuple if found, "scanned" if page loaded but no barcode,
+    or None if the browser was dead / navigation failed (should NOT count as a skip)."""
+    page = _active_page(context)
+    if not page:
+        return None
+
+    rid = ramen.get("id", "?")
+    url = _ramen_url(ramen)
+    print(f"    [auto] Navigating to Ramen Rater for #{rid}...")
+    panel.set_search_status(f"[AUTO] Loading Ramen Rater page for #{rid}...")
+
+    try:
+        page.goto(url, wait_until="domcontentloaded", timeout=15000)
+    except Exception as e:
+        print(f"    [auto] Navigation failed: {e}")
+        return None
+
+    # If this is a search page, find the result that matches #ID: exactly
+    direct_url = None
+    try:
+        links = page.query_selector_all("h2.entry-title a, .entry-title a")
+        target_prefix = f"#{rid}:"
+        matched_link = None
+        for link in links:
+            text = (link.inner_text() or "").strip()
+            if text.startswith(target_prefix):
+                matched_link = link
+                break
+        if matched_link:
+            href = matched_link.get_attribute("href") or ""
+            if href:
+                print(f"    [auto] Following exact match: {href[:80]}")
+                page.goto(href, wait_until="domcontentloaded", timeout=15000)
+                direct_url = page.url
+        elif links:
+            texts = [(l.inner_text() or "").strip()[:60] for l in links[:3]]
+            print(f"    [auto] No result matched #{rid}: — found: {texts}")
+    except Exception as e:
+        print(f"    [auto] Navigation to result: {e}")
+
+    if not direct_url:
+        try:
+            direct_url = page.url
+        except Exception:
+            pass
+
+    # Save the direct URL if it's a real review page (not a search)
+    if direct_url and "theramenrater.com" in direct_url and "?s=" not in direct_url:
+        save_url(rid, direct_url)
+        print(f"    [auto] URL saved: {direct_url[:80]}")
+
+    # Scan a few times with short waits for content to load
+    for attempt in range(6):
+        if panel.shutting_down or not panel.is_automate():
+            return None
+        time.sleep(0.5)
+        page = _active_page(context)
+        if not page:
+            return None
+        results = scan_current_page(page)
+        if results:
+            for code, ctx in results:
+                print(f"    [auto] FOUND: {code}  ({ctx})")
+            best = results[0][0]
+            btype = _detect_barcode_type(best)
+            print(f"    [auto] Selected: {best} ({btype})")
+            panel.set_candidates(results, "Auto: Ramen Rater")
+            _grab_image_if_missing(rid, direct_url)
+            return best, btype
+
+    # Grab the top image via requests (no Playwright interaction)
+    _grab_image_if_missing(rid, direct_url)
+
+    print(f"    [auto] No barcodes found for #{rid}")
+    return "scanned"
+
 
 def _wait_with_url_watch(panel, context):
     """Wait for user action while continuously scanning the active page for barcodes.
@@ -893,6 +1169,13 @@ def _wait_with_url_watch(panel, context):
             known_codes.clear()
             last_url = current_url
 
+        with panel._lock:
+            if panel._action:
+                a = panel._action
+                panel._action = None
+                panel._action_event.clear()
+                return a
+
         results = scan_current_page(page)
 
         with panel._lock:
@@ -930,7 +1213,6 @@ def _run_barcode_gathering(ramen_list, panel):
 
     needs_sorted = _rebuild_queue(ramen_list)
     total_remaining = len(needs_sorted)
-    skipped_ids = set()
 
     print(f"\n  {len(ramen_list)} ramen total, {len(existing)} already have barcodes, {total_remaining} remaining\n")
 
@@ -946,7 +1228,6 @@ def _run_barcode_gathering(ramen_list, panel):
 
     while not panel.shutting_down:
         needs_sorted = _rebuild_queue(ramen_list)
-        needs_sorted = [r for r in needs_sorted if r["id"] not in skipped_ids]
         total_remaining = len(needs_sorted)
         found_count = len(load_barcodes())
 
@@ -961,10 +1242,37 @@ def _run_barcode_gathering(ramen_list, panel):
         pop = load_popularity()
         pop_count = pop.get(str(rid), 0)
         pop_label = f"  (pop: {pop_count:,})" if pop_count else ""
-        print(f"  [1/{total_remaining}] #{rid} {brand} — {variety}{pop_label}")
+        print(f"  [{total_remaining} left] #{rid} {brand} — {variety}{pop_label}")
 
         panel.show_ramen(ramen, total_remaining, found_count)
         time.sleep(0.2)
+
+        # --- Automate mode: skip manual cascade, use Ramen Rater directly ---
+        if panel.is_automate() and context:
+            result = _automate_ramen_rater(panel, context, ramen)
+            if isinstance(result, tuple):
+                barcode, btype = result
+                bl = load_barcodes()
+                dupe_id = _barcode_already_used(bl, barcode, rid)
+                if dupe_id:
+                    n = record_skip(rid)
+                    _log_duplicate(rid, dupe_id, barcode)
+                    print(f"    [auto] DUPLICATE: {barcode} already belongs to #{dupe_id}, skipping #{rid} (skip #{n})")
+                else:
+                    existing_entry = next((e for e in bl if e["id"] == rid), None)
+                    if existing_entry:
+                        existing_entry[btype] = barcode
+                    else:
+                        bl.append({"id": rid, btype: barcode})
+                    save_barcodes(bl)
+                    panel.set_last_saved(rid, barcode, btype)
+                    print(f"    [auto] SAVED: #{rid} → {barcode} ({btype})")
+            elif result == "scanned":
+                n = record_skip(rid)
+                print(f"    [auto] Skipped #{rid} (no barcode found, skip #{n})")
+            else:
+                print(f"    [auto] #{rid} — browser unavailable, not counting as skip")
+            continue
 
         sources = [
             ("Open Food Facts", lambda: search_openfoodfacts(_active_page(context), brand, variety)),
@@ -1013,19 +1321,25 @@ def _run_barcode_gathering(ramen_list, panel):
                     if barcode:
                         btype = _detect_barcode_type(barcode)
                         bl = load_barcodes()
-                        existing = next((e for e in bl if e["id"] == rid), None)
-                        if existing:
-                            existing[btype] = barcode
+                        dupe_id = _barcode_already_used(bl, barcode, rid)
+                        if dupe_id:
+                            _log_duplicate(rid, dupe_id, barcode)
+                            print(f"    DUPLICATE: {barcode} already belongs to #{dupe_id}, not saving for #{rid}")
+                            panel.set_search_status(f"DUPLICATE: {barcode} already used by #{dupe_id}")
                         else:
-                            bl.append({"id": rid, btype: barcode})
-                        save_barcodes(bl)
-                        panel.set_last_saved(rid, barcode, btype)
-                        print(f"    SAVED: {barcode} ({btype})")
+                            existing = next((e for e in bl if e["id"] == rid), None)
+                            if existing:
+                                existing[btype] = barcode
+                            else:
+                                bl.append({"id": rid, btype: barcode})
+                            save_barcodes(bl)
+                            panel.set_last_saved(rid, barcode, btype)
+                            print(f"    SAVED: {barcode} ({btype})")
                     resolved = True
                     break
                 elif action == "skip_item":
-                    skipped_ids.add(rid)
-                    print(f"    Skipped item")
+                    n = record_skip(rid)
+                    print(f"    Skipped item (skip #{n})")
                     resolved = True
                     break
                 elif action == "skip":
@@ -1043,7 +1357,11 @@ def _run_barcode_gathering(ramen_list, panel):
                 elif action == "jump":
                     jump_id = panel.get_jump_id()
                     if jump_id is not None:
-                        skipped_ids.discard(jump_id)
+                        skips = load_skips()
+                        skips.pop(str(jump_id), None)
+                        with open(SKIPS_JSON, "w", encoding="utf-8") as f:
+                            json.dump(skips, f, indent=2, ensure_ascii=False)
+                            f.write("\n")
                         found = next((r for r in ramen_list if r["id"] == jump_id), None)
                         if found:
                             needs_sorted.insert(0, found)
@@ -1074,17 +1392,23 @@ def _run_barcode_gathering(ramen_list, panel):
                     if barcode:
                         btype = _detect_barcode_type(barcode)
                         bl = load_barcodes()
-                        existing = next((e for e in bl if e["id"] == rid), None)
-                        if existing:
-                            existing[btype] = barcode
+                        dupe_id = _barcode_already_used(bl, barcode, rid)
+                        if dupe_id:
+                            _log_duplicate(rid, dupe_id, barcode)
+                            print(f"    DUPLICATE: {barcode} already belongs to #{dupe_id}, not saving for #{rid}")
+                            panel.set_search_status(f"DUPLICATE: {barcode} already used by #{dupe_id}")
                         else:
-                            bl.append({"id": rid, btype: barcode})
-                        save_barcodes(bl)
-                        panel.set_last_saved(rid, barcode, btype)
-                        print(f"    SAVED: {barcode} ({btype})")
+                            existing = next((e for e in bl if e["id"] == rid), None)
+                            if existing:
+                                existing[btype] = barcode
+                            else:
+                                bl.append({"id": rid, btype: barcode})
+                            save_barcodes(bl)
+                            panel.set_last_saved(rid, barcode, btype)
+                            print(f"    SAVED: {barcode} ({btype})")
                 elif action == "skip_item":
-                    skipped_ids.add(rid)
-                    print(f"    Skipped item")
+                    n = record_skip(rid)
+                    print(f"    Skipped item (skip #{n})")
                 break
 
     if context:
@@ -1112,8 +1436,12 @@ def main():
     has_img = sum(1 for r in needs if (IMAGES_DIR / f"{r['id']}.webp").exists())
     pop = load_popularity()
     has_pop = sum(1 for r in needs if str(r["id"]) in pop)
+    skips = load_skips()
+    skipped_count = sum(1 for r in needs if str(r["id"]) in skips)
     print(f"Ramen Barcode Gatherer")
     print(f"  {len(ramen_list)} ramen total, {len(existing)} already have barcodes")
+    if skipped_count:
+        print(f"  {skipped_count} previously skipped (deprioritized, not excluded)")
     print(f"  {len(needs)} still need barcodes ({has_img} have images, {has_pop} have popularity)")
     print(f"  Sorted by: has image > popularity (highest first)")
 

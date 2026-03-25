@@ -48,7 +48,7 @@ XLSX_ETAG_PATH = CACHE_DIR / ".big-list-etag"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                  "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                  "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
 }
 
 def _load_typos():
@@ -187,7 +187,6 @@ def parse_xlsx():
             'style': style,
             'country': country,
             'stars': stars,
-            'url': f"https://www.theramenrater.com/?s=%23{review_id}%3A",
         })
 
     wb.close()
@@ -197,6 +196,7 @@ def parse_xlsx():
 
 def save_json(ramen_list):
     DATA_DIR.mkdir(exist_ok=True)
+    ramen_list.sort(key=lambda r: r.get("id", 0))
     out_path = DATA_DIR / "ramen.json"
     with open(out_path, 'w', encoding='utf-8') as f:
         json.dump(ramen_list, f, ensure_ascii=False)
@@ -225,10 +225,18 @@ def save_popularity(pop_map):
 
 BROWSER_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                  "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                  "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
 }
+
+def _quote_brand(brand):
+    """Quote each slash-separated part of a brand for search queries."""
+    if '/' not in brand:
+        return f'"{brand}"'
+    parts = [p.strip() for p in brand.split('/') if p.strip()]
+    return ' '.join(f'"{p}"' for p in parts)
+
 
 def _search_bing(query):
     """Scrape Bing image search results. Returns list of image URLs.
@@ -569,7 +577,10 @@ def _create_popularity_browser():
         args=[
             f"--disable-extensions-except={ext_path}",
             f"--load-extension={ext_path}",
+            "--disable-blink-features=AutomationControlled",
         ],
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                   "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
     )
     page = context.new_page()
     return pw, context, page
@@ -1036,7 +1047,6 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
     any_need_popularity = any(r['id'] not in pop_map for r in needed)
 
     total_ramen = len(ramen_list)
-    covered = len(existing)
 
     if limit is not None:
         batch = needed[:limit]
@@ -1044,7 +1054,7 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
     else:
         batch = needed
         print(f"Processing: {len(batch)} ramen need images and/or popularity")
-    print(f"Coverage: {covered}/{total_ramen} have images ({100 * covered / total_ramen:.1f}%)")
+    print(f"Coverage: {len(existing)}/{total_ramen} have images ({100 * len(existing) / total_ramen:.1f}%)")
 
     pw, context, page = None, None, None
     if any_need_popularity:
@@ -1098,7 +1108,7 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
         # --- Image ---
         if needs_image:
             print(f"      Searching Bing for image...")
-            query = f'{r["brand"]} {r["variety"]} the ramen rater'
+            query = f'{_quote_brand(r["brand"])} {r["variety"]} the ramen rater'
             candidates = _search_bing(query)
 
             if not candidates:
@@ -1112,6 +1122,7 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                         saved = True
                         downloaded += 1
                         has_image = True
+                        existing.add(r['id'])
                         print(f"      Image: saved")
                         break
                 if not saved:
@@ -1159,7 +1170,7 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
             engine = _get_engine()
             wait = random.uniform(3, 12)
             print(f"      Popularity: searching {engine} (waiting {wait:.0f}s to avoid rate limit)...")
-            pop_query = f'"{r["brand"]}" {r["variety"]}'
+            pop_query = f'{_quote_brand(r["brand"])} {r["variety"]}'
             time.sleep(wait)
             if engine == "google":
                 count = _google_web_result_count(page, pop_query, r["brand"])
@@ -1193,7 +1204,9 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                     found = next((x for x in ramen_list if x.get("id") == req), None)
                     if found:
                         print(f"    [single] #{found['id']} {found['brand']} - {found['variety']}")
-                        _do_one(found, f"[single] ({covered + downloaded}/{total_ramen})")
+                        if found['id'] not in existing and (IMAGES_DIR / f"{found['id']}.webp").exists():
+                            existing.add(found['id'])
+                        _do_one(found, f"[single] ({len(existing)}/{total_ramen})")
                         if panel:
                             panel.set_progress(f"[single] #{found['id']} done")
                             panel.set_status("Single done — paused. Click Resume all scraping to continue.")
@@ -1213,7 +1226,9 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                 break
 
             r = batch[idx]
-            _do_one(r, f"[{idx + 1}/{n_batch}] ({covered + downloaded}/{total_ramen})")
+            if r['id'] not in existing and (IMAGES_DIR / f"{r['id']}.webp").exists():
+                existing.add(r['id'])
+            _do_one(r, f"[{idx + 1}/{n_batch}] ({len(existing)}/{total_ramen})")
             idx += 1
     finally:
         if context:
