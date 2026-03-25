@@ -610,17 +610,6 @@ def _bing_web_result_count(page, query, brand):
             _debug(f"  BODY START: {body_text}")
             return 0
 
-    # Validate: the brand name must appear in the search results
-    try:
-        results_text = page.inner_text("#b_results")
-    except Exception:
-        results_text = ""
-    brand_lower = brand.lower()
-    if brand_lower not in results_text.lower():
-        _debug(f"  BOGUS PAGE: brand '{brand}' not found in results, skipping")
-        print(f"      Bogus results (brand not found on page), skipping")
-        return 0
-
     try:
         text = page.inner_text(".sb_count")
         _debug(f"  .sb_count raw text: {repr(text)}")
@@ -675,7 +664,7 @@ def _google_web_result_count(page, query, brand):
     _debug(f"  URL: {url}")
     _debug(f"  BRAND: {brand}")
     try:
-        page.goto(url, wait_until="load", timeout=20000)
+        page.goto(url, wait_until="domcontentloaded", timeout=20000)
         page.wait_for_selector("#search", timeout=5000)
     except Exception:
         print(f"      Waiting for CAPTCHA — solve it in the browser, will resume automatically...")
@@ -690,29 +679,41 @@ def _google_web_result_count(page, query, brand):
             _debug(f"  BODY START: {body_text}")
             return 0
 
-    # Click "Tools" to reveal the result count
+    # Wait for actual search results to render inside #search (not just the container)
     try:
-        # sleep for 1-3 seconds
-        time.sleep(random.uniform(1, 3))
+        page.wait_for_load_state("networkidle", timeout=10000)
+    except Exception:
+        _debug(f"  networkidle timed out, proceeding anyway")
+
+    # Wait for at least one result heading or the "About" result-stats to appear
+    try:
+        page.wait_for_selector("#result-stats, #search h3, #rso", timeout=5000)
+        _debug(f"  Search results content detected")
+    except Exception:
+        _debug(f"  No result headings found after waiting")
+
+    time.sleep(random.uniform(1, 3))
+
+    # Click "Tools" to open the About section with result count
+    try:
         tools_btn = page.query_selector("#hdtb-tls") or page.query_selector("div.hdtb-mitem >> text=Tools")
         if tools_btn:
             tools_btn.click()
-            page.wait_for_selector("#result-stats", timeout=3000)
-            _debug(f"  Clicked Tools button to reveal result stats")
+            _debug(f"  Clicked Tools button")
         else:
             _debug(f"  Tools button not found, trying #result-stats directly")
     except Exception as e:
         _debug(f"  Tools click issue: {type(e).__name__}: {e}")
 
+    # Wait for the "About X results" section to actually populate
     try:
-        results_text = page.inner_text("#search")
-    except Exception:
-        results_text = ""
-    brand_lower = brand.lower()
-    if brand_lower not in results_text.lower():
-        _debug(f"  BOGUS PAGE: brand '{brand}' not found in results, skipping")
-        print(f"      Bogus results (brand not found on page), skipping")
-        return 0
+        page.wait_for_function(
+            '() => { const el = document.getElementById("result-stats"); return el && el.innerText.length > 0; }',
+            timeout=5000
+        )
+        _debug(f"  #result-stats populated")
+    except Exception as e:
+        _debug(f"  #result-stats did not populate: {type(e).__name__}: {e}")
 
     try:
         text = page.inner_text("#result-stats")
@@ -891,10 +892,13 @@ def _check_orientation(model, image_path, Image):
         angle = int(label) if label and str(label).isdigit() else 0
 
         _debug(f"  PaddleOCR parsed: angle={angle} confidence={score:.3f}")
-        print(f" [angle={angle}° conf={score:.2f}]", end="", flush=True)
 
         if angle == 0:
-            return "ok", None
+            return "ok", f"angle={angle}° conf={score:.2f}"
+
+        MIN_ORI_CONFIDENCE = 0.70
+        if score < MIN_ORI_CONFIDENCE:
+            return "skip", f"angle={angle}° conf={score:.2f} < {MIN_ORI_CONFIDENCE} threshold"
 
         pil_img = Image.open(image_path).convert('RGB')
         rotated = pil_img.rotate(angle, expand=True)
@@ -1138,17 +1142,17 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                 _debug(f"  EXIF error for {out_path.name}: {e}")
 
             if ori_model:
-                print(f"      ML orientation: checking...")
+                print(f"      ML orientation: checking...", end="", flush=True)
                 status, detail = _check_orientation(ori_model, out_path, Image)
                 if status == "fixed":
-                    print(f"      ML orientation: FIXED — {detail}")
+                    print(f"\r      ML orientation: FIXED — {detail}")
                     oriented += 1
                 elif status == "ok":
-                    print(f"      ML orientation: ok")
+                    print(f"\r      ML orientation: ok ({detail})")
                 elif status == "skip":
-                    print(f"      ML orientation: skipped ({detail})")
+                    print(f"\r      ML orientation: skipped ({detail})")
                 else:
-                    print(f"      ML orientation: error ({detail})")
+                    print(f"\r      ML orientation: error ({detail})")
 
         # --- Popularity ---
         if needs_popularity and page:

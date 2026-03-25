@@ -40,6 +40,18 @@
     {
       "id": 593,
       "replace_variety": "Chapagetti Chajang Noodle"
+    },
+    {
+      "id": 4894,
+      "replace_variety": "Cup Noodles Seafood Flavor - Singapore"
+    },
+    {
+      "id": 284,
+      "replace_variety": "Cup Noodles Seafood Flavor - Hong Kong"
+    },
+    {
+      "id": 3820,
+      "replace_variety": "Cup Noodles Shrimps Peppery Shoyu"
     }
   ],
   "style": {
@@ -66,7 +78,8 @@
     "La Liu tou": "La Liu Tou",
     "O'taste": "O'Taste",
     "A-Sha Dry Noodle": "A-Sha",
-    "Tasty ly": "Tasty.ly"
+    "Tasty ly": "Tasty.ly",
+    "Namchang": "Nanchang"
   },
   "text": {
     "Japanese Home Style Noodles": "",
@@ -79,11 +92,15 @@
     "Flavour": "Flavor",
     "Instantt": "Instant",
     "uldak": "Buldak",
-    "BBuldoc": "Buldok",
+    "BBuldak": "Buldak",
     "Goku-Uma": "Goku Uma",
     "Hpakata": "Hakata",
     "CCuphongqing": "Chongqing",
     "Gorenbg": "Goreng",
-    "Jumbo Pack Yellow Curry": "Yellow Curry"
+    "Jumbo Pack Yellow Curry": "Yellow Curry",
+    "Miringa": "Moringa",
+    "Witrh": "With",
+    "Atyificial": "Artificial",
+    "Prok": "Pork"
   }
 }
