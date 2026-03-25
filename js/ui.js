@@ -1904,8 +1904,7 @@ function openBarcodeScanner(context) {
       if (ramen) {
         handled = true;
         closeBarcodeScanner();
-        if (scannerContext === 'rate') openRatingModal(ramen);
-        else expandCard(ramen);
+        openRatingModal(ramen);
       } else {
         statusEl.textContent = `No match: ${decodedText}`;
         statusEl.className = 'barcode-status barcode-not-found';
