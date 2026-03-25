@@ -1904,34 +1904,51 @@ function _scanFrame(video, canvas, ctx, statusEl) {
 
   const vw = video.videoWidth;
   const vh = video.videoHeight;
-  if (vw && vh) {
+  if (!vw || !vh) {
+    _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+    return;
+  }
+
+  let imageData;
+  try {
     canvas.width = vw;
     canvas.height = vh;
     ctx.drawImage(video, 0, 0, vw, vh);
-    const imageData = ctx.getImageData(0, 0, vw, vh);
-    zbarWasm.scanImageData(imageData).then(symbols => {
-      if (_scannerHandled || !_scannerStream) return;
-      for (const sym of symbols) {
-        const decoded = sym.decode('utf-8');
-        if (!decoded || !decoded.trim()) continue;
-        const ramen = data.lookupBarcode(decoded);
-        if (ramen) {
-          _scannerHandled = true;
-          closeBarcodeScanner();
-          openRatingModal(ramen);
-          return;
-        }
-        _showNoMatch(statusEl, decoded);
-      }
-      _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
-    }).catch(() => {
-      if (!_scannerHandled && _scannerStream) {
-        _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
-      }
-    });
-  } else {
-    _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+    imageData = ctx.getImageData(0, 0, vw, vh);
+  } catch (err) {
+    statusEl.textContent = `Canvas error: ${err.message || err}`;
+    statusEl.className = 'barcode-status barcode-error';
+    return;
   }
+
+  zbarWasm.scanImageData(imageData).then(symbols => {
+    if (_scannerHandled || !_scannerStream) return;
+    if (!symbols || !symbols.length) {
+      _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+      return;
+    }
+    for (const sym of symbols) {
+      let decoded;
+      try { decoded = sym.decode('utf-8'); } catch { continue; }
+      if (!decoded || !decoded.trim()) continue;
+      const ramen = data.lookupBarcode(decoded);
+      if (ramen) {
+        _scannerHandled = true;
+        closeBarcodeScanner();
+        openRatingModal(ramen);
+        return;
+      }
+      _showNoMatch(statusEl, decoded);
+    }
+    _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+  }).catch(err => {
+    console.error('Barcode scan error:', err);
+    statusEl.textContent = `Scanner error: ${err.message || err}`;
+    statusEl.className = 'barcode-status barcode-error';
+    if (!_scannerHandled && _scannerStream) {
+      _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+    }
+  });
 }
 
 function openBarcodeScanner(context) {
