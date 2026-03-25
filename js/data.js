@@ -27,12 +27,12 @@ export async function loadRamenData() {
     barcodeMap = {};
     for (const entry of barcodeList) {
       const id = entry.id;
-      for (const [key, val] of Object.entries(entry)) {
-        if (key === 'id') continue;
-        const raw = String(val).trim();
-        barcodeMap[raw] = id;
-        const ean13 = _toEan13(raw);
-        if (ean13 && ean13 !== raw) barcodeMap[ean13] = id;
+      for (const raw of (entry.barcodes || [])) {
+        const code = String(raw).trim();
+        if (!code) continue;
+        barcodeMap[code] = id;
+        const ean13 = _toEan13(code);
+        if (ean13 && ean13 !== code) barcodeMap[ean13] = id;
       }
     }
   } catch {

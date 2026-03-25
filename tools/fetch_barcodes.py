@@ -218,21 +218,26 @@ def load_barcodes():
             with open(BARCODES_JSON, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 if isinstance(data, list):
-                    needs_migrate = any("barcode" in e for e in data)
+                    needs_migrate = any(
+                        k not in ("id", "barcodes") for e in data for k in e
+                    )
                     if needs_migrate:
                         merged = {}
                         for entry in data:
                             rid = entry["id"]
                             if rid not in merged:
-                                merged[rid] = {"id": rid}
-                            if "barcode" in entry:
-                                code = str(entry["barcode"])
-                                btype = entry.get("type", _detect_barcode_type(code))
-                                merged[rid][btype] = code
-                            else:
-                                for k, v in entry.items():
-                                    if k != "id":
-                                        merged[rid][k] = v
+                                merged[rid] = {"id": rid, "barcodes": []}
+                            codes = merged[rid]["barcodes"]
+                            if "barcodes" in entry:
+                                for c in entry["barcodes"]:
+                                    if str(c) not in codes:
+                                        codes.append(str(c))
+                            for k, v in entry.items():
+                                if k in ("id", "barcodes"):
+                                    continue
+                                code = str(v).strip()
+                                if code and code not in codes:
+                                    codes.append(code)
                         data = list(merged.values())
                         save_barcodes(data)
                     return data
@@ -251,14 +256,12 @@ def save_barcodes(barcode_list):
 def _barcode_already_used(barcode_list, barcode, rid):
     """Check if a barcode is already assigned to a different ramen ID.
     Returns the other ID if found, or None if safe to use."""
+    bc = str(barcode)
     for entry in barcode_list:
         if entry.get("id") == rid:
             continue
-        for key, val in entry.items():
-            if key == "id":
-                continue
-            if str(val) == str(barcode):
-                return entry["id"]
+        if bc in [str(c) for c in entry.get("barcodes", [])]:
+            return entry["id"]
     return None
 
 
@@ -280,7 +283,21 @@ def _log_duplicate(rid, dupe_id, barcode):
 
 
 def barcoded_ids(barcode_list):
-    return {entry["id"] for entry in barcode_list}
+    return {entry["id"] for entry in barcode_list if entry.get("barcodes")}
+
+
+def _add_barcode(barcode_list, rid, barcode):
+    """Append a barcode to the entry for rid (creating it if needed). Returns the entry."""
+    bc = str(barcode)
+    existing = next((e for e in barcode_list if e["id"] == rid), None)
+    if existing:
+        codes = existing.setdefault("barcodes", [])
+        if bc not in codes:
+            codes.append(bc)
+    else:
+        existing = {"id": rid, "barcodes": [bc]}
+        barcode_list.append(existing)
+    return existing
 
 
 def load_urls():
@@ -943,11 +960,7 @@ class BarcodePanel:
             self._search_var.set(f"DUPLICATE: {barcode} already used by #{dupe_id}")
             print(f"    DUPLICATE: {barcode} already belongs to #{dupe_id}, not saving for #{rid}")
             return
-        existing = next((e for e in bl if e["id"] == rid), None)
-        if existing:
-            existing[btype] = barcode
-        else:
-            bl.append({"id": rid, btype: barcode})
+        _add_barcode(bl, rid, barcode)
         save_barcodes(bl)
         r = next((r for r in self._ramen_list if r["id"] == rid), None)
         label = f"#{rid}"
@@ -1292,11 +1305,7 @@ def _run_barcode_gathering(ramen_list, panel):
                     _log_duplicate(rid, dupe_id, barcode)
                     print(f"    [auto] DUPLICATE: {barcode} already belongs to #{dupe_id}, skipping #{rid} (skip #{n})")
                 else:
-                    existing_entry = next((e for e in bl if e["id"] == rid), None)
-                    if existing_entry:
-                        existing_entry[btype] = barcode
-                    else:
-                        bl.append({"id": rid, btype: barcode})
+                    _add_barcode(bl, rid, barcode)
                     save_barcodes(bl)
                     panel.set_last_saved(rid, barcode, btype)
                     print(f"    [auto] SAVED: #{rid} → {barcode} ({btype})")
@@ -1360,11 +1369,7 @@ def _run_barcode_gathering(ramen_list, panel):
                             print(f"    DUPLICATE: {barcode} already belongs to #{dupe_id}, not saving for #{rid}")
                             panel.set_search_status(f"DUPLICATE: {barcode} already used by #{dupe_id}")
                         else:
-                            existing = next((e for e in bl if e["id"] == rid), None)
-                            if existing:
-                                existing[btype] = barcode
-                            else:
-                                bl.append({"id": rid, btype: barcode})
+                            _add_barcode(bl, rid, barcode)
                             save_barcodes(bl)
                             panel.set_last_saved(rid, barcode, btype)
                             print(f"    SAVED: {barcode} ({btype})")
@@ -1431,11 +1436,7 @@ def _run_barcode_gathering(ramen_list, panel):
                             print(f"    DUPLICATE: {barcode} already belongs to #{dupe_id}, not saving for #{rid}")
                             panel.set_search_status(f"DUPLICATE: {barcode} already used by #{dupe_id}")
                         else:
-                            existing = next((e for e in bl if e["id"] == rid), None)
-                            if existing:
-                                existing[btype] = barcode
-                            else:
-                                bl.append({"id": rid, btype: barcode})
+                            _add_barcode(bl, rid, barcode)
                             save_barcodes(bl)
                             panel.set_last_saved(rid, barcode, btype)
                             print(f"    SAVED: {barcode} ({btype})")

@@ -1194,7 +1194,7 @@ export function renderDiscover(restorePages) {
           requestAnimationFrame(() => window.scrollTo(0, card.offsetTop - offset));
         }
       }
-    } catch {}
+    } catch { }
   }
 
   loading.classList.toggle('hidden', discoverFiltered.length > 0);
@@ -1241,7 +1241,7 @@ function setupInfiniteScroll() {
           return;
         }
       }
-    } catch {}
+    } catch { }
   });
 
   discoverObserver = new IntersectionObserver(entries => {
@@ -1905,12 +1905,12 @@ function openBarcodeScanner(context) {
           if (scannerContext === 'rate') openRatingModal(ramen);
           else expandCard(ramen);
         } else {
-          statusEl.textContent = `No match: ${decodedText} — scan another`;
+          statusEl.textContent = `No match: ${decodedText}`;
           statusEl.className = 'barcode-status barcode-not-found';
-          html5Qrcode.stop().then(startScanner).catch(() => {});
+          html5Qrcode.stop().then(startScanner).catch(() => { });
         }
       },
-      () => {}
+      () => { }
     ).catch(err => {
       statusEl.textContent = `Camera error: ${err}`;
       statusEl.className = 'barcode-status barcode-error';
@@ -1922,7 +1922,7 @@ function openBarcodeScanner(context) {
 function closeBarcodeScanner() {
   const modal = document.getElementById('modal-barcode');
   if (html5Qrcode && html5Qrcode.isScanning) {
-    html5Qrcode.stop().catch(() => {});
+    html5Qrcode.stop().catch(() => { });
   }
   modal.classList.add('hidden');
   releaseFocus(modal);
