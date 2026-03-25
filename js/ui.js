@@ -1900,6 +1900,7 @@ function openBarcodeScanner(context) {
     (decodedText) => {
       try {
         const ramen = data.lookupBarcode(decodedText);
+        alert(`DEBUG: scanned=${decodedText}, found=${ramen ? '#' + ramen.id : 'null'}`);
         if (ramen) {
           closeBarcodeScanner();
           if (scannerContext === 'rate') openRatingModal(ramen);
@@ -1909,8 +1910,7 @@ function openBarcodeScanner(context) {
           statusEl.className = 'barcode-status barcode-not-found';
         }
       } catch (e) {
-        statusEl.textContent = `Error: ${e.message} (barcode: ${decodedText})`;
-        statusEl.className = 'barcode-status barcode-error';
+        alert(`Scanner error: ${e.message}`);
       }
     },
     () => {}
