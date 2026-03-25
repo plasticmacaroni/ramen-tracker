@@ -50,6 +50,17 @@ export async function loadRamenData() {
     allRamen = [];
   }
 
+  for (const cr of storage.getAllCustomRamenList()) {
+    if (cr.barcode) {
+      const bc = String(cr.barcode).trim();
+      if (bc) {
+        barcodeMap[bc] = cr.id;
+        const ean13 = _toEan13(bc);
+        if (ean13 && ean13 !== bc) barcodeMap[ean13] = cr.id;
+      }
+    }
+  }
+
   const combined = [...allRamen, ...storage.getAllCustomRamenList()];
 
   countries = [...new Set(combined.map(r => r.country).filter(Boolean))].sort();
@@ -97,6 +108,14 @@ function _toEan13(code) {
   if (/^\d{12}$/.test(code)) return '0' + code;
   if (/^\d{13}$/.test(code)) return code;
   return null;
+}
+
+export function registerBarcode(code, id) {
+  const bc = String(code).trim();
+  if (!bc) return;
+  barcodeMap[bc] = id;
+  const ean13 = _toEan13(bc);
+  if (ean13 && ean13 !== bc) barcodeMap[ean13] = id;
 }
 
 export function lookupBarcode(code) {

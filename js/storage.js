@@ -190,6 +190,7 @@ export function addCustomRamen(entry) {
     style: entry.style || '',
     country: entry.country || '',
     imageData: entry.imageData || null,
+    barcode: entry.barcode || '',
     custom: true,
   };
   d.customRamen[id] = ramen;

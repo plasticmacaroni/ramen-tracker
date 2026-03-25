@@ -734,15 +734,30 @@ export function initCustomRamenModal() {
     const brand = document.getElementById('custom-brand').value.trim();
     const style = document.getElementById('custom-style').value;
     const country = document.getElementById('custom-country').value.trim();
+    const barcode = document.getElementById('custom-barcode').value.trim();
 
     if (!variety || !brand) {
       alert('Please enter a variety name and brand.');
       return;
     }
 
+    if (barcode && (!/^\d+$/.test(barcode) || ![8, 12, 13, 14].includes(barcode.length))) {
+      alert('Barcode must be 8, 12, 13, or 14 digits.');
+      return;
+    }
+
+    if (barcode) {
+      const existing = data.lookupBarcode(barcode);
+      if (existing) {
+        alert(`That barcode is already assigned to: ${existing.brand} — ${existing.variety}`);
+        return;
+      }
+    }
+
     const imageData = preview.dataset.imageData || null;
 
-    const ramen = storage.addCustomRamen({ variety, brand, style, country, imageData });
+    const ramen = storage.addCustomRamen({ variety, brand, style, country, imageData, barcode });
+    if (barcode) data.registerBarcode(barcode, ramen.id);
     modal.classList.add('hidden');
     resetCustomForm();
     openRatingModal(ramen);
@@ -775,6 +790,7 @@ function resetCustomForm() {
   document.getElementById('custom-brand').value = '';
   document.getElementById('custom-style').value = 'Pack';
   document.getElementById('custom-country').value = '';
+  document.getElementById('custom-barcode').value = '';
   document.getElementById('custom-image').value = '';
   const preview = document.getElementById('custom-image-preview');
   preview.innerHTML = '';
