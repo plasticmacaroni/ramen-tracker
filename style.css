@@ -601,28 +601,28 @@ a:hover {
 }
 
 .badge-tier[data-tier="1"] {
-  background: rgba(108, 108, 108, 0.2);
-  color: var(--tier-1);
+  background: rgba(255, 51, 102, 0.1);
+  color: var(--grade-f);
 }
 
 .badge-tier[data-tier="2"] {
-  background: rgba(232, 131, 58, 0.15);
-  color: var(--tier-2);
+  background: rgba(232, 131, 58, 0.1);
+  color: var(--grade-d);
 }
 
 .badge-tier[data-tier="3"] {
-  background: rgba(255, 216, 3, 0.15);
-  color: var(--tier-3);
+  background: rgba(255, 216, 3, 0.1);
+  color: var(--grade-c);
 }
 
 .badge-tier[data-tier="4"] {
-  background: rgba(0, 212, 170, 0.15);
-  color: var(--tier-4);
+  background: rgba(123, 199, 77, 0.12);
+  color: var(--grade-b);
 }
 
 .badge-tier[data-tier="5"] {
-  background: rgba(255, 51, 102, 0.15);
-  color: var(--tier-5);
+  background: rgba(0, 212, 170, 0.12);
+  color: var(--grade-a);
 }
 
 .badge-label {
@@ -1028,6 +1028,31 @@ a:hover {
   letter-spacing: 0.02em;
 }
 
+.detail-chip[data-tier="1"] {
+  color: var(--grade-f);
+  background: rgba(255, 51, 102, 0.1);
+}
+
+.detail-chip[data-tier="2"] {
+  color: var(--grade-d);
+  background: rgba(232, 131, 58, 0.1);
+}
+
+.detail-chip[data-tier="3"] {
+  color: var(--grade-c);
+  background: rgba(255, 216, 3, 0.1);
+}
+
+.detail-chip[data-tier="4"] {
+  color: var(--grade-b);
+  background: rgba(123, 199, 77, 0.12);
+}
+
+.detail-chip[data-tier="5"] {
+  color: var(--grade-a);
+  background: rgba(0, 212, 170, 0.12);
+}
+
 .detail-chip.grade-a {
   color: var(--grade-a);
   background: rgba(0, 212, 170, 0.12);
@@ -1096,33 +1121,33 @@ a:hover {
 }
 
 .tier-btn.selected[data-tier="1"] {
-  border-color: var(--tier-1);
-  color: var(--tier-1);
-  background: rgba(108, 108, 108, 0.15);
+  border-color: var(--grade-f);
+  color: var(--grade-f);
+  background: rgba(255, 51, 102, 0.1);
 }
 
 .tier-btn.selected[data-tier="2"] {
-  border-color: var(--tier-2);
-  color: var(--tier-2);
-  background: rgba(232, 131, 58, 0.12);
+  border-color: var(--grade-d);
+  color: var(--grade-d);
+  background: rgba(232, 131, 58, 0.1);
 }
 
 .tier-btn.selected[data-tier="3"] {
-  border-color: var(--tier-3);
-  color: var(--tier-3);
-  background: rgba(255, 216, 3, 0.12);
+  border-color: var(--grade-c);
+  color: var(--grade-c);
+  background: rgba(255, 216, 3, 0.1);
 }
 
 .tier-btn.selected[data-tier="4"] {
-  border-color: var(--tier-4);
-  color: var(--tier-4);
-  background: rgba(0, 212, 170, 0.12);
+  border-color: var(--grade-b);
+  color: var(--grade-b);
+  background: rgba(123, 199, 77, 0.12);
 }
 
 .tier-btn.selected[data-tier="5"] {
-  border-color: var(--tier-5);
-  color: var(--tier-5);
-  background: rgba(255, 51, 102, 0.12);
+  border-color: var(--grade-a);
+  color: var(--grade-a);
+  background: rgba(0, 212, 170, 0.12);
 }
 
 /* ---- COMPARISON / FIGHT CARDS ---- */

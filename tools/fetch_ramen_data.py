@@ -63,6 +63,7 @@ STYLE_TYPOS = {k.lower(): v for k, v in _TYPOS.get('style', {}).items()}
 BRAND_TYPOS = {k.lower(): v for k, v in _TYPOS.get('brand', {}).items()}
 TEXT_TYPOS = {k.lower(): v for k, v in _TYPOS.get('text', {}).items()}
 RENAMES = {r['id']: r for r in _TYPOS.get('rename', [])}
+EXCLUDES = set(_TYPOS.get('exclude', []))
 
 
 def download_xlsx():
@@ -140,6 +141,9 @@ def parse_xlsx():
                 continue
             review_id = int(float(str(raw_id)))
         except (ValueError, TypeError):
+            continue
+
+        if review_id in EXCLUDES:
             continue
 
         brand = str(row[col_map.get('brand', 0)] or '').strip()

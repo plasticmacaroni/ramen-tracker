@@ -21,11 +21,13 @@ export async function loadRamenData() {
     allRamen = [];
   }
 
-  countries = [...new Set(allRamen.map(r => r.country).filter(Boolean))].sort();
-  styles = [...new Set(allRamen.map(r => r.style).filter(Boolean))].sort();
+  const combined = [...allRamen, ...storage.getAllCustomRamenList()];
+
+  countries = [...new Set(combined.map(r => r.country).filter(Boolean))].sort();
+  styles = [...new Set(combined.map(r => r.style).filter(Boolean))].sort();
 
   const brandSet = new Set();
-  for (const r of allRamen) {
+  for (const r of combined) {
     if (!r.brand) continue;
     if (r.brand.includes('/')) {
       for (const part of r.brand.split('/')) {
@@ -106,7 +108,7 @@ export function filterAndSort(options = {}) {
     ratedIds = new Set(),
   } = options;
 
-  let list = [...allRamen];
+  let list = [...allRamen, ...storage.getAllCustomRamenList()];
 
   if (search && search.length >= 2) {
     const numId = /^\d+$/.test(search.trim()) ? Number(search.trim()) : null;
@@ -140,7 +142,7 @@ export function filterAndSort(options = {}) {
       list.sort((a, b) => (a.country || '').localeCompare(b.country || ''));
       break;
     case 'newest':
-      list.sort((a, b) => b.id - a.id);
+      list.sort((a, b) => (typeof b.id === 'number' ? b.id : 0) - (typeof a.id === 'number' ? a.id : 0));
       break;
     case 'popular-desc':
       list.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));

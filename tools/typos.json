@@ -1,4 +1,9 @@
 {
+  "exclude": [
+    44,
+    2559,
+    142
+  ],
   "rename": [
     {
       "id": 4813,
@@ -31,6 +36,10 @@
     {
       "id": 4983,
       "replace_stars": 5.0
+    },
+    {
+      "id": 593,
+      "replace_variety": "Chapagetti Chajang Noodle"
     }
   ],
   "style": {
@@ -56,7 +65,8 @@
     "Jinmailang": "JML",
     "La Liu tou": "La Liu Tou",
     "O'taste": "O'Taste",
-    "A-Sha Dry Noodle": "A-Sha"
+    "A-Sha Dry Noodle": "A-Sha",
+    "Tasty ly": "Tasty.ly"
   },
   "text": {
     "Japanese Home Style Noodles": "",
@@ -72,6 +82,8 @@
     "BBuldoc": "Buldok",
     "Goku-Uma": "Goku Uma",
     "Hpakata": "Hakata",
-    "CCuphongqing": "Chongqing"
+    "CCuphongqing": "Chongqing",
+    "Gorenbg": "Goreng",
+    "Jumbo Pack Yellow Curry": "Yellow Curry"
   }
 }
