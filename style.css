@@ -1677,6 +1677,7 @@ a:hover {
 }
 
 #barcode-reader {
+  position: relative;
   width: 100%;
   max-width: 400px;
   margin: 16px auto 0;
@@ -1685,8 +1686,19 @@ a:hover {
   background: #000;
 }
 
-#barcode-reader video {
+#barcode-video {
+  display: block;
+  width: 100%;
   border-radius: var(--radius);
+}
+
+#barcode-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 .barcode-status {

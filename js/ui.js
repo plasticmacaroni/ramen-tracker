@@ -1861,89 +1861,123 @@ export function initGoToButtons() {
   });
 }
 
-/* ---- Barcode Scanner ---- */
+/* ---- Barcode Scanner (zbar-wasm) ---- */
 
-let html5Qrcode = null;
-let scannerContext = 'rate';
+let _scannerStream = null;
+let _scannerRafId = null;
+let _scannerHandled = false;
+
+function _copyBarcode(decodedText, codeSpan) {
+  navigator.clipboard.writeText(decodedText).then(() => {
+    codeSpan.textContent = decodedText + ' (copied!)';
+    setTimeout(() => { codeSpan.textContent = decodedText; }, 1500);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = decodedText;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    codeSpan.textContent = decodedText + ' (copied!)';
+    setTimeout(() => { codeSpan.textContent = decodedText; }, 1500);
+  });
+}
+
+function _showNoMatch(statusEl, decodedText) {
+  statusEl.textContent = '';
+  statusEl.className = 'barcode-status barcode-not-found';
+  const label = document.createTextNode('No match: ');
+  const codeSpan = document.createElement('span');
+  codeSpan.textContent = decodedText;
+  codeSpan.style.cssText = 'text-decoration:underline;cursor:pointer;user-select:all';
+  codeSpan.title = 'Tap to copy';
+  codeSpan.addEventListener('click', () => _copyBarcode(decodedText, codeSpan));
+  statusEl.appendChild(label);
+  statusEl.appendChild(codeSpan);
+}
+
+function _scanFrame(video, canvas, ctx, statusEl) {
+  if (_scannerHandled || !_scannerStream) return;
+
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
+  if (vw && vh) {
+    canvas.width = vw;
+    canvas.height = vh;
+    ctx.drawImage(video, 0, 0, vw, vh);
+    const imageData = ctx.getImageData(0, 0, vw, vh);
+    zbarWasm.scanImageData(imageData).then(symbols => {
+      if (_scannerHandled || !_scannerStream) return;
+      for (const sym of symbols) {
+        const decoded = sym.decode('utf-8');
+        if (!decoded || !decoded.trim()) continue;
+        const ramen = data.lookupBarcode(decoded);
+        if (ramen) {
+          _scannerHandled = true;
+          closeBarcodeScanner();
+          openRatingModal(ramen);
+          return;
+        }
+        _showNoMatch(statusEl, decoded);
+      }
+      _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+    }).catch(() => {
+      if (!_scannerHandled && _scannerStream) {
+        _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+      }
+    });
+  } else {
+    _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+  }
+}
 
 function openBarcodeScanner(context) {
-  if (typeof Html5Qrcode === 'undefined') {
+  if (typeof zbarWasm === 'undefined' || !zbarWasm.scanImageData) {
     announce('Barcode scanner not available');
     return;
   }
-  scannerContext = context;
+
   const modal = document.getElementById('modal-barcode');
   const statusEl = document.getElementById('barcode-status');
+  const video = document.getElementById('barcode-video');
+  const canvas = document.getElementById('barcode-canvas');
+  const ctx = canvas.getContext('2d');
+
   statusEl.textContent = '';
   statusEl.className = 'barcode-status';
   modal.classList.remove('hidden');
   trapFocus(modal);
 
-  if (!html5Qrcode) {
-    html5Qrcode = new Html5Qrcode('barcode-reader');
-  }
+  _scannerHandled = false;
 
-  const config = {
-    fps: 10,
-    qrbox: { width: 280, height: 140 },
-    formatsToSupport: [
-      Html5QrcodeSupportedFormats.EAN_13,
-      Html5QrcodeSupportedFormats.UPC_A,
-      Html5QrcodeSupportedFormats.UPC_E,
-      Html5QrcodeSupportedFormats.EAN_8,
-    ],
-  };
-
-  let handled = false;
-  html5Qrcode.start(
-    { facingMode: 'environment' },
-    config,
-    (decodedText) => {
-      if (handled) return;
-      const ramen = data.lookupBarcode(decodedText);
-      if (ramen) {
-        handled = true;
-        closeBarcodeScanner();
-        openRatingModal(ramen);
-      } else {
-        statusEl.textContent = '';
-        statusEl.className = 'barcode-status barcode-not-found';
-        const label = document.createTextNode('No match: ');
-        const codeSpan = document.createElement('span');
-        codeSpan.textContent = decodedText;
-        codeSpan.style.cssText = 'text-decoration:underline;cursor:pointer;user-select:all';
-        codeSpan.title = 'Tap to copy';
-        codeSpan.addEventListener('click', () => {
-          navigator.clipboard.writeText(decodedText).then(() => {
-            codeSpan.textContent = decodedText + ' (copied!)';
-            setTimeout(() => { codeSpan.textContent = decodedText; }, 1500);
-          }).catch(() => {
-            const ta = document.createElement('textarea');
-            ta.value = decodedText;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            codeSpan.textContent = decodedText + ' (copied!)';
-            setTimeout(() => { codeSpan.textContent = decodedText; }, 1500);
-          });
-        });
-        statusEl.appendChild(label);
-        statusEl.appendChild(codeSpan);
-      }
-    },
-    () => {}
-  ).catch(err => {
-    statusEl.textContent = `Camera error: ${err}`;
+  navigator.mediaDevices.getUserMedia({
+    audio: false,
+    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+  }).then(stream => {
+    _scannerStream = stream;
+    video.srcObject = stream;
+    video.onloadedmetadata = () => {
+      video.play();
+      _scannerRafId = requestAnimationFrame(() => _scanFrame(video, canvas, ctx, statusEl));
+    };
+  }).catch(err => {
+    statusEl.textContent = `Camera error: ${err.message || err}`;
     statusEl.className = 'barcode-status barcode-error';
   });
 }
 
 function closeBarcodeScanner() {
   const modal = document.getElementById('modal-barcode');
-  if (html5Qrcode && html5Qrcode.isScanning) {
-    html5Qrcode.stop().catch(() => { });
+  if (_scannerRafId) {
+    cancelAnimationFrame(_scannerRafId);
+    _scannerRafId = null;
   }
+  if (_scannerStream) {
+    _scannerStream.getTracks().forEach(t => t.stop());
+    _scannerStream = null;
+  }
+  const video = document.getElementById('barcode-video');
+  if (video) video.srcObject = null;
   modal.classList.add('hidden');
   releaseFocus(modal);
 }
