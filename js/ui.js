@@ -1894,24 +1894,29 @@ function openBarcodeScanner(context) {
     ],
   };
 
-  html5Qrcode.start(
-    { facingMode: 'environment' },
-    config,
-    (decodedText) => {
-      const ramen = data.lookupBarcode(decodedText);
-      if (ramen) {
-        closeBarcodeScanner();
-        openRatingModal(ramen);
-      } else {
-        statusEl.textContent = `No match for barcode: ${decodedText}`;
-        statusEl.className = 'barcode-status barcode-not-found';
-      }
-    },
-    () => {}
-  ).catch(err => {
-    statusEl.textContent = `Camera error: ${err}`;
-    statusEl.className = 'barcode-status barcode-error';
-  });
+  const startScanner = () => {
+    html5Qrcode.start(
+      { facingMode: 'environment' },
+      config,
+      (decodedText) => {
+        const ramen = data.lookupBarcode(decodedText);
+        if (ramen) {
+          closeBarcodeScanner();
+          if (scannerContext === 'rate') openRatingModal(ramen);
+          else expandCard(ramen);
+        } else {
+          statusEl.textContent = `No match: ${decodedText} — scan another`;
+          statusEl.className = 'barcode-status barcode-not-found';
+          html5Qrcode.stop().then(startScanner).catch(() => {});
+        }
+      },
+      () => {}
+    ).catch(err => {
+      statusEl.textContent = `Camera error: ${err}`;
+      statusEl.className = 'barcode-status barcode-error';
+    });
+  };
+  startScanner();
 }
 
 function closeBarcodeScanner() {
