@@ -1898,14 +1898,19 @@ function openBarcodeScanner(context) {
     { facingMode: 'environment' },
     config,
     (decodedText) => {
-      const ramen = data.lookupBarcode(decodedText);
-      if (ramen) {
-        closeBarcodeScanner();
-        if (scannerContext === 'rate') openRatingModal(ramen);
-        else expandCard(ramen);
-      } else {
-        statusEl.textContent = `No match: ${decodedText}`;
-        statusEl.className = 'barcode-status barcode-not-found';
+      try {
+        const ramen = data.lookupBarcode(decodedText);
+        if (ramen) {
+          closeBarcodeScanner();
+          if (scannerContext === 'rate') openRatingModal(ramen);
+          else expandCard(ramen);
+        } else {
+          statusEl.textContent = `No match: ${decodedText}`;
+          statusEl.className = 'barcode-status barcode-not-found';
+        }
+      } catch (e) {
+        statusEl.textContent = `Error: ${e.message} (barcode: ${decodedText})`;
+        statusEl.className = 'barcode-status barcode-error';
       }
     },
     () => {}
