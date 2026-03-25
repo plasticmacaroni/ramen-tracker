@@ -4,18 +4,32 @@ let allRamen = [];
 let countries = [];
 let styles = [];
 let brands = [];
+let barcodeMap = {};
 
 export async function loadRamenData() {
   try {
-    const [ramenRes, popRes] = await Promise.all([
+    const [ramenRes, popRes, barcodeRes] = await Promise.all([
       fetch('data/ramen.json'),
       fetch('data/popularity.json'),
+      fetch('data/barcodes.json'),
     ]);
     allRamen = ramenRes.ok ? await ramenRes.json() : [];
     const popMap = popRes.ok ? await popRes.json() : {};
     for (const r of allRamen) {
       const pop = popMap[r.id];
       if (pop) r.popularity = pop;
+    }
+    const barcodeList = barcodeRes.ok ? await barcodeRes.json() : [];
+    barcodeMap = {};
+    for (const entry of barcodeList) {
+      const id = entry.id;
+      for (const [key, val] of Object.entries(entry)) {
+        if (key === 'id') continue;
+        const raw = String(val).trim();
+        barcodeMap[raw] = id;
+        const ean13 = _toEan13(raw);
+        if (ean13 && ean13 !== raw) barcodeMap[ean13] = id;
+      }
     }
   } catch {
     allRamen = [];
@@ -62,6 +76,23 @@ export function getRamenById(id) {
     return storage.getCustomRamenById(id);
   }
   return allRamen.find(r => r.id === id);
+}
+
+function _toEan13(code) {
+  if (/^\d{12}$/.test(code)) return '0' + code;
+  if (/^\d{13}$/.test(code)) return code;
+  return null;
+}
+
+export function lookupBarcode(code) {
+  const raw = String(code).trim();
+  let ramenId = barcodeMap[raw];
+  if (ramenId == null) {
+    const ean13 = _toEan13(raw);
+    if (ean13) ramenId = barcodeMap[ean13];
+  }
+  if (ramenId != null) return getRamenById(ramenId);
+  return null;
 }
 
 export function searchRamen(query, list = allRamen) {

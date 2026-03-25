@@ -2,9 +2,16 @@
   "exclude": [
     44,
     2559,
-    142
+    142,
+    66,
+    3060,
+    4987
   ],
   "rename": [
+    {
+      "id": 3338,
+      "replace_variety": "Nissin Pasta U.F.O. Camaron Fuego Salsa Habanero"
+    },
     {
       "id": 4813,
       "replace_variety": "Cup Noodle Chicken Flavor - Singapore"
@@ -52,6 +59,10 @@
     {
       "id": 3820,
       "replace_variety": "Cup Noodles Shrimps Peppery Shoyu"
+    },
+    {
+      "id": 3129,
+      "replace_brand": "Acecook / Pringles"
     }
   ],
   "style": {
@@ -101,6 +112,9 @@
     "Miringa": "Moringa",
     "Witrh": "With",
     "Atyificial": "Artificial",
-    "Prok": "Pork"
+    "Prok": "Pork",
+    "Frang": "Frango",
+    "Kweitiau": "Kwetiau",
+    "Chikin": "Chicken"
   }
 }

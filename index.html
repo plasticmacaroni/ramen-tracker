@@ -29,6 +29,9 @@
         <svg aria-hidden="true" class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input type="text" id="rate-search" placeholder="Search for a ramen to rate..." autocomplete="off" aria-label="Search for a ramen to rate">
         <button id="rate-search-clear" class="search-clear hidden" aria-label="Clear search">&times;</button>
+        <button id="rate-barcode-btn" class="barcode-scan-btn" aria-label="Scan barcode" title="Scan barcode">
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="8" x2="7" y2="16"/><line x1="11" y1="8" x2="11" y2="16"/><line x1="15" y1="8" x2="15" y2="16"/><line x1="19" y1="8" x2="19" y2="16"/></svg>
+        </button>
       </div>
       <div id="rate-results" class="card-list" role="list" aria-label="Search results"></div>
       <div id="rate-welcome" class="empty-state" aria-live="polite">
@@ -93,6 +96,9 @@
         <svg aria-hidden="true" class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input type="text" id="discover-search" placeholder="Search all ramen..." autocomplete="off" aria-label="Search all ramen">
         <button id="discover-search-clear" class="search-clear hidden" aria-label="Clear search">&times;</button>
+        <button id="discover-barcode-btn" class="barcode-scan-btn" aria-label="Scan barcode" title="Scan barcode">
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="8" x2="7" y2="16"/><line x1="11" y1="8" x2="11" y2="16"/><line x1="15" y1="8" x2="15" y2="16"/><line x1="19" y1="8" x2="19" y2="16"/></svg>
+        </button>
       </div>
       <div class="view-controls" role="group" aria-label="Filters and sorting">
         <select id="discover-sort" class="control-select" aria-label="Sort order">
@@ -388,6 +394,18 @@
     </div>
   </div>
 
+  <!-- BARCODE SCANNER MODAL -->
+  <div id="modal-barcode" class="modal hidden" role="dialog" aria-modal="true" aria-label="Barcode scanner">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content barcode-modal-content">
+      <button class="modal-close" aria-label="Close barcode scanner">&times;</button>
+      <h2>SCAN BARCODE</h2>
+      <p class="text-muted">Point your camera at a product barcode</p>
+      <div id="barcode-reader"></div>
+      <p id="barcode-status" class="barcode-status" aria-live="polite"></p>
+    </div>
+  </div>
+
   <!-- TAB NAVIGATION -->
   <nav id="tab-nav" role="tablist" aria-label="Main navigation">
     <button id="tab-rate" class="tab-btn active" data-tab="rate" role="tab" aria-selected="true" aria-controls="view-rate" title="Rate — search and rate ramen">
@@ -415,6 +433,7 @@
   <button id="scroll-top" class="scroll-top-btn hidden" aria-label="Scroll to top"><img src="images/return-to-top.png" alt="Return to top"></button>
 
   <div id="a11y-announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

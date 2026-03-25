@@ -1640,6 +1640,70 @@ a:hover {
   color: #fff;
 }
 
+/* ---- BARCODE SCANNER ---- */
+
+.barcode-scan-btn {
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.barcode-scan-btn:hover {
+  color: var(--yellow);
+  background: var(--bg-elevated);
+}
+
+.search-clear:not(.hidden) ~ .barcode-scan-btn {
+  right: 68px;
+}
+
+.barcode-modal-content {
+  text-align: center;
+}
+
+.barcode-modal-content h2 {
+  margin-bottom: 2px;
+}
+
+#barcode-reader {
+  width: 100%;
+  max-width: 400px;
+  margin: 16px auto 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+}
+
+#barcode-reader video {
+  border-radius: var(--radius);
+}
+
+.barcode-status {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  min-height: 1.4em;
+}
+
+.barcode-not-found {
+  color: var(--orange);
+}
+
+.barcode-error {
+  color: var(--pink);
+}
+
 /* ---- SCROLL TO TOP ---- */
 
 .scroll-top-btn {

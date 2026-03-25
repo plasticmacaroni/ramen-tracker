@@ -1860,3 +1860,74 @@ export function initGoToButtons() {
     });
   });
 }
+
+/* ---- Barcode Scanner ---- */
+
+let html5Qrcode = null;
+let scannerContext = 'rate';
+
+function openBarcodeScanner(context) {
+  if (typeof Html5Qrcode === 'undefined') {
+    announce('Barcode scanner not available');
+    return;
+  }
+  scannerContext = context;
+  const modal = document.getElementById('modal-barcode');
+  const statusEl = document.getElementById('barcode-status');
+  statusEl.textContent = '';
+  statusEl.className = 'barcode-status';
+  modal.classList.remove('hidden');
+  trapFocus(modal);
+
+  if (!html5Qrcode) {
+    html5Qrcode = new Html5Qrcode('barcode-reader');
+  }
+
+  const config = {
+    fps: 10,
+    qrbox: { width: 280, height: 140 },
+    formatsToSupport: [
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.UPC_A,
+      Html5QrcodeSupportedFormats.UPC_E,
+      Html5QrcodeSupportedFormats.EAN_8,
+    ],
+  };
+
+  html5Qrcode.start(
+    { facingMode: 'environment' },
+    config,
+    (decodedText) => {
+      const ramen = data.lookupBarcode(decodedText);
+      if (ramen) {
+        closeBarcodeScanner();
+        openRatingModal(ramen);
+      } else {
+        statusEl.textContent = `No match for barcode: ${decodedText}`;
+        statusEl.className = 'barcode-status barcode-not-found';
+      }
+    },
+    () => {}
+  ).catch(err => {
+    statusEl.textContent = `Camera error: ${err}`;
+    statusEl.className = 'barcode-status barcode-error';
+  });
+}
+
+function closeBarcodeScanner() {
+  const modal = document.getElementById('modal-barcode');
+  if (html5Qrcode && html5Qrcode.isScanning) {
+    html5Qrcode.stop().catch(() => {});
+  }
+  modal.classList.add('hidden');
+  releaseFocus(modal);
+}
+
+export function initBarcodeScanner() {
+  const modal = document.getElementById('modal-barcode');
+  modal.querySelector('.modal-close').addEventListener('click', closeBarcodeScanner);
+  modal.querySelector('.modal-backdrop').addEventListener('click', closeBarcodeScanner);
+
+  document.getElementById('rate-barcode-btn')?.addEventListener('click', () => openBarcodeScanner('rate'));
+  document.getElementById('discover-barcode-btn')?.addEventListener('click', () => openBarcodeScanner('discover'));
+}

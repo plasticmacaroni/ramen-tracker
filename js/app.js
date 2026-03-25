@@ -231,6 +231,7 @@ async function init() {
   ui.initSharedView();
   ui.initBanner();
   ui.initGoToButtons();
+  ui.initBarcodeScanner();
 
   setupTabListeners();
   observeFilterChanges();
