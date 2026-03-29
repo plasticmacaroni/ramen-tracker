@@ -371,10 +371,8 @@ function _buildPayload(compressed) {
 function _pixelsFromPayload(payload) {
   const pixelCount = Math.ceil(payload.length / 3);
   const h = Math.ceil(pixelCount / _IMG_WIDTH);
-  const canvas = document.createElement('canvas');
-  canvas.width = _IMG_WIDTH;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d');
+  const canvas = new OffscreenCanvas(_IMG_WIDTH, h);
+  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
   const img = ctx.createImageData(_IMG_WIDTH, h);
   const d = img.data;
   for (let i = 0; i < payload.length; i++) {
@@ -383,7 +381,7 @@ function _pixelsFromPayload(payload) {
     d[px * 4 + ch] = payload[i];
   }
   for (let px = 0; px < _IMG_WIDTH * h; px++) {
-    d[px * 4 + 3] = 255; // full alpha so PNG doesn't premultiply
+    d[px * 4 + 3] = 255;
   }
   ctx.putImageData(img, 0, 0);
   return canvas;
@@ -396,82 +394,72 @@ export async function exportBackupImage() {
   const payload = _buildPayload(compressed);
   const canvas = _pixelsFromPayload(payload);
 
-  return new Promise((resolve) => {
-    canvas.toBlob(blob => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      const date = new Date().toISOString().slice(0, 10);
-      a.href = url;
-      a.download = `ramen-backup-${date}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-      dismissBackupReminder();
-      resolve();
-    }, 'image/png');
-  });
+  const blob = await canvas.convertToBlob({ type: 'image/png' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `ramen-backup-${date}.png`;
+  a.click();
+  URL.revokeObjectURL(url);
+  dismissBackupReminder();
 }
 
-function _importBackupImage(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = async () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0);
-          const imgData = ctx.getImageData(0, 0, img.width, img.height);
-          const px = imgData.data;
-
-          // Read header from first pixels
-          const headerBytes = new Uint8Array(_HEADER_LEN);
-          for (let i = 0; i < _HEADER_LEN; i++) {
-            const pidx = Math.floor(i / 3);
-            headerBytes[i] = px[pidx * 4 + (i % 3)];
-          }
-
-          for (let i = 0; i < _MAGIC.length; i++) {
-            if (headerBytes[i] !== _MAGIC[i]) {
-              reject(new Error('Not a valid Ramen Rater backup image'));
-              return;
-            }
-          }
-
-          const dv = new DataView(headerBytes.buffer);
-          const compLen = dv.getUint32(6, false);
-          const totalBytes = _HEADER_LEN + compLen;
-
-          const payload = new Uint8Array(totalBytes);
-          for (let i = 0; i < totalBytes; i++) {
-            const pidx = Math.floor(i / 3);
-            payload[i] = px[pidx * 4 + (i % 3)];
-          }
-
-          const compressed = payload.slice(_HEADER_LEN);
-          const jsonBytes = await _inflate(compressed);
-          const json = new TextDecoder().decode(jsonBytes);
-          const imported = JSON.parse(json);
-
-          if (!imported.ratings || !imported.rankedList) {
-            reject(new Error('Invalid backup data in image'));
-            return;
-          }
-          data = { ...defaultData(), ...imported };
-          save();
-          resolve(data);
-        } catch (err) {
-          reject(new Error(err.message || 'Could not decode backup image'));
-        }
-      };
-      img.onerror = () => reject(new Error('Could not load image'));
-      img.src = reader.result;
-    };
-    reader.onerror = () => reject(new Error('Could not read file'));
-    reader.readAsDataURL(file);
+async function _importBackupImage(file) {
+  const bitmap = await createImageBitmap(file, {
+    colorSpaceConversion: 'none',
+    premultiplyAlpha: 'none',
   });
+
+  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
+  ctx.drawImage(bitmap, 0, 0);
+  const imgData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
+  const px = imgData.data;
+
+  console.log('[backup-image] Image loaded:', bitmap.width, 'x', bitmap.height,
+    '| first 20 RGBA:', Array.from(px.slice(0, 20)));
+
+  const headerBytes = new Uint8Array(_HEADER_LEN);
+  for (let i = 0; i < _HEADER_LEN; i++) {
+    const pidx = Math.floor(i / 3);
+    headerBytes[i] = px[pidx * 4 + (i % 3)];
+  }
+
+  const headerHex = Array.from(headerBytes).map(b => b.toString(16).padStart(2, '0')).join(' ');
+  const headerAscii = Array.from(headerBytes.slice(0, 5)).map(b => String.fromCharCode(b)).join('');
+  console.log('[backup-image] Header:', headerHex, '| ASCII:', JSON.stringify(headerAscii));
+
+  for (let i = 0; i < _MAGIC.length; i++) {
+    if (headerBytes[i] !== _MAGIC[i]) {
+      throw new Error(
+        `Not a valid Ramen Rater backup image (header: "${headerAscii}" [${headerHex}])`
+      );
+    }
+  }
+
+  const dv = new DataView(headerBytes.buffer);
+  const compLen = dv.getUint32(6, false);
+  const totalBytes = _HEADER_LEN + compLen;
+  console.log('[backup-image] Compressed length:', compLen, '| total payload:', totalBytes);
+
+  const payload = new Uint8Array(totalBytes);
+  for (let i = 0; i < totalBytes; i++) {
+    const pidx = Math.floor(i / 3);
+    payload[i] = px[pidx * 4 + (i % 3)];
+  }
+
+  const compressed = payload.slice(_HEADER_LEN);
+  const jsonBytes = await _inflate(compressed);
+  const json = new TextDecoder().decode(jsonBytes);
+  const imported = JSON.parse(json);
+
+  if (!imported.ratings || !imported.rankedList) {
+    throw new Error('Invalid backup data in image');
+  }
+  data = { ...defaultData(), ...imported };
+  save();
+  return data;
 }
 
 export function clearAll() {
