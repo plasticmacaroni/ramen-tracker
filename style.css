@@ -833,6 +833,31 @@ a:hover {
   letter-spacing: 0.04em;
 }
 
+/* ---- Big Scan Button ---- */
+
+.btn-scan-big {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  margin: 12px 0 4px;
+  background: transparent;
+  border: 2px solid var(--teal);
+  border-radius: var(--radius);
+  color: var(--teal);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-scan-big:hover, .btn-scan-big:focus-visible {
+  background: var(--teal);
+  color: var(--bg-card);
+}
+
 /* ---- Add Custom Link ---- */
 
 .add-custom-link {
@@ -902,6 +927,28 @@ a:hover {
 .form-input:focus {
   border-color: var(--yellow);
 }
+
+.barcode-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.barcode-input-row .form-input { flex: 1; min-width: 0; }
+.barcode-scan-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elevated);
+  border: 2px solid var(--teal);
+  border-radius: var(--radius-sm);
+  color: var(--teal);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.barcode-scan-btn:hover { background: var(--teal); color: var(--bg-card); }
 
 .image-preview {
   text-align: center;
@@ -1787,6 +1834,12 @@ a:hover {
 .barcode-not-found {
   color: var(--orange);
   background: rgba(0, 0, 0, 0.85);
+}
+
+.barcode-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 4px 0 0;
 }
 
 .barcode-actions {

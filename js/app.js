@@ -245,6 +245,26 @@ async function init() {
 
   ui.checkBackupBanner();
   ui.resumePendingInsertion();
+  migrateCustomImages();
+}
+
+async function migrateCustomImages() {
+  const customs = storage.getCustomRamen();
+  let changed = false;
+  for (const id of Object.keys(customs)) {
+    const ramen = customs[id];
+    if (!ramen.imageData) continue;
+    const isWebp = ramen.imageData.startsWith('data:image/webp');
+    if (isWebp && ramen.imageData.length <= 25 * 1024) continue;
+    try {
+      const compressed = await ui.compressExistingImage(ramen.imageData);
+      if (compressed !== ramen.imageData) {
+        ramen.imageData = compressed;
+        changed = true;
+      }
+    } catch { /* skip broken images */ }
+  }
+  if (changed) storage.save();
 }
 
 init();

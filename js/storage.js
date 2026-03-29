@@ -41,7 +41,7 @@ export function load() {
   return data;
 }
 
-function save() {
+export function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
@@ -395,13 +395,24 @@ export async function exportBackupImage() {
   const canvas = _pixelsFromPayload(payload);
 
   const blob = await canvas.convertToBlob({ type: 'image/png' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
   const date = new Date().toISOString().slice(0, 10);
-  a.href = url;
-  a.download = `ramen-backup-${date}.png`;
-  a.click();
-  URL.revokeObjectURL(url);
+  const filename = `ramen-backup-${date}.png`;
+
+  const file = new File([blob], filename, { type: 'image/png' });
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] });
+    } catch (err) {
+      if (err.name !== 'AbortError') throw err;
+    }
+  } else {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
   dismissBackupReminder();
 }
 

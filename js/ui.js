@@ -796,6 +796,8 @@ export function initCustomRamenModal() {
     resetCustomForm();
     openRatingModal(ramen);
   });
+
+  document.getElementById('custom-barcode-scan')?.addEventListener('click', () => openBarcodeScanner('custom'));
 }
 
 function openCustomRamenModal(prefill = '', barcode = '') {
@@ -834,30 +836,58 @@ function resetCustomForm() {
   preview.dataset.imageData = '';
 }
 
+const COMPRESS_MAX_SIDE = 200;
+const COMPRESS_SIZE_BUDGET = 25 * 1024;
+
+function _compressFromDataUrl(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width;
+      let h = img.height;
+      const longest = Math.max(w, h);
+      const alreadyWebp = dataUrl.startsWith('data:image/webp');
+      if (longest <= COMPRESS_MAX_SIDE && alreadyWebp && dataUrl.length <= COMPRESS_SIZE_BUDGET) {
+        resolve(dataUrl);
+        return;
+      }
+      if (longest > COMPRESS_MAX_SIDE) {
+        const scale = COMPRESS_MAX_SIDE / longest;
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+
+      let result = canvas.toDataURL('image/webp', 0.5);
+      if (!result.startsWith('data:image/webp')) {
+        result = canvas.toDataURL('image/jpeg', 0.5);
+      }
+      if (result.length > COMPRESS_SIZE_BUDGET) {
+        const retry = canvas.toDataURL(
+          result.startsWith('data:image/webp') ? 'image/webp' : 'image/jpeg', 0.3
+        );
+        if (retry.length < result.length) result = retry;
+      }
+      resolve(result);
+    };
+    img.src = dataUrl;
+  });
+}
+
 function compressImage(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxW = 300;
-        let w = img.width;
-        let h = img.height;
-        if (w > maxW) {
-          h = Math.round(h * (maxW / w));
-          w = maxW;
-        }
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.6));
-      };
-      img.src = reader.result;
-    };
+    reader.onload = () => _compressFromDataUrl(reader.result).then(resolve);
     reader.readAsDataURL(file);
   });
+}
+
+export function compressExistingImage(dataUrl) {
+  return _compressFromDataUrl(dataUrl);
 }
 
 /* ---- Collection View ---- */
@@ -1993,6 +2023,7 @@ export function initGoToButtons() {
 let _scannerStream = null;
 let _scannerRafId = null;
 let _scannerHandled = false;
+let _scannerContext = null;
 let _lastNoMatch = null;
 let _offCanvas = null;
 let _offCtx = null;
@@ -2023,34 +2054,44 @@ function _showNoMatch(statusEl, decodedText) {
   statusEl.textContent = '';
   statusEl.className = 'barcode-status barcode-not-found';
 
-  const label = document.createTextNode('No match: ');
+  const heading = document.createElement('strong');
+  heading.textContent = 'Barcode not in database';
+  statusEl.appendChild(heading);
+
+  const codeRow = document.createElement('div');
+  codeRow.style.cssText = 'margin:4px 0';
   const codeSpan = document.createElement('span');
   codeSpan.textContent = decodedText;
-  codeSpan.style.cssText = 'text-decoration:underline;cursor:pointer;user-select:all';
+  codeSpan.style.cssText = 'text-decoration:underline;cursor:pointer;user-select:all;font-family:monospace';
   codeSpan.title = 'Tap to copy';
   codeSpan.addEventListener('click', () => _copyBarcode(decodedText, codeSpan));
-  statusEl.appendChild(label);
-  statusEl.appendChild(codeSpan);
+  codeRow.appendChild(codeSpan);
+  statusEl.appendChild(codeRow);
+
+  const hint = document.createElement('p');
+  hint.className = 'barcode-hint';
+  hint.textContent = 'This ramen may already exist without a barcode. Try searching first.';
+  statusEl.appendChild(hint);
 
   const actions = document.createElement('div');
   actions.className = 'barcode-actions';
 
-  const addBtn = document.createElement('button');
-  addBtn.className = 'btn btn-primary barcode-action-btn';
-  addBtn.textContent = 'ADD CUSTOM';
-  addBtn.addEventListener('click', () => {
-    closeBarcodeScanner();
-    openCustomRamenModal('', decodedText);
-  });
-
   const searchBtn = document.createElement('button');
-  searchBtn.className = 'btn btn-muted barcode-action-btn';
-  searchBtn.textContent = 'SEARCH';
+  searchBtn.className = 'btn btn-primary barcode-action-btn';
+  searchBtn.textContent = 'SEARCH FOR IT';
   searchBtn.addEventListener('click', () => {
     closeBarcodeScanner();
     document.querySelector('.tab-btn[data-tab="rate"]')?.click();
     const input = document.getElementById('rate-search');
     if (input) { input.value = ''; input.focus(); }
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn btn-muted barcode-action-btn';
+  addBtn.textContent = 'ADD AS NEW RAMEN';
+  addBtn.addEventListener('click', () => {
+    closeBarcodeScanner();
+    openCustomRamenModal('', decodedText);
   });
 
   const resumeBtn = document.createElement('button');
@@ -2065,8 +2106,8 @@ function _showNoMatch(statusEl, decodedText) {
     _scannerRafId = requestAnimationFrame(() => _scanFrame(video, statusEl));
   });
 
-  actions.appendChild(addBtn);
   actions.appendChild(searchBtn);
+  actions.appendChild(addBtn);
   actions.appendChild(resumeBtn);
   statusEl.appendChild(actions);
 }
@@ -2112,6 +2153,17 @@ function _scanFrame(video, statusEl) {
       let decoded;
       try { decoded = sym.decode('utf-8'); } catch { continue; }
       if (!decoded || !decoded.trim()) continue;
+
+      if (_scannerContext === 'custom') {
+        _scannerHandled = true;
+        const barcodeInput = document.getElementById('custom-barcode');
+        if (barcodeInput) barcodeInput.value = decoded.trim();
+        closeBarcodeScanner();
+        const customModal = document.getElementById('modal-custom-ramen');
+        if (customModal && !customModal.classList.contains('hidden')) trapFocus(customModal);
+        return;
+      }
+
       const ramen = data.lookupBarcode(decoded);
       if (ramen) {
         _scannerHandled = true;
@@ -2135,10 +2187,13 @@ function _scanFrame(video, statusEl) {
 }
 
 function openBarcodeScanner(context) {
+  if (_scannerStream) return;
   if (typeof zbarWasm === 'undefined' || !zbarWasm.scanImageData) {
     announce('Barcode scanner not available');
     return;
   }
+
+  _scannerContext = context || 'rate';
 
   const modal = document.getElementById('modal-barcode');
   const statusEl = document.getElementById('barcode-status');
@@ -2184,6 +2239,7 @@ function closeBarcodeScanner() {
     _scannerStream.getTracks().forEach(t => t.stop());
     _scannerStream = null;
   }
+  _scannerContext = null;
   const video = document.getElementById('barcode-video');
   if (video) video.srcObject = null;
   const scanLine = document.getElementById('barcode-scan-line');
@@ -2198,5 +2254,6 @@ export function initBarcodeScanner() {
   modal.querySelector('.modal-backdrop').addEventListener('click', closeBarcodeScanner);
 
   document.getElementById('rate-barcode-btn')?.addEventListener('click', () => openBarcodeScanner('rate'));
+  document.getElementById('rate-barcode-big')?.addEventListener('click', () => openBarcodeScanner('rate'));
   document.getElementById('discover-barcode-btn')?.addEventListener('click', () => openBarcodeScanner('discover'));
 }

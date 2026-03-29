@@ -39,6 +39,10 @@
         <h2>RATE YOUR RAMEN</h2>
         <p>Search above to find a ramen and log your rating</p>
       </div>
+      <button id="rate-barcode-big" class="btn-scan-big" aria-label="Scan a barcode to find or add ramen">
+        <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="8" x2="7" y2="16"/><line x1="11" y1="8" x2="11" y2="16"/><line x1="15" y1="8" x2="15" y2="16"/><line x1="19" y1="8" x2="19" y2="16"/></svg>
+        SCAN A BARCODE
+      </button>
       <p id="rate-add-custom" class="add-custom-link">Can't find your ramen? <a href="#" aria-label="Add a custom ramen entry">Add it yourself</a></p>
     </section>
 
@@ -342,7 +346,12 @@
         </label>
         <label class="form-label">
           Barcode (optional)
-          <input type="text" id="custom-barcode" class="form-input" placeholder="e.g. 070662404027" inputmode="numeric" pattern="\d*" autocomplete="off" aria-label="Product barcode">
+          <div class="barcode-input-row">
+            <input type="text" id="custom-barcode" class="form-input" placeholder="e.g. 070662404027" inputmode="numeric" pattern="\d*" autocomplete="off" aria-label="Product barcode">
+            <button type="button" id="custom-barcode-scan" class="barcode-scan-btn" aria-label="Scan barcode">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+            </button>
+          </div>
         </label>
         <label class="form-label">
           Photo (optional)
