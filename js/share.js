@@ -1,5 +1,7 @@
 const VERSION = 1;
 const STYLE_ENUM = ['Pack', 'Cup', 'Bowl', 'Tray', 'Other'];
+const URL_BUDGET = 8000;
+const URL_PREFIX_ESTIMATE = 60;
 
 /* ---- Base64url ---- */
 
@@ -59,6 +61,75 @@ async function inflate(data) {
   return result;
 }
 
+/* ---- Share thumbnail compression ---- */
+
+export async function compressShareThumbnail(imageDataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 50;
+      canvas.height = 50;
+      const ctx = canvas.getContext('2d');
+      const scale = Math.max(50 / img.width, 50 / img.height);
+      const sw = 50 / scale;
+      const sh = 50 / scale;
+      const sx = (img.width - sw) / 2;
+      const sy = (img.height - sh) / 2;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 50, 50);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.3);
+      const b64 = dataUrl.split(',')[1];
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      resolve(bytes);
+    };
+    img.onerror = () => resolve(null);
+    img.src = imageDataUrl;
+  });
+}
+
+async function _appendThumbnails(coreBuf, customIds, customRamen) {
+  const coreCompressed = await deflate(coreBuf);
+  const coreB64Len = toBase64url(coreCompressed).length;
+  const remainingB64 = URL_BUDGET - URL_PREFIX_ESTIMATE - coreB64Len;
+
+  if (remainingB64 <= 10) return coreBuf;
+
+  const binaryBudget = Math.floor(remainingB64 * 3 / 4);
+  const thumbData = [];
+  let thumbTotalBytes = 1;
+
+  for (let i = 0; i < customIds.length; i++) {
+    const cr = customRamen[customIds[i]];
+    if (!cr || !cr.imageData) continue;
+    const bytes = await compressShareThumbnail(cr.imageData);
+    if (!bytes || bytes.length === 0 || bytes.length > 0xffff) continue;
+    const cost = 1 + 2 + bytes.length;
+    if (thumbTotalBytes + cost > binaryBudget) break;
+    thumbData.push({ index: i, bytes });
+    thumbTotalBytes += cost;
+  }
+
+  if (thumbData.length === 0) return coreBuf;
+
+  const thumbSection = new Uint8Array(thumbTotalBytes);
+  let tOff = 0;
+  thumbSection[tOff++] = thumbData.length;
+  for (const t of thumbData) {
+    thumbSection[tOff++] = t.index;
+    thumbSection[tOff++] = (t.bytes.length >> 8) & 0xff;
+    thumbSection[tOff++] = t.bytes.length & 0xff;
+    thumbSection.set(t.bytes, tOff);
+    tOff += t.bytes.length;
+  }
+
+  const out = new Uint8Array(coreBuf.length + thumbSection.length);
+  out.set(coreBuf);
+  out.set(thumbSection, coreBuf.length);
+  return out;
+}
+
 /* ---- Binary packing helpers ---- */
 
 function writeString(view, offset, str) {
@@ -80,6 +151,7 @@ function readString(view, offset) {
 export async function encode(name, rankedList, ratings, customRamen) {
   const dbEntries = [];
   const customEntries = [];
+  const customIds = [];
   const order = [];
 
   for (const id of rankedList) {
@@ -93,6 +165,7 @@ export async function encode(name, rankedList, ratings, customRamen) {
       if (!cr) continue;
       order.push(0x80 | customEntries.length);
       customEntries.push({ variety: cr.variety, brand: cr.brand, style: cr.style || '', country: cr.country || '', flavor, noodle });
+      customIds.push(id);
     } else {
       order.push(dbEntries.length);
       dbEntries.push({ id: Number(id), flavor, noodle });
@@ -114,37 +187,41 @@ export async function encode(name, rankedList, ratings, customRamen) {
   const canOrder = dbEntries.length <= 127 && customEntries.length <= 127;
   if (canOrder) size += order.length;
 
-  const buf = new Uint8Array(size);
+  const coreBuf = new Uint8Array(size);
   let off = 0;
 
-  buf[off++] = VERSION;
+  coreBuf[off++] = VERSION;
 
-  off = writeString(buf, off, name);
+  off = writeString(coreBuf, off, name);
 
-  buf[off++] = (dbEntries.length >> 8) & 0xff;
-  buf[off++] = dbEntries.length & 0xff;
+  coreBuf[off++] = (dbEntries.length >> 8) & 0xff;
+  coreBuf[off++] = dbEntries.length & 0xff;
 
   for (const e of dbEntries) {
-    buf[off++] = (e.id >> 8) & 0xff;
-    buf[off++] = e.id & 0xff;
-    buf[off++] = ((e.flavor - 1) << 4) | (e.noodle - 1);
+    coreBuf[off++] = (e.id >> 8) & 0xff;
+    coreBuf[off++] = e.id & 0xff;
+    coreBuf[off++] = ((e.flavor - 1) << 4) | (e.noodle - 1);
   }
 
-  buf[off++] = customEntries.length & 0xff;
+  coreBuf[off++] = customEntries.length & 0xff;
 
   for (const c of customEntries) {
-    off = writeString(buf, off, c.variety);
-    off = writeString(buf, off, c.brand);
-    buf[off++] = Math.max(0, STYLE_ENUM.indexOf(c.style || 'Other'));
-    off = writeString(buf, off, c.country);
-    buf[off++] = ((c.flavor - 1) << 4) | (c.noodle - 1);
+    off = writeString(coreBuf, off, c.variety);
+    off = writeString(coreBuf, off, c.brand);
+    coreBuf[off++] = Math.max(0, STYLE_ENUM.indexOf(c.style || 'Other'));
+    off = writeString(coreBuf, off, c.country);
+    coreBuf[off++] = ((c.flavor - 1) << 4) | (c.noodle - 1);
   }
 
   if (canOrder) {
-    for (const o of order) buf[off++] = o;
+    for (const o of order) coreBuf[off++] = o;
   }
 
-  const compressed = await deflate(buf);
+  const finalBuf = customIds.length > 0
+    ? await _appendThumbnails(coreBuf, customIds, customRamen)
+    : coreBuf;
+
+  const compressed = await deflate(finalBuf);
   return toBase64url(compressed);
 }
 
@@ -203,10 +280,12 @@ export async function decode(base64str) {
     });
   }
 
-  // Trailing bytes encode interleaved rank order (newer shares only)
+  const totalEntries = dbCount + customCount;
+
   if (off < buf.length) {
     const ordered = [];
-    while (off < buf.length) {
+    const orderEnd = Math.min(off + totalEntries, buf.length);
+    while (off < orderEnd) {
       const b = buf[off++];
       if (b & 0x80) {
         const idx = b & 0x7f;
@@ -215,6 +294,25 @@ export async function decode(base64str) {
         if (b < dbEntries.length) ordered.push(dbEntries[b]);
       }
     }
+
+    if (off < buf.length) {
+      const thumbCount = buf[off++] || 0;
+      for (let t = 0; t < thumbCount && off + 3 <= buf.length; t++) {
+        const idx = buf[off++];
+        const imgLen = (buf[off] << 8) | buf[off + 1];
+        off += 2;
+        if (off + imgLen > buf.length) break;
+        const imgBytes = buf.subarray(off, off + imgLen);
+        off += imgLen;
+        let bin = '';
+        for (let i = 0; i < imgBytes.length; i++) bin += String.fromCharCode(imgBytes[i]);
+        const dataUrl = 'data:image/jpeg;base64,' + btoa(bin);
+        if (idx < customEntries.length) {
+          customEntries[idx].imageData = dataUrl;
+        }
+      }
+    }
+
     if (ordered.length > 0) return { name, entries: ordered };
   }
 

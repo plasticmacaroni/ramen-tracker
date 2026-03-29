@@ -1682,6 +1682,7 @@ export function initShareModal() {
 /* ---- Shared View ---- */
 
 let sharedData = null;
+let _closeSharedDetail = null;
 
 export function getSharedData() { return sharedData; }
 
@@ -1761,10 +1762,10 @@ export function initSharedView() {
 
   // Shared detail modal
   const detailModal = document.getElementById('modal-shared-detail');
-  const closeDetail = () => { detailModal.classList.add('hidden'); releaseFocus(detailModal); };
-  detailModal.querySelector('.modal-close').addEventListener('click', closeDetail);
-  detailModal.querySelector('.modal-backdrop').addEventListener('click', closeDetail);
-  setupModalA11y(detailModal, closeDetail);
+  _closeSharedDetail = () => { detailModal.classList.add('hidden'); releaseFocus(detailModal); };
+  detailModal.querySelector('.modal-close').addEventListener('click', _closeSharedDetail);
+  detailModal.querySelector('.modal-backdrop').addEventListener('click', _closeSharedDetail);
+  setupModalA11y(detailModal, _closeSharedDetail);
 }
 
 function populateSharedFilters(decoded) {
@@ -1888,12 +1889,25 @@ function renderSharedCard(ramen) {
   el.setAttribute('tabindex', '0');
   el.setAttribute('role', 'button');
 
+  const viewerRating = !ramen.custom ? storage.getRating(ramen.id) : null;
+  if (viewerRating) el.classList.add('card-user-rated');
+
   const a11yParts = [ramen.variety, ramen.brand];
   if (ramen.country) a11yParts.push(ramen.country);
   a11yParts.push(`Rank ${ramen._rank}, grade ${grade}`);
   a11yParts.push(`Flavor: ${FLAVOR_LABELS[ramen._flavor]}, Noodles/Ingredients: ${NOODLE_LABELS[ramen._noodle]}`);
   const sharedPopTier = popularityTier(ramen.popularity);
   if (sharedPopTier) a11yParts.push(`Popularity: ${POP_LABELS[sharedPopTier]}`);
+
+  let viewerBadge = '';
+  if (viewerRating) {
+    const viewerScore = storage.getScore(ramen.id);
+    const viewerRank = storage.getRank(ramen.id);
+    const vg = scoreToGrade(viewerScore);
+    viewerBadge = `<span class="badge badge-viewer-grade ${gradeClass(vg)}" title="Your grade: ${vg} #${viewerRank}">You: ${vg} #${viewerRank}</span>`;
+    a11yParts.push(`Your grade: ${vg}, rank ${viewerRank}`);
+  }
+
   el.setAttribute('aria-label', a11yParts.join(', '));
   el.setAttribute('title', a11yParts.join(' \u00b7 '));
 
@@ -1912,6 +1926,7 @@ function renderSharedCard(ramen) {
       <div class="card-brand">${brandHtml(ramen.brand)}</div>
       <div class="card-meta">
         ${customBadge}
+        ${viewerBadge}
         ${ramen.style ? `<span class="badge badge-style" title="Style: ${ramen.style}">${ramen.style}</span>` : ''}
         <span class="badge badge-tier" data-tier="${ramen._flavor}" title="Flavor: ${FLAVOR_LABELS[ramen._flavor]}"><span class="badge-label">Flavor:</span> ${FLAVOR_LABELS[ramen._flavor]}</span>
         <span class="badge badge-tier" data-tier="${ramen._noodle}" title="Noodles/Ingredients: ${NOODLE_LABELS[ramen._noodle]}"><span class="badge-label">Noodles:</span> ${NOODLE_LABELS[ramen._noodle]}</span>
@@ -1921,6 +1936,17 @@ function renderSharedCard(ramen) {
     ${scoreHtml}
   `;
   return el;
+}
+
+function _adoptSharedRamen(ramen) {
+  if (!ramen.custom) return data.getRamenById(ramen.id);
+  return storage.addCustomRamen({
+    variety: ramen.variety,
+    brand: ramen.brand,
+    style: ramen.style || '',
+    country: ramen.country || '',
+    imageData: ramen.imageData || null,
+  });
 }
 
 function openSharedDetailModal(ramen) {
@@ -1954,24 +1980,48 @@ function openSharedDetailModal(ramen) {
     creditEl.innerHTML = `<a href="${url}" target="_blank" rel="noopener" class="rater-link">View on The Ramen Rater \u2197</a>`;
   }
 
+  const viewerInfo = document.getElementById('shared-detail-viewer-info');
+  const rateBtn = document.getElementById('shared-detail-rate');
   const wishBtn = document.getElementById('shared-detail-wishlist');
-  if (storage.isRated(ramen.id)) {
+
+  const viewerRated = !ramen.custom && storage.isRated(ramen.id);
+
+  if (viewerRated) {
+    const existingRating = storage.getRating(ramen.id);
+    const userRank = storage.getRank(ramen.id);
+    const userScore = storage.getScore(ramen.id);
+    const ug = scoreToGrade(userScore);
+    const infoChips = [];
+    infoChips.push(`<span class="detail-chip detail-user-grade ${gradeClass(ug)}">You: ${ug} #${userRank}</span>`);
+    if (existingRating.flavorRating) infoChips.push(`<span class="detail-chip" data-tier="${existingRating.flavorRating}">\u{1F35C} ${FLAVOR_LABELS[existingRating.flavorRating]}</span>`);
+    if (existingRating.noodleRating) infoChips.push(`<span class="detail-chip" data-tier="${existingRating.noodleRating}">\u{1F962} ${NOODLE_LABELS[existingRating.noodleRating]}</span>`);
+    viewerInfo.innerHTML = infoChips.join('');
+    viewerInfo.classList.remove('hidden');
+    rateBtn.classList.add('hidden');
     wishBtn.classList.add('hidden');
   } else {
+    viewerInfo.innerHTML = '';
+    viewerInfo.classList.add('hidden');
+
+    rateBtn.classList.remove('hidden');
+    rateBtn.onclick = () => {
+      const local = _adoptSharedRamen(ramen);
+      _closeSharedDetail();
+      openRatingModal(local);
+    };
+
     wishBtn.classList.remove('hidden');
-    const wishlisted = storage.isWishlisted(ramen.id);
+    const wishlisted = !ramen.custom && storage.isWishlisted(ramen.id);
     wishBtn.classList.toggle('active', wishlisted);
     wishBtn.innerHTML = wishlisted ? '&#x2665; On Your List' : '&#x2661; Want to Try';
     wishBtn.onclick = () => {
-      if (storage.isWishlisted(ramen.id)) {
+      if (!ramen.custom && storage.isWishlisted(ramen.id)) {
         storage.removeFromWishlist(ramen.id);
         wishBtn.classList.remove('active');
         wishBtn.innerHTML = '&#x2661; Want to Try';
       } else {
-        const customPayload = ramen.custom
-          ? { variety: ramen.variety, brand: ramen.brand, style: ramen.style || '', country: ramen.country || '', imageData: ramen.imageData || null }
-          : undefined;
-        storage.addToWishlist(ramen.id, customPayload);
+        const local = _adoptSharedRamen(ramen);
+        storage.addToWishlist(local.id);
         wishBtn.classList.add('active');
         wishBtn.innerHTML = '&#x2665; On Your List';
       }

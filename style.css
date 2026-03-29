@@ -851,6 +851,11 @@ a:hover {
   font-weight: 700;
   letter-spacing: 0.04em;
 }
+.badge-viewer-grade {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
 
 /* ---- Big Scan Button ---- */
 
