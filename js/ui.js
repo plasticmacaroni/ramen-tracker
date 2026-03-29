@@ -1817,14 +1817,6 @@ function populateSharedFilters(decoded) {
   populateSelect('shared-style', styles);
 }
 
-function sharedScoreFromPosition(idx, total) {
-  if (total <= 1) return 7.0;
-  const rawPct = (total - 1 - idx) / (total - 1);
-  const minScore = Math.max(5.8, 7.3 - (total - 2) * 0.15);
-  const maxScore = Math.min(10.0, 9.3 + (total - 2) * 0.07);
-  return parseFloat((minScore + rawPct * (maxScore - minScore)).toFixed(1));
-}
-
 export function renderSharedCollection() {
   if (!sharedData) return;
 
@@ -1849,7 +1841,7 @@ export function renderSharedCollection() {
     ramen._flavor = entry.flavor;
     ramen._noodle = entry.noodle;
     ramen._rank = idx + 1;
-    ramen._score = sharedScoreFromPosition(idx, total);
+    ramen._score = storage.scoreFromPosition(idx, total);
     return ramen;
   }).filter(Boolean);
 

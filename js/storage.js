@@ -112,23 +112,19 @@ export function getRatedCount() {
   return Object.keys(getData().ratings).length;
 }
 
+export function scoreFromPosition(idx, total) {
+  if (total <= 1) return 9.7;
+  const rawPct = (total - 1 - idx) / (total - 1);
+  const minScore = Math.max(5.5, 8.7 - (total - 2) * 0.25);
+  const maxScore = Math.min(10.0, 9.7 + (total - 2) * 0.03);
+  return parseFloat((minScore + rawPct * (maxScore - minScore)).toFixed(1));
+}
+
 export function getScore(id) {
   const list = getRankedList();
   const idx = list.indexOf(id);
   if (idx === -1) return null;
-  const n = list.length;
-  if (n <= 1) return 9.7;
-
-  const rawPct = (n - 1 - idx) / (n - 1);
-
-  // Early ratings cluster near A+; the range widens as you rate more.
-  // Floor starts at B+ (8.7) and drops toward F (4.0).
-  // Ceiling starts at A+ (9.7) and rises toward 10.
-  const minScore = Math.max(4.0, 8.7 - (n - 2) * 0.25);
-  const maxScore = Math.min(10.0, 9.7 + (n - 2) * 0.03);
-  const score = minScore + rawPct * (maxScore - minScore);
-
-  return parseFloat(score.toFixed(1));
+  return scoreFromPosition(idx, list.length);
 }
 
 export function getRank(id) {

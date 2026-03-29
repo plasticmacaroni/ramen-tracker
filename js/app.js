@@ -6,7 +6,6 @@ import * as ui from './ui.js';
 let tabs, views;
 let currentTab = 'rate';
 let suppressHashUpdate = false;
-let activeShareParam = '';
 
 function refreshTabsAndViews() {
   tabs = document.querySelectorAll('#tab-nav .tab-btn:not(.hidden)');
@@ -46,9 +45,6 @@ function readHash() {
 function writeHash() {
   if (suppressHashUpdate) return;
   const params = { tab: currentTab };
-
-  // Preserve the share parameter across all tab/filter changes
-  if (activeShareParam) params.share = activeShareParam;
 
   const elMap = FILTER_ELEMENTS[currentTab];
   if (elMap) {
@@ -192,28 +188,52 @@ function setupTabListeners() {
   });
 }
 
-window.addEventListener('hashchange', () => restoreFromHash());
+window.addEventListener('hashchange', async () => {
+  const hasShare = await handleShareParam();
+  if (hasShare) {
+    switchTab('shared', true);
+  } else {
+    restoreFromHash();
+  }
+});
 
 /* ---- Share Detection ---- */
 
+const SHARE_SESSION_KEY = 'ramen_shared';
+
 async function handleShareParam() {
   const params = readHash();
-  if (!params.share) return false;
+  const payload = params.share || null;
 
-  try {
-    const decoded = await share.decode(params.share);
-    activeShareParam = params.share;
-    ui.showSharedView(decoded);
-    refreshTabsAndViews();
-    return true;
-  } catch (err) {
-    console.error('Failed to decode shared rankings:', err);
-    return false;
+  if (payload) {
+    try {
+      const decoded = await share.decode(payload);
+      sessionStorage.setItem(SHARE_SESSION_KEY, payload);
+      ui.showSharedView(decoded);
+      refreshTabsAndViews();
+      writeHash();
+      return true;
+    } catch (err) {
+      console.error('Failed to decode shared rankings:', err);
+      return false;
+    }
   }
+
+  const cached = sessionStorage.getItem(SHARE_SESSION_KEY);
+  if (cached) {
+    try {
+      const decoded = await share.decode(cached);
+      ui.showSharedView(decoded);
+      refreshTabsAndViews();
+      return true;
+    } catch { sessionStorage.removeItem(SHARE_SESSION_KEY); }
+  }
+
+  return false;
 }
 
 ui.setShareDismissCallback(() => {
-  activeShareParam = '';
+  sessionStorage.removeItem(SHARE_SESSION_KEY);
   refreshTabsAndViews();
   switchTab('rate');
 });
