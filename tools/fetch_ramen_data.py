@@ -59,6 +59,7 @@ def _load_typos():
     return {}
 
 _TYPOS = _load_typos()
+COUNTRY_TYPOS = {k.lower(): v for k, v in _TYPOS.get('country', {}).items()}
 STYLE_TYPOS = {k.lower(): v for k, v in _TYPOS.get('style', {}).items()}
 BRAND_TYPOS = {k.lower(): v for k, v in _TYPOS.get('brand', {}).items()}
 TEXT_TYPOS = {k.lower(): v for k, v in _TYPOS.get('text', {}).items()}
@@ -150,13 +151,19 @@ def parse_xlsx():
         brand = BRAND_TYPOS.get(brand.lower(), brand)
         variety = str(row[col_map.get('variety', 0)] or '').strip()
         for typo, fix in TEXT_TYPOS.items():
-            variety = re.sub(re.escape(typo), fix, variety, flags=re.IGNORECASE)
+            escaped = re.escape(typo)
+            if re.match(r'\w', typo):
+                escaped = r'\b' + escaped
+            if re.search(r'\w$', typo):
+                escaped = escaped + r'\b'
+            variety = re.sub(escaped, fix, variety, flags=re.IGNORECASE)
         if not variety:
             continue
 
         style = str(row[col_map.get('style', 0)] or '').strip() if 'style' in col_map else ''
         style = STYLE_TYPOS.get(style.lower(), style)
         country = str(row[col_map.get('country', 0)] or '').strip() if 'country' in col_map else ''
+        country = COUNTRY_TYPOS.get(country.lower(), country)
 
         stars = None
         if 'stars' in col_map:

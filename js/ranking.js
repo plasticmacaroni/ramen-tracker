@@ -67,6 +67,14 @@ export function nextComparison() {
   const mid = Math.floor((session.low + session.high) / 2);
   const compareId = ranked[mid];
 
+  if (!storage.getRating(compareId)) {
+    ranked.splice(mid, 1);
+    storage.setRankedList(ranked);
+    if (session.high >= ranked.length) session.high = ranked.length - 1;
+    saveSession();
+    return nextComparison();
+  }
+
   return {
     done: false,
     compareId,

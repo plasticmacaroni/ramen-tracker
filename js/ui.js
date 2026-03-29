@@ -118,26 +118,55 @@ function popularityBadge(ramen) {
 /* ---- Flag Emoji Lookup ---- */
 
 const COUNTRY_FLAGS = {
-  'Japan': '\u{1F1EF}\u{1F1F5}', 'South Korea': '\u{1F1F0}\u{1F1F7}',
-  'China': '\u{1F1E8}\u{1F1F3}', 'Taiwan': '\u{1F1F9}\u{1F1FC}',
-  'Thailand': '\u{1F1F9}\u{1F1ED}', 'Indonesia': '\u{1F1EE}\u{1F1E9}',
-  'Malaysia': '\u{1F1F2}\u{1F1FE}', 'Singapore': '\u{1F1F8}\u{1F1EC}',
-  'Vietnam': '\u{1F1FB}\u{1F1F3}', 'Philippines': '\u{1F1F5}\u{1F1ED}',
-  'India': '\u{1F1EE}\u{1F1F3}', 'United States': '\u{1F1FA}\u{1F1F8}',
-  'Canada': '\u{1F1E8}\u{1F1E6}', 'Mexico': '\u{1F1F2}\u{1F1FD}',
-  'Germany': '\u{1F1E9}\u{1F1EA}', 'United Kingdom': '\u{1F1EC}\u{1F1E7}',
-  'Australia': '\u{1F1E6}\u{1F1FA}', 'Nigeria': '\u{1F1F3}\u{1F1EC}',
-  'Brazil': '\u{1F1E7}\u{1F1F7}', 'Hong Kong': '\u{1F1ED}\u{1F1F0}',
-  'Myanmar': '\u{1F1F2}\u{1F1F2}', 'Nepal': '\u{1F1F3}\u{1F1F5}',
-  'Pakistan': '\u{1F1F5}\u{1F1F0}', 'Bangladesh': '\u{1F1E7}\u{1F1E9}',
-  'Cambodia': '\u{1F1F0}\u{1F1ED}', 'Fiji': '\u{1F1EB}\u{1F1EF}',
-  'Netherlands': '\u{1F1F3}\u{1F1F1}', 'Sweden': '\u{1F1F8}\u{1F1EA}',
-  'Italy': '\u{1F1EE}\u{1F1F9}', 'France': '\u{1F1EB}\u{1F1F7}',
-  'Poland': '\u{1F1F5}\u{1F1F1}', 'Hungary': '\u{1F1ED}\u{1F1FA}',
-  'Colombia': '\u{1F1E8}\u{1F1F4}', 'Peru': '\u{1F1F5}\u{1F1EA}',
-  'Chile': '\u{1F1E8}\u{1F1F1}', 'Estonia': '\u{1F1EA}\u{1F1EA}',
-  'Finland': '\u{1F1EB}\u{1F1EE}', 'Ghana': '\u{1F1EC}\u{1F1ED}',
-  'Sarawak': '\u{1F1F2}\u{1F1FE}', 'USA': '\u{1F1FA}\u{1F1F8}',
+  'Australia': '\u{1F1E6}\u{1F1FA}',
+  'Bangladesh': '\u{1F1E7}\u{1F1E9}',
+  'Brazil': '\u{1F1E7}\u{1F1F7}',
+  'Cambodia': '\u{1F1F0}\u{1F1ED}',
+  'Canada': '\u{1F1E8}\u{1F1E6}',
+  'Chile': '\u{1F1E8}\u{1F1F1}',
+  'China': '\u{1F1E8}\u{1F1F3}',
+  'Colombia': '\u{1F1E8}\u{1F1F4}',
+  'Dubai': '\u{1F1E6}\u{1F1EA}',
+  'Estonia': '\u{1F1EA}\u{1F1EA}',
+  'Fiji': '\u{1F1EB}\u{1F1EF}',
+  'Finland': '\u{1F1EB}\u{1F1EE}',
+  'France': '\u{1F1EB}\u{1F1F7}',
+  'Germany': '\u{1F1E9}\u{1F1EA}',
+  'Ghana': '\u{1F1EC}\u{1F1ED}',
+  'Hong Kong': '\u{1F1ED}\u{1F1F0}',
+  'Hungary': '\u{1F1ED}\u{1F1FA}',
+  'India': '\u{1F1EE}\u{1F1F3}',
+  'Indonesia': '\u{1F1EE}\u{1F1E9}',
+  'Ireland': '\u{1F1EE}\u{1F1EA}',
+  'Israel': '\u{1F1EE}\u{1F1F1}',
+  'Italy': '\u{1F1EE}\u{1F1F9}',
+  'Japan': '\u{1F1EF}\u{1F1F5}',
+  'Malaysia': '\u{1F1F2}\u{1F1FE}',
+  'Mexico': '\u{1F1F2}\u{1F1FD}',
+  'Myanmar': '\u{1F1F2}\u{1F1F2}',
+  'Nepal': '\u{1F1F3}\u{1F1F5}',
+  'Netherlands': '\u{1F1F3}\u{1F1F1}',
+  'New Zealand': '\u{1F1F3}\u{1F1FF}',
+  'Nigeria': '\u{1F1F3}\u{1F1EC}',
+  'Pakistan': '\u{1F1F5}\u{1F1F0}',
+  'Peru': '\u{1F1F5}\u{1F1EA}',
+  'Philippines': '\u{1F1F5}\u{1F1ED}',
+  'Poland': '\u{1F1F5}\u{1F1F1}',
+  'Portugal': '\u{1F1F5}\u{1F1F9}',
+  'Russia': '\u{1F1F7}\u{1F1FA}',
+  'Sarawak': '\u{1F1F2}\u{1F1FE}',
+  'Serbia': '\u{1F1F7}\u{1F1F8}',
+  'Singapore': '\u{1F1F8}\u{1F1EC}',
+  'South Korea': '\u{1F1F0}\u{1F1F7}',
+  'Spain': '\u{1F1EA}\u{1F1F8}',
+  'Sweden': '\u{1F1F8}\u{1F1EA}',
+  'Taiwan': '\u{1F1F9}\u{1F1FC}',
+  'Thailand': '\u{1F1F9}\u{1F1ED}',
+  'Turkey': '\u{1F1F9}\u{1F1F7}',
+  'Ukraine': '\u{1F1FA}\u{1F1E6}',
+  'United Kingdom': '\u{1F1EC}\u{1F1E7}',
+  'United States': '\u{1F1FA}\u{1F1F8}',
+  'Vietnam': '\u{1F1FB}\u{1F1F3}',
 };
 
 function flag(country) {
@@ -764,11 +793,14 @@ export function initCustomRamenModal() {
   });
 }
 
-function openCustomRamenModal(prefill = '') {
+function openCustomRamenModal(prefill = '', barcode = '') {
   const modal = document.getElementById('modal-custom-ramen');
   resetCustomForm();
   if (prefill) {
     document.getElementById('custom-variety').value = prefill;
+  }
+  if (barcode) {
+    document.getElementById('custom-barcode').value = barcode;
   }
 
   const countrySelect = document.getElementById('custom-country');
@@ -826,6 +858,8 @@ function compressImage(file) {
 /* ---- Collection View ---- */
 
 let collectionMode = 'rankings';
+let reorderMode = false;
+let _sortableInstance = null;
 
 function updateWishlistCount() {
   const count = storage.getWishlistCount();
@@ -911,11 +945,18 @@ export function initCollectionView() {
 
   function setCollectionMode(mode) {
     collectionMode = mode;
+    if (mode === 'wishlist' && reorderMode) {
+      reorderMode = false;
+      reorderBtn.textContent = 'REORDER';
+      reorderBtn.classList.remove('btn-reorder-active');
+      [sortSelect, brandSelect, countrySelect, styleSelect, searchInput].forEach(el => { el.disabled = false; });
+    }
     toggleRankings.classList.toggle('active', mode === 'rankings');
     toggleWishlist.classList.toggle('active', mode === 'wishlist');
     toggleRankings.setAttribute('aria-selected', mode === 'rankings' ? 'true' : 'false');
     toggleWishlist.setAttribute('aria-selected', mode === 'wishlist' ? 'true' : 'false');
     sortSelect.classList.toggle('hidden', mode === 'wishlist');
+    reorderBtn.classList.toggle('hidden', mode === 'wishlist');
     if (mode === 'rankings') {
       document.getElementById('wishlist-list').classList.add('hidden');
       document.getElementById('wishlist-empty').classList.add('hidden');
@@ -934,6 +975,26 @@ export function initCollectionView() {
   toggleRankings.addEventListener('click', () => setCollectionMode('rankings'));
   toggleWishlist.addEventListener('click', () => setCollectionMode('wishlist'));
   updateWishlistCount();
+
+  const reorderBtn = document.getElementById('collection-reorder-btn');
+  reorderBtn.addEventListener('click', () => {
+    reorderMode = !reorderMode;
+    reorderBtn.textContent = reorderMode ? 'DONE' : 'REORDER';
+    reorderBtn.classList.toggle('btn-reorder-active', reorderMode);
+    if (reorderMode) {
+      sortSelect.value = 'rank';
+      searchInput.value = '';
+      clearBtn.classList.add('hidden');
+      brandSelect.value = '';
+      countrySelect.value = '';
+      styleSelect.value = '';
+    }
+    [sortSelect, brandSelect, countrySelect, styleSelect, searchInput].forEach(el => {
+      el.disabled = reorderMode;
+    });
+    clearFiltersBtn.classList.toggle('hidden', true);
+    renderCollection();
+  });
 }
 
 export function renderCollection() {
@@ -1012,13 +1073,44 @@ export function renderCollection() {
       break;
   }
 
+  if (_sortableInstance) { _sortableInstance.destroy(); _sortableInstance = null; }
+
   list.innerHTML = '';
   items.forEach(item => {
     const card = renderRamenCard(item, { showUserScore: true, showStars: false });
-    card.addEventListener('click', () => openRatingModal(item));
-    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRatingModal(item); } });
+    card.dataset.ramenId = String(item.id);
+    if (reorderMode) {
+      const handle = document.createElement('div');
+      handle.className = 'drag-handle';
+      handle.setAttribute('aria-hidden', 'true');
+      handle.innerHTML = '⠿';
+      card.prepend(handle);
+      card.classList.add('reorderable');
+    } else {
+      card.addEventListener('click', () => openRatingModal(item));
+      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRatingModal(item); } });
+    }
     list.appendChild(card);
   });
+
+  if (reorderMode && typeof Sortable !== 'undefined') {
+    _sortableInstance = Sortable.create(list, {
+      handle: '.drag-handle',
+      animation: 200,
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      onEnd() {
+        const newOrder = [...list.children].map(c => {
+          const raw = c.dataset.ramenId;
+          const n = Number(raw);
+          return isNaN(n) || raw.startsWith('c-') ? raw : n;
+        });
+        storage.setRankedList(newOrder);
+        renderCollection();
+      },
+    });
+  }
+
   announce(`${items.length} ramen in your collection`);
 }
 
@@ -1902,11 +1994,16 @@ function _copyBarcode(decodedText, codeSpan) {
   });
 }
 
+let _scannerPaused = false;
+
 function _showNoMatch(statusEl, decodedText) {
   if (_lastNoMatch === decodedText) return;
   _lastNoMatch = decodedText;
+  _scannerPaused = true;
+
   statusEl.textContent = '';
   statusEl.className = 'barcode-status barcode-not-found';
+
   const label = document.createTextNode('No match: ');
   const codeSpan = document.createElement('span');
   codeSpan.textContent = decodedText;
@@ -1915,6 +2012,44 @@ function _showNoMatch(statusEl, decodedText) {
   codeSpan.addEventListener('click', () => _copyBarcode(decodedText, codeSpan));
   statusEl.appendChild(label);
   statusEl.appendChild(codeSpan);
+
+  const actions = document.createElement('div');
+  actions.className = 'barcode-actions';
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn btn-primary barcode-action-btn';
+  addBtn.textContent = 'ADD CUSTOM';
+  addBtn.addEventListener('click', () => {
+    closeBarcodeScanner();
+    openCustomRamenModal('', decodedText);
+  });
+
+  const searchBtn = document.createElement('button');
+  searchBtn.className = 'btn btn-muted barcode-action-btn';
+  searchBtn.textContent = 'SEARCH';
+  searchBtn.addEventListener('click', () => {
+    closeBarcodeScanner();
+    document.querySelector('.tab-btn[data-tab="rate"]')?.click();
+    const input = document.getElementById('rate-search');
+    if (input) { input.value = ''; input.focus(); }
+  });
+
+  const resumeBtn = document.createElement('button');
+  resumeBtn.className = 'btn btn-muted barcode-action-btn';
+  resumeBtn.textContent = 'KEEP SCANNING';
+  resumeBtn.addEventListener('click', () => {
+    _scannerPaused = false;
+    _lastNoMatch = null;
+    statusEl.textContent = 'Scanning...';
+    statusEl.className = 'barcode-status';
+    const video = document.getElementById('barcode-video');
+    _scannerRafId = requestAnimationFrame(() => _scanFrame(video, statusEl));
+  });
+
+  actions.appendChild(addBtn);
+  actions.appendChild(searchBtn);
+  actions.appendChild(resumeBtn);
+  statusEl.appendChild(actions);
 }
 
 function _getOffscreenCtx(w, h) {
@@ -1928,7 +2063,7 @@ function _getOffscreenCtx(w, h) {
 }
 
 function _scanFrame(video, statusEl) {
-  if (_scannerHandled || !_scannerStream) return;
+  if (_scannerHandled || !_scannerStream || _scannerPaused) return;
 
   const vw = video.videoWidth;
   const vh = video.videoHeight;
@@ -1967,7 +2102,9 @@ function _scanFrame(video, statusEl) {
       }
       _showNoMatch(statusEl, decoded);
     }
-    _scannerRafId = requestAnimationFrame(() => _scanFrame(video, statusEl));
+    if (!_scannerPaused) {
+      _scannerRafId = requestAnimationFrame(() => _scanFrame(video, statusEl));
+    }
   }).catch(err => {
     console.error('Barcode scan error:', err);
     statusEl.textContent = `Scanner error: ${err.message || err}`;
@@ -1995,6 +2132,7 @@ function openBarcodeScanner(context) {
   trapFocus(modal);
 
   _scannerHandled = false;
+  _scannerPaused = false;
   _lastNoMatch = null;
   if (scanLine) scanLine.style.display = 'block';
 

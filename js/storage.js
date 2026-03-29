@@ -33,6 +33,8 @@ export function load() {
     if (data.settings.ratingsAtLastReminder === undefined) data.settings.ratingsAtLastReminder = 0;
     if (!data.customRamen) data.customRamen = {};
     if (!data.wishlist) data.wishlist = {};
+    // Reconcile: remove rankedList entries with no corresponding rating
+    data.rankedList = data.rankedList.filter(id => String(id) in data.ratings);
   } catch {
     data = defaultData();
   }
@@ -92,8 +94,7 @@ export function removeRating(id) {
   const d = getData();
   const key = String(id);
   delete d.ratings[key];
-  const idx = d.rankedList.indexOf(id);
-  if (idx !== -1) d.rankedList.splice(idx, 1);
+  d.rankedList = d.rankedList.filter(e => String(e) !== key);
   save();
 }
 
@@ -203,8 +204,7 @@ export function deleteCustomRamen(id) {
   const key = String(id);
   delete d.customRamen[key];
   delete d.ratings[key];
-  const idx = d.rankedList.indexOf(id);
-  if (idx !== -1) d.rankedList.splice(idx, 1);
+  d.rankedList = d.rankedList.filter(e => String(e) !== key);
   save();
 }
 

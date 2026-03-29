@@ -357,6 +357,58 @@ a:hover {
   color: var(--yellow);
 }
 
+.btn-reorder {
+  padding: 6px 14px;
+  background: none;
+  border: 1px solid var(--teal);
+  border-radius: var(--radius-sm);
+  color: var(--teal);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.btn-reorder:hover {
+  background: var(--teal);
+  color: var(--bg);
+}
+
+.btn-reorder-active {
+  background: var(--teal);
+  color: var(--bg);
+}
+
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  min-width: 28px;
+  font-size: 1.4rem;
+  color: var(--text-dim);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.drag-handle:active { cursor: grabbing; }
+
+.reorderable { cursor: default; }
+.reorderable:hover { transform: none; }
+.reorderable:active { transform: none; }
+
+.sortable-ghost {
+  opacity: 0.3;
+}
+
+.sortable-chosen {
+  border-color: var(--teal);
+  box-shadow: 0 0 12px rgba(0, 212, 170, 0.3);
+}
+
 .toggle-label {
   display: flex;
   align-items: center;
@@ -1728,6 +1780,21 @@ a:hover {
 .barcode-not-found {
   color: var(--orange);
   background: rgba(0, 0, 0, 0.85);
+}
+
+.barcode-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.barcode-action-btn {
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
 }
 
 .barcode-error {

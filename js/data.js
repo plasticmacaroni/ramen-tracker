@@ -6,6 +6,8 @@ let styles = [];
 let brands = [];
 let barcodeMap = {};
 
+const PRIORITY_COUNTRIES = ['United States', 'Japan', 'South Korea'];
+
 export async function loadRamenData() {
   try {
     const [ramenRes, popRes, barcodeRes, urlsRes] = await Promise.all([
@@ -63,7 +65,10 @@ export async function loadRamenData() {
 
   const combined = [...allRamen, ...storage.getAllCustomRamenList()];
 
-  countries = [...new Set(combined.map(r => r.country).filter(Boolean))].sort();
+  const countrySet = new Set(combined.map(r => r.country).filter(Boolean));
+  const priority = PRIORITY_COUNTRIES.filter(c => countrySet.has(c));
+  const rest = [...countrySet].filter(c => !PRIORITY_COUNTRIES.includes(c)).sort();
+  countries = [...priority, ...rest];
   styles = [...new Set(combined.map(r => r.style).filter(Boolean))].sort();
 
   const brandSet = new Set();

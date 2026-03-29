@@ -65,6 +65,17 @@
       "replace_brand": "Acecook / Pringles"
     }
   ],
+  "country": {
+    "USA": "United States",
+    "Russian Federation": "Russia",
+    "UK": "United Kingdom",
+    "Holland": "Netherlands",
+    "Phillippines": "Philippines",
+    "Phlippines": "Philippines",
+    "Souh Korea": "South Korea",
+    "THailand": "Thailand",
+    "Yaiwan": "Taiwan"
+  },
   "style": {
     "boowl": "Bowl",
     "trray": "Tray"
@@ -104,7 +115,6 @@
     "Instantt": "Instant",
     "uldak": "Buldak",
     "BBuldak": "Buldak",
-    "Goku-Uma": "Goku Uma",
     "Hpakata": "Hakata",
     "CCuphongqing": "Chongqing",
     "Gorenbg": "Goreng",
