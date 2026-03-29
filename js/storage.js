@@ -299,7 +299,7 @@ export function importBackup(file) {
 /* ---- Image Backup (PNG pixel encoding) ---- */
 
 const _MAGIC = [0x52, 0x41, 0x4D, 0x45, 0x4E]; // "RAMEN"
-const _IMG_VERSION = 1;
+const _IMG_VERSION = 2;
 const _HEADER_LEN = 10; // 5 magic + 1 version + 4 length
 const _IMG_WIDTH = 256;
 
@@ -355,18 +355,24 @@ function _buildPayload(compressed) {
 }
 
 function _pixelsFromPayload(payload) {
-  const pixelCount = Math.ceil(payload.length / 3);
+  const totalBits = payload.length * 8;
+  const pixelCount = Math.ceil(totalBits / 3);
   const h = Math.ceil(pixelCount / _IMG_WIDTH);
   const canvas = new OffscreenCanvas(_IMG_WIDTH, h);
-  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
+  const ctx = canvas.getContext('2d');
   const img = ctx.createImageData(_IMG_WIDTH, h);
   const d = img.data;
-  for (let i = 0; i < payload.length; i++) {
-    const px = Math.floor(i / 3);
-    const ch = i % 3;
-    d[px * 4 + ch] = payload[i];
-  }
+
+  let bitIdx = 0;
   for (let px = 0; px < _IMG_WIDTH * h; px++) {
+    for (let ch = 0; ch < 3; ch++) {
+      if (bitIdx < totalBits) {
+        const bytePos = bitIdx >> 3;
+        const bitPos = 7 - (bitIdx & 7);
+        d[px * 4 + ch] = ((payload[bytePos] >> bitPos) & 1) ? 255 : 0;
+        bitIdx++;
+      }
+    }
     d[px * 4 + 3] = 255;
   }
   ctx.putImageData(img, 0, 0);
@@ -402,6 +408,24 @@ export async function exportBackupImage() {
   dismissBackupReminder();
 }
 
+function _readBitsFromPixels(px, numBytes) {
+  const out = new Uint8Array(numBytes);
+  let bitIdx = 0;
+  const totalBits = numBytes * 8;
+  const totalPixels = px.length / 4;
+  for (let p = 0; p < totalPixels && bitIdx < totalBits; p++) {
+    for (let ch = 0; ch < 3 && bitIdx < totalBits; ch++) {
+      const val = px[p * 4 + ch];
+      const bit = val >= 128 ? 1 : 0;
+      const bytePos = bitIdx >> 3;
+      const bitPos = 7 - (bitIdx & 7);
+      out[bytePos] |= bit << bitPos;
+      bitIdx++;
+    }
+  }
+  return out;
+}
+
 async function _importBackupImage(file) {
   const bitmap = await createImageBitmap(file, {
     colorSpaceConversion: 'none',
@@ -409,7 +433,7 @@ async function _importBackupImage(file) {
   });
 
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
+  const ctx = canvas.getContext('2d');
   ctx.drawImage(bitmap, 0, 0);
   const imgData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
   const px = imgData.data;
@@ -417,11 +441,7 @@ async function _importBackupImage(file) {
   console.log('[backup-image] Image loaded:', bitmap.width, 'x', bitmap.height,
     '| first 20 RGBA:', Array.from(px.slice(0, 20)));
 
-  const headerBytes = new Uint8Array(_HEADER_LEN);
-  for (let i = 0; i < _HEADER_LEN; i++) {
-    const pidx = Math.floor(i / 3);
-    headerBytes[i] = px[pidx * 4 + (i % 3)];
-  }
+  const headerBytes = _readBitsFromPixels(px, _HEADER_LEN);
 
   const headerHex = Array.from(headerBytes).map(b => b.toString(16).padStart(2, '0')).join(' ');
   const headerAscii = Array.from(headerBytes.slice(0, 5)).map(b => String.fromCharCode(b)).join('');
@@ -440,11 +460,7 @@ async function _importBackupImage(file) {
   const totalBytes = _HEADER_LEN + compLen;
   console.log('[backup-image] Compressed length:', compLen, '| total payload:', totalBytes);
 
-  const payload = new Uint8Array(totalBytes);
-  for (let i = 0; i < totalBytes; i++) {
-    const pidx = Math.floor(i / 3);
-    payload[i] = px[pidx * 4 + (i % 3)];
-  }
+  const payload = _readBitsFromPixels(px, totalBytes);
 
   const compressed = payload.slice(_HEADER_LEN);
   const jsonBytes = await _inflate(compressed);
