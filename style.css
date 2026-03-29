@@ -1254,10 +1254,9 @@ a:hover {
   background: rgba(0, 212, 170, 0.12);
 }
 
-/* ---- COMPARISON / FIGHT CARDS ---- */
+/* ---- COMPARISON CARDS ---- */
 
-.compare-title,
-.fight-header h2 {
+.compare-title {
   text-align: center;
   font-size: 1.4rem;
   color: var(--yellow);
@@ -1307,16 +1306,14 @@ a:hover {
   }
 }
 
-.compare-cards,
-.fight-cards {
+.compare-cards {
   display: flex;
   gap: 12px;
   align-items: stretch;
   justify-content: center;
 }
 
-.compare-card,
-.fight-card {
+.compare-card {
   flex: 1;
   max-width: 220px;
   background: var(--bg);
@@ -1332,20 +1329,17 @@ a:hover {
   gap: 8px;
 }
 
-.compare-card:hover,
-.fight-card:hover {
+.compare-card:hover {
   border-color: var(--yellow);
   transform: scale(1.03);
   box-shadow: 0 0 20px rgba(255, 216, 3, 0.15);
 }
 
-.compare-card:active,
-.fight-card:active {
+.compare-card:active {
   transform: scale(0.97);
 }
 
-.compare-card .card-img,
-.fight-card .card-img {
+.compare-card .card-img {
   width: 80px;
   height: 80px;
   border-radius: var(--radius-sm);
@@ -1356,28 +1350,24 @@ a:hover {
   overflow: hidden;
 }
 
-.compare-card .card-img img,
-.fight-card .card-img img {
+.compare-card .card-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.compare-card .card-name,
-.fight-card .card-name {
+.compare-card .card-name {
   font-weight: 700;
   font-size: 0.9rem;
   line-height: 1.2;
 }
 
-.compare-card .card-brand-small,
-.fight-card .card-brand-small {
+.compare-card .card-brand-small {
   font-size: 0.75rem;
   color: var(--text-muted);
 }
 
-.compare-vs,
-.fight-vs {
+.compare-vs {
   font-family: "Bangers", cursive;
   font-size: 2rem;
   color: var(--yellow);
@@ -1387,15 +1377,13 @@ a:hover {
   text-shadow: 0 0 20px rgba(255, 216, 3, 0.3);
 }
 
-.compare-card.winner,
-.fight-card.winner {
+.compare-card.winner {
   border-color: var(--teal);
   box-shadow: 0 0 30px rgba(0, 212, 170, 0.25);
   animation: winPop 0.4s ease;
 }
 
-.compare-card.loser,
-.fight-card.loser {
+.compare-card.loser {
   opacity: 0.3;
   transform: scale(0.92);
 }
@@ -1412,49 +1400,6 @@ a:hover {
   100% {
     transform: scale(1);
   }
-}
-
-/* ---- FIGHT VIEW ---- */
-
-.fight-header {
-  text-align: center;
-  margin-bottom: 12px;
-}
-
-.fight-header h2 {
-  font-size: 2.2rem;
-  text-shadow: 0 0 30px rgba(255, 216, 3, 0.3);
-}
-
-.fight-stats {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  margin-top: 4px;
-}
-
-.fight-stat {
-  font-size: 1rem;
-  color: var(--text-muted);
-}
-
-.fight-prompt {
-  text-align: center;
-  color: var(--text-muted);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.85rem;
-  margin-bottom: 20px;
-}
-
-.fight-cards {
-  margin-bottom: 24px;
-}
-
-#fight-skip {
-  display: block;
-  margin: 0 auto;
 }
 
 /* ---- DONE STEP ---- */
@@ -1646,57 +1591,23 @@ a:hover {
   font-style: italic;
 }
 
-/* ---- COLLECTION TOGGLE (Rankings / Want to Try) ---- */
+/* ---- WISHLIST TAB COUNT BADGE ---- */
 
-.collection-toggle {
-  display: flex;
-  gap: 0;
-  margin-bottom: 14px;
-  border: 2px solid var(--bg-elevated);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.toggle-seg {
-  flex: 1;
-  padding: 10px 14px;
-  background: var(--bg);
-  border: none;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.toggle-seg.active {
-  background: var(--bg-elevated);
-  color: var(--yellow);
-}
-
-.toggle-seg:hover:not(.active) {
-  color: var(--text);
-}
-
-.toggle-count {
+.tab-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 10px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
   background: var(--yellow);
   color: #0d0d0d;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   font-weight: 800;
   line-height: 1;
+  margin-left: 3px;
+  vertical-align: middle;
 }
 
 /* ---- WISHLIST BUTTON (in modals) ---- */
@@ -2149,13 +2060,11 @@ a:hover {
     gap: 12px;
   }
 
-  .fight-cards,
   .compare-cards {
     gap: 24px;
   }
 
-  .compare-card,
-  .fight-card {
+  .compare-card {
     max-width: 260px;
   }
 

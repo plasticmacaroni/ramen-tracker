@@ -55,16 +55,12 @@ Filter by country, style, or text search.
 Browse the full Big List (custom ramen do NOT appear here). Sort by Ramen Rater score, brand, country, newest.
 Filter by country, style, and hide-already-rated toggle. Infinite scroll for performance.
 
-### 4. Ramen Fight
-
-Two random ramen from your collection go head to head. Pick the winner -- rankings update. Track your fight streak and total fights.
-
 ## Ranking System
 
 Maintains an ordered array (ranked list). Score is derived by linear interpolation:
 `score = ((N - 1 - position) / (N - 1)) * 10`
 
-New ramen are inserted via binary search comparisons. Ramen Fight swaps positions when the winner is ranked below the loser.
+New ramen are inserted via binary search comparisons. Manual reordering is available via drag-and-drop.
 
 ## Letter Grade System
 
@@ -103,7 +99,6 @@ All user data lives in localStorage:
 
 - `ratings`: flavor/noodle tier per ramen
 - `rankedList`: ordered array of ramen IDs
-- `stats`: fight count, streak
 - `settings`: backup reminder timing, `hideRaterScore` toggle, `cardSize` (compact/large)
 - `customRamen`: user-created ramen entries with base64 images
 
@@ -154,7 +149,7 @@ js/
   app.js           -- Entry point, tab switching
   data.js          -- Ramen data loading, search, filter/sort
   storage.js       -- localStorage CRUD, backup, custom ramen
-  ranking.js       -- Binary insertion sort, fight logic
+  ranking.js       -- Binary insertion sort
   share.js         -- Share URL encoding/decoding (binary + deflate + base64url)
   ui.js            -- All UI rendering and event handling
 data/

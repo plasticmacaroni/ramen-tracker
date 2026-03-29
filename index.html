@@ -48,10 +48,6 @@
 
     <!-- COLLECTION VIEW -->
     <section id="view-collection" class="view" role="tabpanel" aria-labelledby="tab-collection" aria-label="My rated ramen" aria-hidden="true">
-      <div class="collection-toggle" role="tablist" aria-label="Switch between rankings and want-to-try list">
-        <button id="toggle-rankings" class="toggle-seg active" role="tab" aria-selected="true">Rankings</button>
-        <button id="toggle-wishlist" class="toggle-seg" role="tab" aria-selected="false">Want to Try <span id="wishlist-count" class="toggle-count hidden">0</span></button>
-      </div>
       <div class="search-box" role="search">
         <svg aria-hidden="true" class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input type="text" id="collection-search" placeholder="Search your ramen..." autocomplete="off" aria-label="Search your rated ramen">
@@ -86,8 +82,29 @@
         <p>You haven't rated any ramen! Head to the Rate tab to get started.</p>
         <button class="btn btn-primary" data-goto="rate">RATE YOUR FIRST</button>
       </div>
-      <div id="wishlist-list" class="card-list hidden" role="list" aria-label="Your want-to-try ramen"></div>
-      <div id="wishlist-empty" class="empty-state hidden" aria-live="polite">
+    </section>
+
+    <!-- WISHLIST VIEW -->
+    <section id="view-wishlist" class="view" role="tabpanel" aria-labelledby="tab-wishlist" aria-label="Your want-to-try ramen" aria-hidden="true">
+      <div class="search-box" role="search">
+        <svg aria-hidden="true" class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="wishlist-search" placeholder="Search your list..." autocomplete="off" aria-label="Search your want-to-try ramen">
+        <button id="wishlist-search-clear" class="search-clear hidden" aria-label="Clear search">&times;</button>
+      </div>
+      <div class="view-controls" role="group" aria-label="Filters">
+        <select id="wishlist-brand" class="control-select" aria-label="Filter by brand">
+          <option value="">All Brands</option>
+        </select>
+        <select id="wishlist-country" class="control-select" aria-label="Filter by country">
+          <option value="">All Countries</option>
+        </select>
+        <select id="wishlist-style" class="control-select" aria-label="Filter by style">
+          <option value="">All Styles</option>
+        </select>
+        <button id="wishlist-clear-filters" class="btn-clear-filters hidden" aria-label="Clear all filters">Clear Filters</button>
+      </div>
+      <div id="wishlist-list" class="card-list" role="list" aria-label="Your want-to-try ramen"></div>
+      <div id="wishlist-empty" class="empty-state" aria-live="polite">
         <div class="empty-icon" aria-hidden="true">&#x2661;</div>
         <h2>NOTHING YET</h2>
         <p>Browse ramen on Discover or Rate and tap "Want to Try" to save them here.</p>
@@ -132,32 +149,6 @@
       </div>
       <div id="discover-list" class="card-list" role="list" aria-label="All ramen"></div>
       <div id="discover-loading" class="loading-indicator" aria-live="polite">Loading ramen database...</div>
-    </section>
-
-    <!-- FIGHT VIEW -->
-    <section id="view-fight" class="view" role="tabpanel" aria-labelledby="tab-fight" aria-label="Ramen fight comparison game" aria-hidden="true">
-      <div id="fight-arena" class="hidden">
-        <div class="fight-header">
-          <h2>RAMEN FIGHT!</h2>
-          <div class="fight-stats" aria-label="Fight statistics">
-            <span id="fight-streak" class="fight-stat" title="Current win streak" aria-label="Current win streak">🔥 0</span>
-            <span id="fight-total" class="fight-stat" title="Total fights" aria-label="Total fights">⚔️ 0</span>
-          </div>
-        </div>
-        <p class="fight-prompt" id="fight-prompt">TAP THE ONE YOU PREFER</p>
-        <div class="fight-cards" role="group" aria-label="Choose which ramen you prefer">
-          <div id="fight-left" class="fight-card" data-side="left" role="button" tabindex="0" aria-label="Choose left ramen"></div>
-          <div class="fight-vs" aria-hidden="true">VS</div>
-          <div id="fight-right" class="fight-card" data-side="right" role="button" tabindex="0" aria-label="Choose right ramen"></div>
-        </div>
-        <button id="fight-skip" class="btn btn-muted" aria-label="Skip this matchup">SKIP</button>
-      </div>
-      <div id="fight-empty" class="empty-state" aria-live="polite">
-        <div class="empty-icon" aria-hidden="true">⚔️</div>
-        <h2>RAMEN FIGHT!</h2>
-        <p>Rate at least 2 ramen to start battling them against each other!</p>
-        <button class="btn btn-primary" data-goto="rate">RATE SOME RAMEN</button>
-      </div>
     </section>
 
     <!-- SHARED VIEW (dynamic, hidden by default) -->
@@ -301,7 +292,7 @@
       </div>
       <div class="settings-section">
         <h3>DATA</h3>
-        <p class="text-muted"><span id="stats-count">0</span> ramen rated &middot; <span id="stats-fights">0</span> fights</p>
+        <p class="text-muted"><span id="stats-count">0</span> ramen rated</p>
         <button id="data-clear" class="btn btn-danger" aria-label="Permanently clear all your ratings and rankings">CLEAR ALL DATA</button>
       </div>
       <div class="settings-section settings-credit">
@@ -439,13 +430,13 @@
       <span class="tab-icon" aria-hidden="true">📋</span>
       <span class="tab-label">My Ramen</span>
     </button>
+    <button id="tab-wishlist" class="tab-btn" data-tab="wishlist" role="tab" aria-selected="false" aria-controls="view-wishlist" tabindex="-1" title="Want to Try — ramen you want to try">
+      <span class="tab-icon" aria-hidden="true">&#x2661;</span>
+      <span class="tab-label">Want to Try <span id="wishlist-tab-count" class="tab-count hidden">0</span></span>
+    </button>
     <button id="tab-discover" class="tab-btn" data-tab="discover" role="tab" aria-selected="false" aria-controls="view-discover" tabindex="-1" title="Discover — browse all ramen">
       <span class="tab-icon" aria-hidden="true">🔍</span>
       <span class="tab-label">Discover</span>
-    </button>
-    <button id="tab-fight" class="tab-btn" data-tab="fight" role="tab" aria-selected="false" aria-controls="view-fight" tabindex="-1" title="Ramen Fight — head-to-head comparisons">
-      <span class="tab-icon" aria-hidden="true">⚔️</span>
-      <span class="tab-label">Fight!</span>
     </button>
     <button id="tab-shared" class="tab-btn hidden" data-tab="shared" role="tab" aria-selected="false" aria-controls="view-shared" tabindex="-1">
       <span class="tab-icon" aria-hidden="true">👤</span>

@@ -6,7 +6,6 @@ function defaultData() {
     version: VERSION,
     ratings: {},
     rankedList: [],
-    stats: { totalFights: 0, fightStreak: 0, biggestUpset: null },
     settings: {
       lastBackupReminder: new Date().toISOString(),
       ratingsAtLastReminder: 0,
@@ -26,7 +25,7 @@ export function load() {
     if (!data.version) data = { ...defaultData(), ...data };
     if (!data.ratings) data.ratings = {};
     if (!data.rankedList) data.rankedList = [];
-    if (!data.stats) data.stats = { totalFights: 0, fightStreak: 0, biggestUpset: null };
+    delete data.stats;
     if (!data.settings) data.settings = defaultData().settings;
     if (data.settings.hideRaterScore === undefined) data.settings.hideRaterScore = false;
     if (data.settings.lastBackupReminder === undefined) data.settings.lastBackupReminder = new Date().toISOString();
@@ -111,15 +110,6 @@ export function getRatedIds() {
 
 export function getRatedCount() {
   return Object.keys(getData().ratings).length;
-}
-
-export function getStats() {
-  return getData().stats;
-}
-
-export function updateStats(updates) {
-  Object.assign(getData().stats, updates);
-  save();
 }
 
 export function getScore(id) {

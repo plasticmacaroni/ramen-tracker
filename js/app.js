@@ -21,6 +21,10 @@ const FILTER_ELEMENTS = {
     q: 'collection-search', sort: 'collection-sort',
     brand: 'collection-brand', country: 'collection-country', style: 'collection-style',
   },
+  wishlist: {
+    q: 'wishlist-search',
+    brand: 'wishlist-brand', country: 'wishlist-country', style: 'wishlist-style',
+  },
   discover: {
     q: 'discover-search', sort: 'discover-sort',
     brand: 'discover-brand', country: 'discover-country', style: 'discover-style',
@@ -72,7 +76,7 @@ function writeHash() {
 }
 
 function getValidTabs() {
-  const base = ['rate', 'collection', 'discover', 'fight'];
+  const base = ['rate', 'collection', 'wishlist', 'discover'];
   if (ui.getSharedData()) base.push('shared');
   return base;
 }
@@ -148,11 +152,11 @@ function refreshView(tab, restorePages) {
     case 'collection':
       ui.renderCollection();
       break;
+    case 'wishlist':
+      ui.renderWishlist();
+      break;
     case 'discover':
       ui.renderDiscover(restorePages);
-      break;
-    case 'fight':
-      ui.renderFightView();
       break;
     case 'shared':
       ui.renderSharedCollection();
@@ -224,8 +228,8 @@ async function init() {
   ui.initRatingModal();
   ui.initCustomRamenModal();
   ui.initCollectionView();
+  ui.initWishlistView();
   ui.initDiscoverView();
-  ui.initFightView();
   ui.initSettingsModal();
   ui.initShareModal();
   ui.initSharedView();

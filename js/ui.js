@@ -894,13 +894,12 @@ export function compressExistingImage(dataUrl) {
 
 /* ---- Collection View ---- */
 
-let collectionMode = 'rankings';
 let reorderMode = false;
 let _sortableInstance = null;
 
 function updateWishlistCount() {
   const count = storage.getWishlistCount();
-  const badge = document.getElementById('wishlist-count');
+  const badge = document.getElementById('wishlist-tab-count');
   if (count > 0) {
     badge.textContent = count;
     badge.classList.remove('hidden');
@@ -941,9 +940,8 @@ export function initCollectionView() {
   const clearFiltersBtn = document.getElementById('collection-clear-filters');
 
   const refresh = () => {
-    if (collectionMode === 'wishlist') renderWishlist();
-    else renderCollection();
-    const active = (collectionMode === 'rankings' && sortSelect.value !== 'rank')
+    renderCollection();
+    const active = sortSelect.value !== 'rank'
       || brandSelect.value || countrySelect.value
       || styleSelect.value || searchInput.value.trim();
     clearFiltersBtn.classList.toggle('hidden', !active);
@@ -977,42 +975,6 @@ export function initCollectionView() {
     refresh();
   });
 
-  const toggleRankings = document.getElementById('toggle-rankings');
-  const toggleWishlist = document.getElementById('toggle-wishlist');
-
-  function setCollectionMode(mode) {
-    collectionMode = mode;
-    if (mode === 'wishlist' && reorderMode) {
-      reorderMode = false;
-      reorderBtn.textContent = 'REORDER';
-      reorderBtn.classList.remove('btn-reorder-active');
-      [sortSelect, brandSelect, countrySelect, styleSelect, searchInput].forEach(el => { el.disabled = false; });
-    }
-    toggleRankings.classList.toggle('active', mode === 'rankings');
-    toggleWishlist.classList.toggle('active', mode === 'wishlist');
-    toggleRankings.setAttribute('aria-selected', mode === 'rankings' ? 'true' : 'false');
-    toggleWishlist.setAttribute('aria-selected', mode === 'wishlist' ? 'true' : 'false');
-    sortSelect.classList.toggle('hidden', mode === 'wishlist');
-    reorderBtn.classList.toggle('hidden', mode === 'wishlist');
-    if (mode === 'rankings') {
-      document.getElementById('wishlist-list').classList.add('hidden');
-      document.getElementById('wishlist-empty').classList.add('hidden');
-      renderCollection();
-    } else {
-      document.getElementById('collection-list').classList.add('hidden');
-      document.getElementById('collection-empty').classList.add('hidden');
-      renderWishlist();
-    }
-    const active = brandSelect.value || countrySelect.value
-      || styleSelect.value || searchInput.value.trim()
-      || (mode === 'rankings' && sortSelect.value !== 'rank');
-    clearFiltersBtn.classList.toggle('hidden', !active);
-  }
-
-  toggleRankings.addEventListener('click', () => setCollectionMode('rankings'));
-  toggleWishlist.addEventListener('click', () => setCollectionMode('wishlist'));
-  updateWishlistCount();
-
   const reorderBtn = document.getElementById('collection-reorder-btn');
   reorderBtn.addEventListener('click', () => {
     reorderMode = !reorderMode;
@@ -1036,11 +998,7 @@ export function initCollectionView() {
 
 export function renderCollection() {
   updateWishlistCount();
-  if (collectionMode === 'wishlist') { renderWishlist(); return; }
-  document.getElementById('wishlist-list').classList.add('hidden');
-  document.getElementById('wishlist-empty').classList.add('hidden');
   const list = document.getElementById('collection-list');
-  list.classList.remove('hidden');
   const empty = document.getElementById('collection-empty');
   const sort = document.getElementById('collection-sort').value;
   const brandFilter = document.getElementById('collection-brand').value;
@@ -1151,17 +1109,78 @@ export function renderCollection() {
   announce(`${items.length} ramen in your collection`);
 }
 
-function renderWishlist() {
-  document.getElementById('collection-list').classList.add('hidden');
-  document.getElementById('collection-empty').classList.add('hidden');
+export function initWishlistView() {
+  const brandSelect = document.getElementById('wishlist-brand');
+  const countrySelect = document.getElementById('wishlist-country');
+  const styleSelect = document.getElementById('wishlist-style');
+  const searchInput = document.getElementById('wishlist-search');
+  const clearBtn = document.getElementById('wishlist-search-clear');
+  const clearFiltersBtn = document.getElementById('wishlist-clear-filters');
+
+  data.getBrands().forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b;
+    opt.textContent = b;
+    brandSelect.appendChild(opt);
+  });
+
+  data.getCountries().forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = `${flag(c)} ${c}`;
+    countrySelect.appendChild(opt);
+  });
+
+  data.getStyles().forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    styleSelect.appendChild(opt);
+  });
+
+  const refresh = () => {
+    renderWishlist();
+    const active = brandSelect.value || countrySelect.value
+      || styleSelect.value || searchInput.value.trim();
+    clearFiltersBtn.classList.toggle('hidden', !active);
+  };
+
+  brandSelect.addEventListener('change', refresh);
+  countrySelect.addEventListener('change', refresh);
+  styleSelect.addEventListener('change', refresh);
+
+  searchInput.addEventListener('input', () => {
+    clearBtn.classList.toggle('hidden', !searchInput.value.trim());
+    refresh();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    searchInput.focus();
+    searchInput.dispatchEvent(new Event('input'));
+  });
+
+  clearFiltersBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearBtn.classList.add('hidden');
+    brandSelect.value = '';
+    countrySelect.value = '';
+    styleSelect.value = '';
+    [brandSelect, countrySelect, styleSelect].forEach(el =>
+      el.dispatchEvent(new Event('change')));
+    refresh();
+  });
+}
+
+export function renderWishlist() {
+  updateWishlistCount();
   const list = document.getElementById('wishlist-list');
   const empty = document.getElementById('wishlist-empty');
-  list.classList.remove('hidden');
 
-  const brandFilter = document.getElementById('collection-brand').value;
-  const countryFilter = document.getElementById('collection-country').value;
-  const styleFilter = document.getElementById('collection-style').value;
-  const searchQuery = document.getElementById('collection-search').value.trim().toLowerCase();
+  const brandFilter = document.getElementById('wishlist-brand').value;
+  const countryFilter = document.getElementById('wishlist-country').value;
+  const styleFilter = document.getElementById('wishlist-style').value;
+  const searchQuery = document.getElementById('wishlist-search').value.trim().toLowerCase();
   const wishlist = storage.getWishlist();
   const keys = Object.keys(wishlist);
 
@@ -1402,88 +1421,6 @@ function setupInfiniteScroll() {
   discoverObserver.observe(sentinel);
 }
 
-/* ---- Fight View ---- */
-
-let currentFight = null;
-
-export function initFightView() {
-  const leftEl = document.getElementById('fight-left');
-  const rightEl = document.getElementById('fight-right');
-  leftEl.addEventListener('click', () => handleFightPick('left'));
-  rightEl.addEventListener('click', () => handleFightPick('right'));
-  leftEl.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleFightPick('left'); } });
-  rightEl.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleFightPick('right'); } });
-  document.getElementById('fight-skip').addEventListener('click', startNewFight);
-}
-
-export function renderFightView() {
-  const arena = document.getElementById('fight-arena');
-  const empty = document.getElementById('fight-empty');
-  const ranked = storage.getRankedList();
-
-  if (ranked.length < 2) {
-    arena.classList.add('hidden');
-    empty.classList.remove('hidden');
-    return;
-  }
-
-  empty.classList.add('hidden');
-  arena.classList.remove('hidden');
-  updateFightStats();
-  startNewFight();
-}
-
-function startNewFight() {
-  const pair = ranking.pickFightPair();
-  if (!pair) return;
-
-  currentFight = pair;
-  const leftRamen = data.getRamenById(pair.left);
-  const rightRamen = data.getRamenById(pair.right);
-
-  const leftEl = document.getElementById('fight-left');
-  const rightEl = document.getElementById('fight-right');
-
-  leftEl.classList.remove('winner', 'loser');
-  rightEl.classList.remove('winner', 'loser');
-
-  if (leftRamen) renderCompareCard(leftRamen, leftEl);
-  if (rightRamen) renderCompareCard(rightRamen, rightEl);
-}
-
-function handleFightPick(side) {
-  if (!currentFight) return;
-
-  const winnerId = side === 'left' ? currentFight.left : currentFight.right;
-  const loserId = side === 'left' ? currentFight.right : currentFight.left;
-
-  const leftEl = document.getElementById('fight-left');
-  const rightEl = document.getElementById('fight-right');
-
-  if (side === 'left') {
-    leftEl.classList.add('winner');
-    rightEl.classList.add('loser');
-  } else {
-    rightEl.classList.add('winner');
-    leftEl.classList.add('loser');
-  }
-
-  ranking.processFight(winnerId, loserId);
-  updateFightStats();
-
-  setTimeout(startNewFight, 600);
-}
-
-function updateFightStats() {
-  const stats = storage.getStats();
-  const streakEl = document.getElementById('fight-streak');
-  const totalEl = document.getElementById('fight-total');
-  streakEl.textContent = `\u{1F525} ${stats.fightStreak || 0}`;
-  totalEl.textContent = `\u{2694}\u{FE0F} ${stats.totalFights || 0}`;
-  streakEl.setAttribute('aria-label', `Current win streak: ${stats.fightStreak || 0}`);
-  totalEl.setAttribute('aria-label', `Total fights: ${stats.totalFights || 0}`);
-}
-
 /* ---- Settings Modal ---- */
 
 export function initSettingsModal() {
@@ -1626,7 +1563,6 @@ function updateCardSizeButtons(size) {
 
 function updateSettingsStats() {
   document.getElementById('stats-count').textContent = storage.getRatedCount();
-  document.getElementById('stats-fights').textContent = storage.getStats().totalFights || 0;
 }
 
 /* ---- Backup Banner ---- */
