@@ -1558,6 +1558,34 @@ a:hover {
   margin-bottom: 0;
 }
 
+.paste-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 14px;
+  border: 2px dashed var(--bg-elevated);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+  outline: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.paste-zone:focus, .paste-zone:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.paste-zone.paste-active {
+  border-color: var(--teal);
+  background: rgba(0, 206, 209, 0.06);
+  color: var(--teal);
+}
+.paste-zone-icon { font-size: 1.2rem; }
+
 /* ---- BACKUP BANNER ---- */
 
 .banner {

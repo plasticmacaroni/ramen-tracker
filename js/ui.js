@@ -1550,6 +1550,46 @@ export function initSettingsModal() {
     }
   });
 
+  async function handleBackupPaste(e) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    let imageFile = null;
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        imageFile = item.getAsFile();
+        break;
+      }
+    }
+    if (!imageFile) {
+      document.getElementById('backup-status').textContent = 'No image found in clipboard.';
+      return;
+    }
+    e.preventDefault();
+    if (!confirm('Restore ratings from pasted image? This will replace your current data.')) return;
+    const status = document.getElementById('backup-status');
+    status.textContent = 'Restoring from pasted image...';
+    try {
+      await storage.importBackup(imageFile);
+      status.textContent = 'Backup restored! Refreshing...';
+      setTimeout(() => location.reload(), 800);
+    } catch (err) {
+      status.textContent = `Error: ${err.message}`;
+    }
+  }
+
+  const pasteZone = document.getElementById('backup-paste-zone');
+  if (pasteZone) {
+    pasteZone.addEventListener('click', () => pasteZone.focus());
+    pasteZone.addEventListener('paste', handleBackupPaste);
+  }
+
+  document.addEventListener('paste', (e) => {
+    const settingsModal = document.getElementById('modal-settings');
+    if (settingsModal.classList.contains('hidden')) return;
+    if (e.target.closest('#backup-paste-zone')) return;
+    handleBackupPaste(e);
+  });
+
   document.getElementById('data-clear').addEventListener('click', () => {
     if (confirm('Are you sure? This will delete ALL your ratings and rankings permanently.')) {
       storage.clearAll();

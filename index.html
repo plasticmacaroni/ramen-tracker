@@ -287,6 +287,10 @@
           <label class="btn btn-muted" for="backup-upload" role="button" tabindex="0" aria-label="Restore ratings from a backup file or image">RESTORE BACKUP</label>
           <input type="file" id="backup-upload" accept=".json,image/png,image/*" class="hidden" aria-label="Choose backup file or image to restore">
         </div>
+        <div id="backup-paste-zone" class="paste-zone" tabindex="0" role="button" aria-label="Paste a backup image from clipboard">
+          <span class="paste-zone-icon" aria-hidden="true">📋</span>
+          <span>Tap here &amp; paste a backup image</span>
+        </div>
         <p class="text-hint">Image backups save to your camera roll and work on mobile.</p>
         <p id="backup-status" class="text-muted" aria-live="polite"></p>
       </div>
