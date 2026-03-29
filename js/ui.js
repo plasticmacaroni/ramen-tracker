@@ -280,7 +280,7 @@ function ramenImage(ramen) {
 }
 
 export function renderRamenCard(ramen, options = {}) {
-  const { showUserScore = false, showStars = true, clickable = true, hideRaterGrade = false, showWishlistBadge = false } = options;
+  const { showUserScore = true, showStars = true, clickable = true } = options;
   const rating = storage.getRating(ramen.id);
   const isRated = !!rating;
   const score = storage.getScore(ramen.id);
@@ -317,7 +317,7 @@ export function renderRamenCard(ramen, options = {}) {
     a11yParts.push(`Flavor: ${FLAVOR_LABELS[rating.flavorRating]}, Noodles/Ingredients: ${NOODLE_LABELS[rating.noodleRating]}`);
   }
 
-  const shouldHideGrade = hideRaterGrade && storage.getHideRaterScore();
+  const shouldHideGrade = storage.getHideRaterScore();
   const starGrade = starsToGrade(ramen.stars);
   const gradeOverlay = showStars && starGrade && !ramen.custom && !shouldHideGrade
     ? `<span class="card-rater-grade ${gradeClass(starGrade)}" title="Ramen Rater grade: ${starGrade} (${ramen.stars} stars)">${starGrade}</span>`
@@ -340,7 +340,7 @@ export function renderRamenCard(ramen, options = {}) {
     : '';
   if (isRated && !showUserScore) a11yParts.push('Rated');
 
-  const wishlisted = !isRated && (showWishlistBadge || showStars) && storage.isWishlisted(ramen.id);
+  const wishlisted = !isRated && showStars && storage.isWishlisted(ramen.id);
   const wishlistBadge = wishlisted
     ? '<span class="badge badge-wishlist" title="On your Want to Try list">&#x2661; Want to Try</span>'
     : '';
@@ -419,7 +419,7 @@ export function initRateView() {
     }
 
     found.forEach(r => {
-      const card = renderRamenCard(r, { showStars: true, showUserScore: false, hideRaterGrade: true });
+      const card = renderRamenCard(r);
       card.addEventListener('click', () => openRatingModal(r));
       card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRatingModal(r); } });
       results.appendChild(card);
@@ -447,6 +447,7 @@ let selectedFlavor = 0;
 let selectedNoodle = 0;
 
 export function openRatingModal(ramen) {
+  if (_pendingBarcode) dismissPendingBarcode();
   currentRatingRamen = ramen;
   selectedFlavor = 0;
   selectedNoodle = 0;
@@ -1066,7 +1067,7 @@ export function renderCollection() {
 
   list.innerHTML = '';
   items.forEach(item => {
-    const card = renderRamenCard(item, { showUserScore: true, showStars: false });
+    const card = renderRamenCard(item);
     card.dataset.ramenId = String(item.id);
     if (reorderMode) {
       const handle = document.createElement('div');
@@ -1217,7 +1218,7 @@ export function renderWishlist() {
   items.forEach(item => {
     const wrap = document.createElement('div');
     wrap.className = 'wishlist-card-wrap';
-    const card = renderRamenCard(item, { showStars: true, showUserScore: false });
+    const card = renderRamenCard(item);
     card.addEventListener('click', () => openRatingModal(item));
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRatingModal(item); } });
     const removeBtn = document.createElement('button');
@@ -1367,7 +1368,7 @@ function appendDiscoverPage() {
   const slice = discoverFiltered.slice(start, start + ITEMS_PER_PAGE);
 
   slice.forEach(r => {
-    const card = renderRamenCard(r, { showStars: true, showUserScore: true });
+    const card = renderRamenCard(r);
     card.addEventListener('click', () => openRatingModal(r));
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRatingModal(r); } });
     list.appendChild(card);
@@ -2024,6 +2025,21 @@ function _copyBarcode(decodedText, codeSpan) {
   });
 }
 
+let _pendingBarcode = null;
+
+function showPendingBarcode(barcode) {
+  _pendingBarcode = barcode;
+  const banner = document.getElementById('barcode-pending-banner');
+  const code = document.getElementById('barcode-pending-code');
+  code.textContent = barcode;
+  banner.classList.remove('hidden');
+}
+
+function dismissPendingBarcode() {
+  _pendingBarcode = null;
+  document.getElementById('barcode-pending-banner').classList.add('hidden');
+}
+
 let _scannerPaused = false;
 
 function _showNoMatch(statusEl, decodedText) {
@@ -2061,6 +2077,7 @@ function _showNoMatch(statusEl, decodedText) {
   searchBtn.textContent = 'SEARCH FOR IT';
   searchBtn.addEventListener('click', () => {
     closeBarcodeScanner();
+    showPendingBarcode(decodedText);
     document.querySelector('.tab-btn[data-tab="rate"]')?.click();
     const input = document.getElementById('rate-search');
     if (input) { input.value = ''; input.focus(); }
@@ -2174,6 +2191,7 @@ function openBarcodeScanner(context) {
   }
 
   _scannerContext = context || 'rate';
+  if (_pendingBarcode) dismissPendingBarcode();
 
   const modal = document.getElementById('modal-barcode');
   const statusEl = document.getElementById('barcode-status');
@@ -2238,4 +2256,11 @@ export function initBarcodeScanner() {
   document.getElementById('collection-barcode-btn')?.addEventListener('click', () => openBarcodeScanner('rate'));
   document.getElementById('wishlist-barcode-btn')?.addEventListener('click', () => openBarcodeScanner('rate'));
   document.getElementById('discover-barcode-btn')?.addEventListener('click', () => openBarcodeScanner('rate'));
+
+  document.getElementById('barcode-pending-add')?.addEventListener('click', () => {
+    const barcode = _pendingBarcode;
+    dismissPendingBarcode();
+    openCustomRamenModal('', barcode);
+  });
+  document.getElementById('barcode-pending-dismiss')?.addEventListener('click', dismissPendingBarcode);
 }

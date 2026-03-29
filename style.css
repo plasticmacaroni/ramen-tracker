@@ -1601,6 +1601,16 @@ a:hover {
   cursor: pointer;
 }
 
+.barcode-banner {
+  border-color: var(--teal);
+}
+
+.barcode-banner code {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--teal);
+}
+
 /* ---- LOADING ---- */
 
 .loading-indicator {
