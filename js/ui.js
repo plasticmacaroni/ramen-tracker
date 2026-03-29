@@ -1766,6 +1766,17 @@ export function initSharedView() {
   detailModal.querySelector('.modal-close').addEventListener('click', _closeSharedDetail);
   detailModal.querySelector('.modal-backdrop').addEventListener('click', _closeSharedDetail);
   setupModalA11y(detailModal, _closeSharedDetail);
+
+  const sharedImg = document.getElementById('shared-detail-image');
+  const lightbox = document.getElementById('image-lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  sharedImg.style.cursor = 'zoom-in';
+  sharedImg.addEventListener('click', () => {
+    const img = sharedImg.querySelector('img');
+    if (!img) return;
+    lightboxImg.src = img.src;
+    lightbox.classList.remove('hidden');
+  });
 }
 
 function populateSharedFilters(decoded) {
@@ -1882,6 +1893,12 @@ export function renderSharedCollection() {
   announce(`${items.length} ramen in shared collection`);
 }
 
+function _resolveViewerLocal(ramen) {
+  if (!ramen.custom) return ramen.id;
+  const local = storage.findCustomRamenByContent(ramen.variety, ramen.brand);
+  return local ? local.id : null;
+}
+
 function renderSharedCard(ramen) {
   const grade = scoreToGrade(ramen._score);
   const el = document.createElement('div');
@@ -1889,7 +1906,8 @@ function renderSharedCard(ramen) {
   el.setAttribute('tabindex', '0');
   el.setAttribute('role', 'button');
 
-  const viewerRating = !ramen.custom ? storage.getRating(ramen.id) : null;
+  const localId = _resolveViewerLocal(ramen);
+  const viewerRating = localId ? storage.getRating(localId) : null;
   if (viewerRating) el.classList.add('card-user-rated');
 
   const a11yParts = [ramen.variety, ramen.brand];
@@ -1900,9 +1918,9 @@ function renderSharedCard(ramen) {
   if (sharedPopTier) a11yParts.push(`Popularity: ${POP_LABELS[sharedPopTier]}`);
 
   let viewerBadge = '';
-  if (viewerRating) {
-    const viewerScore = storage.getScore(ramen.id);
-    const viewerRank = storage.getRank(ramen.id);
+  if (viewerRating && localId) {
+    const viewerScore = storage.getScore(localId);
+    const viewerRank = storage.getRank(localId);
     const vg = scoreToGrade(viewerScore);
     viewerBadge = `<span class="badge badge-viewer-grade ${gradeClass(vg)}" title="Your grade: ${vg} #${viewerRank}">You: ${vg} #${viewerRank}</span>`;
     a11yParts.push(`Your grade: ${vg}, rank ${viewerRank}`);
@@ -1940,6 +1958,8 @@ function renderSharedCard(ramen) {
 
 function _adoptSharedRamen(ramen) {
   if (!ramen.custom) return data.getRamenById(ramen.id);
+  const existing = storage.findCustomRamenByContent(ramen.variety, ramen.brand);
+  if (existing) return existing;
   return storage.addCustomRamen({
     variety: ramen.variety,
     brand: ramen.brand,
@@ -1984,12 +2004,13 @@ function openSharedDetailModal(ramen) {
   const rateBtn = document.getElementById('shared-detail-rate');
   const wishBtn = document.getElementById('shared-detail-wishlist');
 
-  const viewerRated = !ramen.custom && storage.isRated(ramen.id);
+  const localId = _resolveViewerLocal(ramen);
+  const viewerRated = localId && storage.isRated(localId);
 
   if (viewerRated) {
-    const existingRating = storage.getRating(ramen.id);
-    const userRank = storage.getRank(ramen.id);
-    const userScore = storage.getScore(ramen.id);
+    const existingRating = storage.getRating(localId);
+    const userRank = storage.getRank(localId);
+    const userScore = storage.getScore(localId);
     const ug = scoreToGrade(userScore);
     const infoChips = [];
     infoChips.push(`<span class="detail-chip detail-user-grade ${gradeClass(ug)}">You: ${ug} #${userRank}</span>`);
@@ -2011,12 +2032,13 @@ function openSharedDetailModal(ramen) {
     };
 
     wishBtn.classList.remove('hidden');
-    const wishlisted = !ramen.custom && storage.isWishlisted(ramen.id);
+    const wishlisted = localId && storage.isWishlisted(localId);
     wishBtn.classList.toggle('active', wishlisted);
     wishBtn.innerHTML = wishlisted ? '&#x2665; On Your List' : '&#x2661; Want to Try';
     wishBtn.onclick = () => {
-      if (!ramen.custom && storage.isWishlisted(ramen.id)) {
-        storage.removeFromWishlist(ramen.id);
+      const lid = _resolveViewerLocal(ramen);
+      if (lid && storage.isWishlisted(lid)) {
+        storage.removeFromWishlist(lid);
         wishBtn.classList.remove('active');
         wishBtn.innerHTML = '&#x2661; Want to Try';
       } else {

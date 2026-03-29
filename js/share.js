@@ -1,6 +1,6 @@
 const VERSION = 1;
 const STYLE_ENUM = ['Pack', 'Cup', 'Bowl', 'Tray', 'Other'];
-const URL_BUDGET = 8000;
+const URL_BUDGET = 50000;
 const URL_PREFIX_ESTIMATE = 60;
 
 /* ---- Base64url ---- */
@@ -63,26 +63,50 @@ async function inflate(data) {
 
 /* ---- Share thumbnail compression ---- */
 
-export async function compressShareThumbnail(imageDataUrl) {
+function _dataUrlToBytes(dataUrl) {
+  const b64 = dataUrl.split(',')[1];
+  if (!b64) return null;
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+function _compressImageToTarget(img, maxSide, quality) {
+  const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+  const w = Math.round(img.width * scale);
+  const h = Math.round(img.height * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+  let dataUrl = canvas.toDataURL('image/webp', quality);
+  if (!dataUrl.startsWith('data:image/webp')) {
+    dataUrl = canvas.toDataURL('image/jpeg', quality);
+  }
+  return _dataUrlToBytes(dataUrl);
+}
+
+const _THUMB_STEPS = [
+  { maxSide: 200, quality: 0.6 },
+  { maxSide: 150, quality: 0.5 },
+  { maxSide: 100, quality: 0.4 },
+  { maxSide: 50, quality: 0.3 },
+];
+
+export function compressShareThumbnail(imageDataUrl, maxBytes) {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 50;
-      canvas.height = 50;
-      const ctx = canvas.getContext('2d');
-      const scale = Math.max(50 / img.width, 50 / img.height);
-      const sw = 50 / scale;
-      const sh = 50 / scale;
-      const sx = (img.width - sw) / 2;
-      const sy = (img.height - sh) / 2;
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 50, 50);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.3);
-      const b64 = dataUrl.split(',')[1];
-      const bin = atob(b64);
-      const bytes = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      resolve(bytes);
+      const original = _dataUrlToBytes(imageDataUrl);
+      if (original && original.length <= maxBytes) { resolve(original); return; }
+
+      for (const step of _THUMB_STEPS) {
+        const bytes = _compressImageToTarget(img, step.maxSide, step.quality);
+        if (bytes && bytes.length <= maxBytes) { resolve(bytes); return; }
+      }
+      const last = _compressImageToTarget(img, 50, 0.2);
+      resolve(last && last.length <= maxBytes ? last : null);
     };
     img.onerror = () => resolve(null);
     img.src = imageDataUrl;
@@ -97,17 +121,24 @@ async function _appendThumbnails(coreBuf, customIds, customRamen) {
   if (remainingB64 <= 10) return coreBuf;
 
   const binaryBudget = Math.floor(remainingB64 * 3 / 4);
+  const withImages = [];
+  for (let i = 0; i < customIds.length; i++) {
+    const cr = customRamen[customIds[i]];
+    if (cr && cr.imageData) withImages.push({ index: i, imageData: cr.imageData });
+  }
+  if (withImages.length === 0) return coreBuf;
+
   const thumbData = [];
   let thumbTotalBytes = 1;
 
-  for (let i = 0; i < customIds.length; i++) {
-    const cr = customRamen[customIds[i]];
-    if (!cr || !cr.imageData) continue;
-    const bytes = await compressShareThumbnail(cr.imageData);
-    if (!bytes || bytes.length === 0 || bytes.length > 0xffff) continue;
+  for (const entry of withImages) {
+    const perImageBudget = Math.min(0xffff, binaryBudget - thumbTotalBytes - 3);
+    if (perImageBudget <= 0) break;
+    const bytes = await compressShareThumbnail(entry.imageData, perImageBudget);
+    if (!bytes || bytes.length === 0) continue;
     const cost = 1 + 2 + bytes.length;
     if (thumbTotalBytes + cost > binaryBudget) break;
-    thumbData.push({ index: i, bytes });
+    thumbData.push({ index: entry.index, bytes });
     thumbTotalBytes += cost;
   }
 
@@ -306,7 +337,9 @@ export async function decode(base64str) {
         off += imgLen;
         let bin = '';
         for (let i = 0; i < imgBytes.length; i++) bin += String.fromCharCode(imgBytes[i]);
-        const dataUrl = 'data:image/jpeg;base64,' + btoa(bin);
+        const mime = (imgBytes[0] === 0x52 && imgBytes[1] === 0x49 && imgBytes[2] === 0x46 && imgBytes[3] === 0x46)
+          ? 'image/webp' : 'image/jpeg';
+        const dataUrl = `data:${mime};base64,` + btoa(bin);
         if (idx < customEntries.length) {
           customEntries[idx].imageData = dataUrl;
         }

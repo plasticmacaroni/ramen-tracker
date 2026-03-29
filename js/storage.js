@@ -117,15 +117,15 @@ export function getScore(id) {
   const idx = list.indexOf(id);
   if (idx === -1) return null;
   const n = list.length;
-  if (n <= 1) return 7.0;
+  if (n <= 1) return 9.7;
 
   const rawPct = (n - 1 - idx) / (n - 1);
 
-  // With few ratings, compress the range so grades stay reasonable
-  // (no misleading F's when you've only rated 3 ramen).
-  // Floor starts at C (7.3) and drops toward 0; ceiling starts at A (9.3) and rises to 10.
-  const minScore = Math.max(5.8, 7.3 - (n - 2) * 0.15);
-  const maxScore = Math.min(10.0, 9.3 + (n - 2) * 0.07);
+  // Early ratings cluster near A+; the range widens as you rate more.
+  // Floor starts at B+ (8.7) and drops toward F (4.0).
+  // Ceiling starts at A+ (9.7) and rises toward 10.
+  const minScore = Math.max(4.0, 8.7 - (n - 2) * 0.25);
+  const maxScore = Math.min(10.0, 9.7 + (n - 2) * 0.03);
   const score = minScore + rawPct * (maxScore - minScore);
 
   return parseFloat(score.toFixed(1));
@@ -169,6 +169,15 @@ export function getCustomRamenById(id) {
 
 export function getAllCustomRamenList() {
   return Object.values(getData().customRamen);
+}
+
+export function findCustomRamenByContent(variety, brand) {
+  const customs = getData().customRamen;
+  for (const id of Object.keys(customs)) {
+    const cr = customs[id];
+    if (cr.variety === variety && cr.brand === brand) return cr;
+  }
+  return null;
 }
 
 export function addCustomRamen(entry) {
