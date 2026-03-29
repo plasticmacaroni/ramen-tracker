@@ -836,8 +836,10 @@ function resetCustomForm() {
   preview.dataset.imageData = '';
 }
 
-const COMPRESS_MAX_SIDE = 200;
-const COMPRESS_SIZE_BUDGET = 25 * 1024;
+const COMPRESS_MAX_SIDE = 400;
+const COMPRESS_SIZE_BUDGET = 80_000;
+const COMPRESS_QUALITY = 0.75;
+const COMPRESS_RETRY_QUALITY = 0.5;
 
 function _compressFromDataUrl(dataUrl) {
   return new Promise((resolve) => {
@@ -847,7 +849,7 @@ function _compressFromDataUrl(dataUrl) {
       let h = img.height;
       const longest = Math.max(w, h);
       const alreadyWebp = dataUrl.startsWith('data:image/webp');
-      if (longest <= COMPRESS_MAX_SIDE && alreadyWebp && dataUrl.length <= COMPRESS_SIZE_BUDGET) {
+      if (longest <= COMPRESS_MAX_SIDE && alreadyWebp) {
         resolve(dataUrl);
         return;
       }
@@ -862,13 +864,13 @@ function _compressFromDataUrl(dataUrl) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
 
-      let result = canvas.toDataURL('image/webp', 0.5);
+      let result = canvas.toDataURL('image/webp', COMPRESS_QUALITY);
       if (!result.startsWith('data:image/webp')) {
-        result = canvas.toDataURL('image/jpeg', 0.5);
+        result = canvas.toDataURL('image/jpeg', COMPRESS_QUALITY);
       }
       if (result.length > COMPRESS_SIZE_BUDGET) {
         const retry = canvas.toDataURL(
-          result.startsWith('data:image/webp') ? 'image/webp' : 'image/jpeg', 0.3
+          result.startsWith('data:image/webp') ? 'image/webp' : 'image/jpeg', COMPRESS_RETRY_QUALITY
         );
         if (retry.length < result.length) result = retry;
       }

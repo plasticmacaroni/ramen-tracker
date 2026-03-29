@@ -254,8 +254,7 @@ async function migrateCustomImages() {
   for (const id of Object.keys(customs)) {
     const ramen = customs[id];
     if (!ramen.imageData) continue;
-    const isWebp = ramen.imageData.startsWith('data:image/webp');
-    if (isWebp && ramen.imageData.length <= 25 * 1024) continue;
+    if (ramen.imageData.startsWith('data:image/webp')) continue;
     try {
       const compressed = await ui.compressExistingImage(ramen.imageData);
       if (compressed !== ramen.imageData) {
