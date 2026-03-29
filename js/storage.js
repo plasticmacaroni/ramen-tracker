@@ -284,6 +284,11 @@ export function exportBackup() {
 }
 
 export function importBackup(file) {
+  const isImage = file.type.startsWith('image/') ||
+    /\.(png|webp|bmp)$/i.test(file.name);
+
+  if (isImage) return _importBackupImage(file);
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -302,6 +307,170 @@ export function importBackup(file) {
     };
     reader.onerror = () => reject(new Error('Could not read file'));
     reader.readAsText(file);
+  });
+}
+
+/* ---- Image Backup (PNG pixel encoding) ---- */
+
+const _MAGIC = [0x52, 0x41, 0x4D, 0x45, 0x4E]; // "RAMEN"
+const _IMG_VERSION = 1;
+const _HEADER_LEN = 10; // 5 magic + 1 version + 4 length
+const _IMG_WIDTH = 256;
+
+async function _deflate(bytes) {
+  const cs = new CompressionStream('deflate-raw');
+  const writer = cs.writable.getWriter();
+  writer.write(bytes);
+  writer.close();
+  const chunks = [];
+  const reader = cs.readable.getReader();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  let len = 0;
+  for (const c of chunks) len += c.length;
+  const out = new Uint8Array(len);
+  let off = 0;
+  for (const c of chunks) { out.set(c, off); off += c.length; }
+  return out;
+}
+
+async function _inflate(bytes) {
+  const ds = new DecompressionStream('deflate-raw');
+  const writer = ds.writable.getWriter();
+  writer.write(bytes);
+  writer.close();
+  const chunks = [];
+  const reader = ds.readable.getReader();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  let len = 0;
+  for (const c of chunks) len += c.length;
+  const out = new Uint8Array(len);
+  let off = 0;
+  for (const c of chunks) { out.set(c, off); off += c.length; }
+  return out;
+}
+
+function _buildPayload(compressed) {
+  const total = _HEADER_LEN + compressed.length;
+  const payload = new Uint8Array(total);
+  payload.set(_MAGIC, 0);
+  payload[5] = _IMG_VERSION;
+  const dv = new DataView(payload.buffer);
+  dv.setUint32(6, compressed.length, false);
+  payload.set(compressed, _HEADER_LEN);
+  return payload;
+}
+
+function _pixelsFromPayload(payload) {
+  const pixelCount = Math.ceil(payload.length / 3);
+  const h = Math.ceil(pixelCount / _IMG_WIDTH);
+  const canvas = document.createElement('canvas');
+  canvas.width = _IMG_WIDTH;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(_IMG_WIDTH, h);
+  const d = img.data;
+  for (let i = 0; i < payload.length; i++) {
+    const px = Math.floor(i / 3);
+    const ch = i % 3;
+    d[px * 4 + ch] = payload[i];
+  }
+  for (let px = 0; px < _IMG_WIDTH * h; px++) {
+    d[px * 4 + 3] = 255; // full alpha so PNG doesn't premultiply
+  }
+  ctx.putImageData(img, 0, 0);
+  return canvas;
+}
+
+export async function exportBackupImage() {
+  const json = JSON.stringify(getData());
+  const jsonBytes = new TextEncoder().encode(json);
+  const compressed = await _deflate(jsonBytes);
+  const payload = _buildPayload(compressed);
+  const canvas = _pixelsFromPayload(payload);
+
+  return new Promise((resolve) => {
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const date = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `ramen-backup-${date}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+      dismissBackupReminder();
+      resolve();
+    }, 'image/png');
+  });
+}
+
+function _importBackupImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = async () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const imgData = ctx.getImageData(0, 0, img.width, img.height);
+          const px = imgData.data;
+
+          // Read header from first pixels
+          const headerBytes = new Uint8Array(_HEADER_LEN);
+          for (let i = 0; i < _HEADER_LEN; i++) {
+            const pidx = Math.floor(i / 3);
+            headerBytes[i] = px[pidx * 4 + (i % 3)];
+          }
+
+          for (let i = 0; i < _MAGIC.length; i++) {
+            if (headerBytes[i] !== _MAGIC[i]) {
+              reject(new Error('Not a valid Ramen Rater backup image'));
+              return;
+            }
+          }
+
+          const dv = new DataView(headerBytes.buffer);
+          const compLen = dv.getUint32(6, false);
+          const totalBytes = _HEADER_LEN + compLen;
+
+          const payload = new Uint8Array(totalBytes);
+          for (let i = 0; i < totalBytes; i++) {
+            const pidx = Math.floor(i / 3);
+            payload[i] = px[pidx * 4 + (i % 3)];
+          }
+
+          const compressed = payload.slice(_HEADER_LEN);
+          const jsonBytes = await _inflate(compressed);
+          const json = new TextDecoder().decode(jsonBytes);
+          const imported = JSON.parse(json);
+
+          if (!imported.ratings || !imported.rankedList) {
+            reject(new Error('Invalid backup data in image'));
+            return;
+          }
+          data = { ...defaultData(), ...imported };
+          save();
+          resolve(data);
+        } catch (err) {
+          reject(new Error(err.message || 'Could not decode backup image'));
+        }
+      };
+      img.onerror = () => reject(new Error('Could not load image'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('Could not read file'));
+    reader.readAsDataURL(file);
   });
 }
 

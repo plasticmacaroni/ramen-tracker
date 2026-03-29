@@ -176,7 +176,7 @@ def _create_browser():
     ext_path = _ensure_ublock()
 
     pw = sync_playwright().start()
-    user_data = str(CACHE_DIR / "pw-barcode-profile")
+    user_data = str(CACHE_DIR / "pw-profile")
     context = pw.chromium.launch_persistent_context(
         user_data,
         headless=False,

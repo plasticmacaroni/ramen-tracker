@@ -1504,6 +1504,13 @@ a:hover {
   text-align: center;
 }
 
+.text-hint {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
 /* ---- BACKUP BANNER ---- */
 
 .banner {

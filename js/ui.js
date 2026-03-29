@@ -1489,15 +1489,29 @@ export function initSettingsModal() {
     hideBanner();
   });
 
+  document.getElementById('backup-image').addEventListener('click', async () => {
+    const status = document.getElementById('backup-status');
+    status.textContent = 'Generating image...';
+    try {
+      await storage.exportBackupImage();
+      status.textContent = 'Image saved! Do not screenshot — save the file directly.';
+      hideBanner();
+    } catch (err) {
+      status.textContent = `Error: ${err.message}`;
+    }
+  });
+
   document.getElementById('backup-upload').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const status = document.getElementById('backup-status');
+    status.textContent = 'Restoring...';
     try {
       await storage.importBackup(file);
-      document.getElementById('backup-status').textContent = 'Backup restored! Refreshing...';
+      status.textContent = 'Backup restored! Refreshing...';
       setTimeout(() => location.reload(), 800);
     } catch (err) {
-      document.getElementById('backup-status').textContent = `Error: ${err.message}`;
+      status.textContent = `Error: ${err.message}`;
     }
   });
 
