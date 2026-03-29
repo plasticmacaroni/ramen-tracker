@@ -248,15 +248,20 @@ function _applyLogoBg(img) {
 }
 window.__applyLogoBg = _applyLogoBg;
 
+window.__brandLogoLoaded = function (img) {
+  _applyLogoBg(img);
+  const wrap = img.closest('.brand-logo-wrap');
+  if (wrap) wrap.style.display = '';
+  const text = wrap?.nextElementSibling;
+  if (text) text.style.display = 'none';
+};
+
 window.__brandLogoFallback = function (img) {
   const idx = (parseInt(img.dataset.extIdx) || 0) + 1;
   const brand = img.dataset.brand;
   if (idx < BRAND_LOGO_EXTS.length) {
     img.dataset.extIdx = idx;
     img.src = brandLogoPath(brand, BRAND_LOGO_EXTS[idx]);
-  } else {
-    img.parentElement.style.display = 'none';
-    img.parentElement.nextElementSibling.style.display = '';
   }
 };
 
@@ -264,7 +269,7 @@ function brandHtml(brand) {
   if (!brand) return '';
   const src = brandLogoPath(brand);
   const escaped = brand.replace(/"/g, '&quot;');
-  return `<span class="brand-logo-wrap"><img src="${src}" alt="${escaped}" class="brand-logo" data-brand="${escaped}" data-ext-idx="0" crossorigin="anonymous" onload="window.__applyLogoBg(this)" onerror="window.__brandLogoFallback(this)"></span><span class="brand-text" style="display:none">${brand}</span>`;
+  return `<span class="brand-logo-wrap" style="display:none"><img src="${src}" alt="${escaped}" class="brand-logo" data-brand="${escaped}" data-ext-idx="0" crossorigin="anonymous" onload="window.__brandLogoLoaded(this)" onerror="window.__brandLogoFallback(this)"></span><span class="brand-text">${brand}</span>`;
 }
 
 function ramenImage(ramen) {
