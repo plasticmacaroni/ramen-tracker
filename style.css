@@ -1687,7 +1687,7 @@ a:hover {
 
 /* ---- BARCODE SCANNER ---- */
 
-.barcode-scan-btn {
+.search-box .barcode-scan-btn {
   position: absolute;
   right: 40px;
   top: 50%;
@@ -1702,9 +1702,11 @@ a:hover {
   align-items: center;
   justify-content: center;
   transition: var(--transition);
+  width: auto;
+  height: auto;
 }
 
-.barcode-scan-btn:hover {
+.search-box .barcode-scan-btn:hover {
   color: var(--yellow);
   background: var(--bg-elevated);
 }
