@@ -1580,7 +1580,19 @@ export function initSettingsModal() {
   const pasteZone = document.getElementById('backup-paste-zone');
   if (pasteZone) {
     pasteZone.addEventListener('click', () => pasteZone.focus());
-    pasteZone.addEventListener('paste', handleBackupPaste);
+    pasteZone.addEventListener('beforeinput', (e) => {
+      if (e.inputType !== 'insertFromPaste') e.preventDefault();
+    });
+    pasteZone.addEventListener('paste', (e) => {
+      handleBackupPaste(e);
+      requestAnimationFrame(() => {
+        pasteZone.textContent = '';
+        pasteZone.innerHTML =
+          '<span class="paste-zone-icon" aria-hidden="true">\u{1F4CB}</span>' +
+          '<span>Tap &amp; hold to paste a backup image</span>';
+      });
+    });
+    pasteZone.addEventListener('drop', (e) => e.preventDefault());
   }
 
   document.addEventListener('paste', (e) => {

@@ -1572,8 +1572,8 @@ a:hover {
   cursor: pointer;
   transition: var(--transition);
   outline: none;
-  -webkit-user-select: none;
-  user-select: none;
+  caret-color: transparent;
+  -webkit-user-modify: read-write-plaintext-only;
 }
 .paste-zone:focus, .paste-zone:hover {
   border-color: var(--teal);
