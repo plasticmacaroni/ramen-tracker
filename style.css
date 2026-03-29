@@ -381,6 +381,25 @@ a:hover {
   color: var(--bg);
 }
 
+.btn-reorder-float {
+  position: fixed;
+  bottom: calc(var(--nav-height) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  padding: 12px 40px;
+  background: var(--teal);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
 .drag-handle {
   display: flex;
   align-items: center;
@@ -1591,25 +1610,6 @@ a:hover {
   font-style: italic;
 }
 
-/* ---- WISHLIST TAB COUNT BADGE ---- */
-
-.tab-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 8px;
-  background: var(--yellow);
-  color: #0d0d0d;
-  font-size: 0.6rem;
-  font-weight: 800;
-  line-height: 1;
-  margin-left: 3px;
-  vertical-align: middle;
-}
-
 /* ---- WISHLIST BUTTON (in modals) ---- */
 
 .wishlist-btn {
@@ -2020,6 +2020,10 @@ a:hover {
     top: 8px;
     right: 14px;
     z-index: 110;
+  }
+
+  .btn-reorder-float {
+    bottom: 24px;
   }
 
   .tab-btn {

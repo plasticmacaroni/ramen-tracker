@@ -897,17 +897,6 @@ export function compressExistingImage(dataUrl) {
 let reorderMode = false;
 let _sortableInstance = null;
 
-function updateWishlistCount() {
-  const count = storage.getWishlistCount();
-  const badge = document.getElementById('wishlist-tab-count');
-  if (count > 0) {
-    badge.textContent = count;
-    badge.classList.remove('hidden');
-  } else {
-    badge.classList.add('hidden');
-  }
-}
-
 export function initCollectionView() {
   const sortSelect = document.getElementById('collection-sort');
   const brandSelect = document.getElementById('collection-brand');
@@ -976,10 +965,13 @@ export function initCollectionView() {
   });
 
   const reorderBtn = document.getElementById('collection-reorder-btn');
-  reorderBtn.addEventListener('click', () => {
+  const reorderFloat = document.getElementById('reorder-done-float');
+
+  function toggleReorder() {
     reorderMode = !reorderMode;
     reorderBtn.textContent = reorderMode ? 'DONE' : 'REORDER';
     reorderBtn.classList.toggle('btn-reorder-active', reorderMode);
+    reorderFloat.classList.toggle('hidden', !reorderMode);
     if (reorderMode) {
       sortSelect.value = 'rank';
       searchInput.value = '';
@@ -993,11 +985,13 @@ export function initCollectionView() {
     });
     clearFiltersBtn.classList.toggle('hidden', true);
     renderCollection();
-  });
+  }
+
+  reorderBtn.addEventListener('click', toggleReorder);
+  reorderFloat.addEventListener('click', toggleReorder);
 }
 
 export function renderCollection() {
-  updateWishlistCount();
   const list = document.getElementById('collection-list');
   const empty = document.getElementById('collection-empty');
   const sort = document.getElementById('collection-sort').value;
@@ -1173,7 +1167,6 @@ export function initWishlistView() {
 }
 
 export function renderWishlist() {
-  updateWishlistCount();
   const list = document.getElementById('wishlist-list');
   const empty = document.getElementById('wishlist-empty');
 
@@ -1187,7 +1180,6 @@ export function renderWishlist() {
   if (keys.length === 0) {
     list.innerHTML = '';
     empty.classList.remove('hidden');
-    updateWishlistCount();
     return;
   }
   empty.classList.add('hidden');
@@ -1236,13 +1228,11 @@ export function renderWishlist() {
       e.stopPropagation();
       storage.removeFromWishlist(item.id);
       renderWishlist();
-      updateWishlistCount();
     });
     wrap.appendChild(card);
     wrap.appendChild(removeBtn);
     list.appendChild(wrap);
   });
-  updateWishlistCount();
   announce(`${items.length} ramen in your want-to-try list`);
 }
 
@@ -2245,5 +2235,7 @@ export function initBarcodeScanner() {
 
   document.getElementById('rate-barcode-btn')?.addEventListener('click', () => openBarcodeScanner('rate'));
   document.getElementById('rate-barcode-big')?.addEventListener('click', () => openBarcodeScanner('rate'));
-  document.getElementById('discover-barcode-btn')?.addEventListener('click', () => openBarcodeScanner('discover'));
+  document.getElementById('collection-barcode-btn')?.addEventListener('click', () => openBarcodeScanner('rate'));
+  document.getElementById('wishlist-barcode-btn')?.addEventListener('click', () => openBarcodeScanner('rate'));
+  document.getElementById('discover-barcode-btn')?.addEventListener('click', () => openBarcodeScanner('rate'));
 }

@@ -223,10 +223,6 @@ export function isWishlisted(id) {
   return String(id) in getData().wishlist;
 }
 
-export function getWishlistCount() {
-  return Object.keys(getData().wishlist).length;
-}
-
 export function getWishlistIds() {
   return new Set(Object.keys(getData().wishlist).map(k => {
     const n = Number(k);
