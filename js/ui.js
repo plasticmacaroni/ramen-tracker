@@ -154,7 +154,6 @@ const COUNTRY_FLAGS = {
   'Poland': '\u{1F1F5}\u{1F1F1}',
   'Portugal': '\u{1F1F5}\u{1F1F9}',
   'Russia': '\u{1F1F7}\u{1F1FA}',
-  'Sarawak': '\u{1F1F2}\u{1F1FE}',
   'Serbia': '\u{1F1F7}\u{1F1F8}',
   'Singapore': '\u{1F1F8}\u{1F1EC}',
   'South Korea': '\u{1F1F0}\u{1F1F7}',
@@ -522,6 +521,7 @@ export function openRatingModal(ramen) {
     removeBtn.classList.add('hidden');
   }
 
+  document.querySelector('#modal-rate .modal-close').classList.remove('hidden');
   modal.classList.remove('hidden');
   trapFocus(modal);
 }
@@ -675,6 +675,7 @@ function showCompareStep(result) {
   document.getElementById('rating-step-rate').classList.add('hidden');
   document.getElementById('rating-step-compare').classList.remove('hidden');
   document.getElementById('rating-step-done').classList.add('hidden');
+  document.querySelector('#modal-rate .modal-close').classList.add('hidden');
 
   document.getElementById('compare-counter').textContent = `Comparison ${result.step} of ~${result.totalSteps}`;
 
@@ -699,6 +700,7 @@ function showDoneStep() {
   document.getElementById('rating-step-rate').classList.add('hidden');
   document.getElementById('rating-step-compare').classList.add('hidden');
   document.getElementById('rating-step-done').classList.remove('hidden');
+  document.querySelector('#modal-rate .modal-close').classList.remove('hidden');
 
   const rank = storage.getRank(currentRatingRamen.id);
   const score = storage.getScore(currentRatingRamen.id);
@@ -711,6 +713,7 @@ function showDoneStep() {
 }
 
 function closeRatingModal() {
+  if (ranking.isInsertionActive()) return;
   const modal = document.getElementById('modal-rate');
   modal.classList.add('hidden');
   releaseFocus(modal);

@@ -267,9 +267,19 @@ async function init() {
     restoreFromHash();
   }
 
+  syncSearchClearButtons();
+
   ui.checkBackupBanner();
   ui.resumePendingInsertion();
   migrateCustomImages();
+}
+
+function syncSearchClearButtons() {
+  document.querySelectorAll('.search-box').forEach(box => {
+    const input = box.querySelector('input[type="text"]');
+    const btn = box.querySelector('.search-clear');
+    if (input && btn) btn.classList.toggle('hidden', !input.value.trim());
+  });
 }
 
 async function migrateCustomImages() {
@@ -293,11 +303,8 @@ async function migrateCustomImages() {
 init();
 
 window.addEventListener('pageshow', () => {
-  document.querySelectorAll('.search-box').forEach(box => {
-    const input = box.querySelector('input[type="text"]');
-    const btn = box.querySelector('.search-clear');
-    if (input && btn) btn.classList.toggle('hidden', !input.value.trim());
-  });
+  syncSearchClearButtons();
+  requestAnimationFrame(syncSearchClearButtons);
 });
 
 const scrollTopBtn = document.getElementById('scroll-top');

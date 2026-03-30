@@ -8,6 +8,21 @@ let barcodeMap = {};
 
 const PRIORITY_COUNTRIES = ['United States', 'Japan', 'South Korea'];
 
+const COUNTRY_ALIASES = {
+  'USA': 'United States',
+  'US': 'United States',
+  'U.S.': 'United States',
+  'U.S.A.': 'United States',
+  'UK': 'United Kingdom',
+  'U.K.': 'United Kingdom',
+  'Sarawak': 'Malaysia',
+};
+
+function normalizeCountry(country) {
+  if (!country) return country;
+  return COUNTRY_ALIASES[country] || country;
+}
+
 export async function loadRamenData() {
   try {
     const [ramenRes, popRes, barcodeRes, urlsRes] = await Promise.all([
@@ -20,6 +35,7 @@ export async function loadRamenData() {
     const popMap = popRes.ok ? await popRes.json() : {};
     const urlMap = urlsRes.ok ? await urlsRes.json() : {};
     for (const r of allRamen) {
+      r.country = normalizeCountry(r.country);
       const pop = popMap[r.id];
       if (pop) r.popularity = pop;
       const directUrl = urlMap[r.id];
@@ -63,7 +79,9 @@ export async function loadRamenData() {
     }
   }
 
-  const combined = [...allRamen, ...storage.getAllCustomRamenList()];
+  const customList = storage.getAllCustomRamenList();
+  for (const cr of customList) cr.country = normalizeCountry(cr.country);
+  const combined = [...allRamen, ...customList];
 
   const countrySet = new Set(combined.map(r => r.country).filter(Boolean));
   const priority = PRIORITY_COUNTRIES.filter(c => countrySet.has(c));

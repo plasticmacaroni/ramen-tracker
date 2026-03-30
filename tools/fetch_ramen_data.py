@@ -376,8 +376,8 @@ class ScraperControlPanel:
         root.title("Ramen Scraper")
         root.attributes("-topmost", True)
         root.resizable(True, True)
-        root.geometry("620x560")
-        root.minsize(460, 400)
+        root.geometry("620x750")
+        root.minsize(460, 600)
         root.configure(bg="#1a1a2e")
 
         tk.Label(root, text="Search Engine", font=("Segoe UI", 10, "bold"),
@@ -437,13 +437,48 @@ class ScraperControlPanel:
                   font=("Segoe UI", 9), bg="#16213e", fg="#e0e0e0",
                   activebackground="#0f3460", activeforeground="#f7d354").pack(side=tk.LEFT, padx=4)
 
+        tk.Frame(root, bg="#333", height=1).pack(fill=tk.X, padx=10, pady=(6, 4))
+
+        stats_frame = tk.Frame(root, bg="#1a1a2e")
+        stats_frame.pack(fill=tk.X, padx=10, pady=(0, 2))
+
+        left_stats = tk.Frame(stats_frame, bg="#1a1a2e")
+        left_stats.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        self._captcha_count = 0
+        self._since_captcha_var = tk.StringVar(value="Since CAPTCHA: 0")
+        tk.Label(left_stats, textvariable=self._since_captcha_var,
+                 font=("Segoe UI", 10, "bold"), fg="#2ecc71", bg="#1a1a2e",
+                 anchor="w").pack(fill=tk.X)
+
+        self._total_scored_var = tk.StringVar(value="Scored: 0")
+        tk.Label(left_stats, textvariable=self._total_scored_var,
+                 font=("Segoe UI", 9), fg="#a0a0a0", bg="#1a1a2e",
+                 anchor="w").pack(fill=tk.X)
+
+        tk.Frame(root, bg="#333", height=1).pack(fill=tk.X, padx=10, pady=(4, 2))
+
+        tk.Label(root, text="Recent Results", font=("Segoe UI", 9, "bold"),
+                 fg="#e0e0e0", bg="#1a1a2e", anchor="w").pack(fill=tk.X, padx=10, pady=(2, 0))
+
+        recent_frame = tk.Frame(root, bg="#1a1a2e")
+        recent_frame.pack(fill=tk.X, padx=10, pady=(0, 4))
+        self._recent_list = tk.Listbox(
+            recent_frame, height=6, font=("TkFixedFont", 8),
+            bg="#16213e", fg="#e0e0e0", selectbackground="#0f3460",
+            selectforeground="#f7d354", exportselection=False, activestyle="none",
+        )
+        self._recent_list.pack(fill=tk.X, expand=True)
+
+        tk.Frame(root, bg="#333", height=1).pack(fill=tk.X, padx=10, pady=(2, 4))
+
         self._progress_var = tk.StringVar(value="Starting...")
         tk.Label(root, textvariable=self._progress_var, font=("Segoe UI", 9),
-                 fg="#a0a0a0", bg="#1a1a2e").pack(pady=(4, 2))
+                 fg="#a0a0a0", bg="#1a1a2e").pack(pady=(2, 2))
 
         self._status_var = tk.StringVar(value="")
         tk.Label(root, textvariable=self._status_var, font=("Segoe UI", 8),
-                 fg="#666", bg="#1a1a2e", wraplength=430).pack(pady=(0, 8))
+                 fg="#666", bg="#1a1a2e", wraplength=430).pack(pady=(0, 6))
 
         root.protocol("WM_DELETE_WINDOW", self._on_close)
 
@@ -502,6 +537,41 @@ class ScraperControlPanel:
     def set_status(self, text):
         if self._root:
             self._root.after(0, lambda: self._status_var.set(text))
+
+    def record_captcha(self):
+        self._captcha_count += 1
+        def _update():
+            self._since_captcha_var.set(f"Since CAPTCHA: 0  (total: {self._captcha_count})")
+        if self._root:
+            self._root.after(0, _update)
+
+    def record_success(self, rid, brand, variety, count):
+        if self._root:
+            self._root.after(0, lambda: self._add_recent(rid, brand, variety, count))
+
+    def _add_recent(self, rid, brand, variety, count):
+        line = f"#{rid:<5d} {count:>12,}  {brand} — {variety}"
+        self._recent_list.insert(0, line)
+        if self._recent_list.size() > 50:
+            self._recent_list.delete(50, tk.END)
+        cur = self._since_captcha_var.get()
+        try:
+            parts = cur.split(":")
+            rest = parts[1].strip()
+            if "(" in rest:
+                num = int(rest.split("(")[0].strip())
+                total_part = rest.split("(")[1].rstrip(")")
+                self._since_captcha_var.set(f"Since CAPTCHA: {num + 1}  ({total_part})")
+            else:
+                num = int(rest)
+                self._since_captcha_var.set(f"Since CAPTCHA: {num + 1}")
+        except Exception:
+            pass
+
+    def update_scored_total(self, scored, total):
+        if self._root:
+            self._root.after(0, lambda: self._total_scored_var.set(
+                f"Scored: {scored} / {total} remaining"))
 
     def run_with_panel(self, fn, *args, **kwargs):
         """Run fn in a background thread while tkinter mainloop owns the main thread."""
@@ -602,6 +672,8 @@ def _debug(msg):
         f.write(f"[{time.strftime('%H:%M:%S')}] {msg}\n")
 
 
+_on_captcha = None
+
 def _bing_web_result_count(page, query, brand):
     """Get estimated result count from Bing web search via Playwright. Returns int."""
     from urllib.parse import quote_plus
@@ -617,6 +689,8 @@ def _bing_web_result_count(page, query, brand):
             raise TimeoutError()
     except Exception:
         print(f"      Waiting for CAPTCHA — solve it in the browser, will resume automatically...")
+        if _on_captcha:
+            _on_captcha()
         _debug(f"  .sb_count not found in 5s, waiting indefinitely (CAPTCHA?)")
         try:
             page.wait_for_selector(".sb_count", timeout=0)
@@ -647,7 +721,7 @@ def _bing_web_result_count(page, query, brand):
 def _maybe_click_result(page, engine):
     """40% chance to click a random organic result, dwell 3-12s, then go back.
     Prefers The Ramen Rater links if present."""
-    if random.random() > 0.2:
+    if random.random() > 0.05:
         return
     try:
         if engine == "google":
@@ -686,6 +760,8 @@ def _google_web_result_count(page, query, brand):
         page.wait_for_selector("#search", timeout=5000)
     except Exception:
         print(f"      Waiting for CAPTCHA — solve it in the browser, will resume automatically...")
+        if _on_captcha:
+            _on_captcha()
         _debug(f"  #search not found in 5s, waiting indefinitely (CAPTCHA?)")
         try:
             page.wait_for_selector("#search", timeout=0)
@@ -853,83 +929,6 @@ def _recompress_dir(directory, patterns, fmt, quality, Image):
     return recompressed
 
 
-_ori_model_error = ""
-
-def _init_orientation_model():
-    """Initialize PaddleOCR document orientation classifier. Returns model or None."""
-    global _ori_model_error
-    try:
-        import paddleocr
-        ver = getattr(paddleocr, '__version__', 'unknown')
-        print(f"  PaddleOCR version: {ver}")
-    except ImportError:
-        _ori_model_error = "paddleocr not installed (pip install paddleocr paddlepaddle)"
-        print(f"  ERROR: {_ori_model_error}")
-        return None
-
-    try:
-        from paddleocr import DocImgOrientationClassification
-        model = DocImgOrientationClassification(model_name="PP-LCNet_x1_0_doc_ori")
-        print("  Orientation model loaded (PP-LCNet_x1_0_doc_ori)")
-        return model
-    except ImportError as e:
-        _ori_model_error = f"DocImgOrientationClassification not in paddleocr {ver} — pip install --upgrade paddleocr"
-        _debug(f"  {_ori_model_error}: {e}")
-        print(f"  ERROR: {_ori_model_error}")
-    except Exception as e:
-        _ori_model_error = str(e)
-        _debug(f"  Orientation model init error: {e}")
-        print(f"  ERROR: Orientation model failed to load: {e}")
-        import traceback
-        traceback.print_exc()
-    return None
-
-
-def _check_orientation(model, image_path, Image):
-    """Check/fix orientation of an image using PaddleOCR. Returns (status, detail_str)."""
-    import numpy as np
-    try:
-        pil_img = Image.open(image_path).convert('RGB')
-        img_array = np.array(pil_img)
-        pil_img.close()
-
-        results = list(model.predict(img_array, batch_size=1))
-        if not results:
-            return "skip", "no prediction result"
-
-        raw = results[0].json
-        _debug(f"  PaddleOCR raw: {raw}")
-
-        # Output may be nested under 'res' key or flat
-        data = raw.get("res", raw) if isinstance(raw, dict) else raw
-
-        labels = data.get("label_names", [])
-        scores = data.get("scores", [])
-        label = labels[0] if labels else None
-        score = float(scores[0]) if scores else 0.0
-        angle = int(label) if label and str(label).isdigit() else 0
-
-        _debug(f"  PaddleOCR parsed: angle={angle} confidence={score:.3f}")
-
-        if angle == 0:
-            return "ok", f"angle={angle}° conf={score:.2f}"
-
-        MIN_ORI_CONFIDENCE = 0.70
-        if score < MIN_ORI_CONFIDENCE:
-            return "skip", f"angle={angle}° conf={score:.2f} < {MIN_ORI_CONFIDENCE} threshold"
-
-        pil_img = Image.open(image_path).convert('RGB')
-        rotated = pil_img.rotate(angle, expand=True)
-        rotated.save(image_path, 'WEBP', quality=WEBP_QUALITY)
-        pil_img.close()
-        rotated.close()
-
-        return "fixed", f"rotated {angle}° (confidence: {score:.2f})"
-    except Exception as e:
-        _debug(f"  Orientation error for {Path(image_path).name}: {e}")
-        return "error", str(e)
-
-
 def recompress_existing():
     """Check all existing ramen and brand images, recompress any that are too large."""
     try:
@@ -1072,12 +1071,8 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
             print(f"  WARNING: Could not launch browser ({e}). Skipping popularity.")
             print("  Run: bash tools/setup.sh")
 
-    # Initialize PaddleOCR orientation detection model
-    ori_model = _init_orientation_model()
-
     downloaded = 0
     scored = 0
-    oriented = 0
     errors = 0
     no_results = 0
 
@@ -1085,7 +1080,7 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
         return panel.engine if panel else "google"
 
     def _do_one(r, progress_prefix):
-        nonlocal downloaded, scored, oriented, errors, no_results
+        nonlocal downloaded, scored, errors, no_results
         out_path = IMAGES_DIR / f"{r['id']}.webp"
         needs_image = not out_path.exists()
         has_image = out_path.exists()
@@ -1100,8 +1095,6 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
             todo.append("image")
         if needs_popularity:
             todo.append("popularity")
-        if has_image and has_pillow:
-            todo.append("orientation check")
 
         reason = ", ".join(todo) if todo else "up to date"
 
@@ -1138,46 +1131,14 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
 
             time.sleep(0.3)
 
-        # --- Orientation ---
-        if has_image and has_pillow:
-            from PIL import ImageOps
-            try:
-                pil_img = Image.open(out_path)
-                exif_orient = None
-                try:
-                    exif_orient = pil_img.getexif().get(0x0112, 1)
-                except Exception:
-                    pass
-                if exif_orient and exif_orient != 1:
-                    pil_img = ImageOps.exif_transpose(pil_img)
-                    pil_img = pil_img.convert('RGB')
-                    pil_img.info.pop('exif', None)
-                    pil_img.save(out_path, 'WEBP', quality=WEBP_QUALITY)
-                    print(f"      EXIF: rotated (tag={exif_orient})")
-                    oriented += 1
-                pil_img.close()
-            except Exception as e:
-                _debug(f"  EXIF error for {out_path.name}: {e}")
-
-            if ori_model:
-                print(f"      ML orientation: checking...", end="", flush=True)
-                status, detail = _check_orientation(ori_model, out_path, Image)
-                if status == "fixed":
-                    print(f"\r      ML orientation: FIXED — {detail}")
-                    oriented += 1
-                elif status == "ok":
-                    print(f"\r      ML orientation: ok ({detail})")
-                elif status == "skip":
-                    print(f"\r      ML orientation: skipped ({detail})")
-                else:
-                    print(f"\r      ML orientation: error ({detail})")
-
         # --- Popularity ---
         if needs_popularity and page:
             engine = _get_engine()
             wait = random.uniform(3, 12)
             print(f"      Popularity: searching {engine} (waiting {wait:.0f}s to avoid rate limit)...")
-            pop_query = f'{_quote_brand(r["brand"])} {r["variety"]}'
+            variety_clean = re.sub(r'\bramen\b', '', r["variety"], flags=re.IGNORECASE).strip()
+            variety_clean = re.sub(r'\s+', ' ', variety_clean)
+            pop_query = f'{_quote_brand(r["brand"])} {variety_clean} ramen'
             time.sleep(wait)
             if engine == "google":
                 count = _google_web_result_count(page, pop_query, r["brand"])
@@ -1189,7 +1150,9 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                 save_popularity(pop_map)
                 print(f"      Popularity: {count:,}")
                 if panel:
-                    panel.set_status(f"{r['variety'][:25]}: {count:,}")
+                    panel.record_success(r['id'], r['brand'], r['variety'], count)
+                    remaining = sum(1 for x in batch if x['id'] not in pop_map)
+                    panel.update_scored_total(scored, remaining)
             else:
                 print(f"      Popularity: no results")
         elif existing_pop:
@@ -1245,7 +1208,6 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
 
     parts = []
     if downloaded: parts.append(f"{downloaded} images downloaded")
-    if oriented: parts.append(f"{oriented} orientations fixed")
     if scored: parts.append(f"{scored} popularity scores")
     if no_results: parts.append(f"{no_results} no image results")
     if errors: parts.append(f"{errors} image errors")
@@ -1286,7 +1248,11 @@ def main():
 
 
 def _main_scrape_and_finish(ramen_list, limit, panel):
+    global _on_captcha
+    if panel:
+        _on_captcha = panel.record_captcha
     fetch_images_and_popularity(ramen_list, limit=limit, panel=panel)
+    _on_captcha = None
     print(f"\nDone! {len(ramen_list)} ramen in database.")
 
 
