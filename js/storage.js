@@ -416,9 +416,14 @@ function _drawBackupCard(stats) {
     }
   }
 
+  ctx.font = '13px sans-serif';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+  ctx.fillText('This image contains your ramen ratings data.', _CARD_W / 2, 320);
+  ctx.fillText('Import it in Settings to restore your backup.', _CARD_W / 2, 340);
+
   ctx.font = '11px sans-serif';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-  ctx.fillText('Do not edit this image', _CARD_W / 2, _CARD_H - 28);
+  ctx.fillText('Do not edit or screenshot \u2014 use the original PNG file', _CARD_W / 2, _CARD_H - 28);
 
   return ctx.getImageData(0, 0, _CARD_W, _CARD_H);
 }
