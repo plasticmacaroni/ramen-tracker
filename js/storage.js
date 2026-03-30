@@ -312,7 +312,7 @@ const _SYNC = [0x00, 0xFF, 0x00, 0xFF];
 const _SYNC_HEADER_LEN = 4 + 1 + 4; // sync(4) + version(1) + length(4)
 
 const _CARD_W = 600;
-const _CARD_H = 160;
+const _CARD_H = 60;
 const _PNG_SIG = [137, 80, 78, 71, 13, 10, 26, 10];
 const _CHUNK_TYPE = [114, 77, 98, 107]; // "rMbk" — ancillary, private, safe-to-copy
 const _CHUNK_VER = 1;
@@ -411,19 +411,15 @@ function _drawBackupCard(stats) {
   const canvas = new OffscreenCanvas(_CARD_W, _CARD_H);
   const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
 
-  const grad = ctx.createLinearGradient(0, 0, _CARD_W, _CARD_H);
-  grad.addColorStop(0, '#1a0a00');
-  grad.addColorStop(0.5, '#4a1a08');
-  grad.addColorStop(1, '#7c2d12');
-  ctx.fillStyle = grad;
+  ctx.fillStyle = '#2d1206';
   ctx.fillRect(0, 0, _CARD_W, _CARD_H);
 
-  ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 24px sans-serif';
-  ctx.fillText('RAMEN RATINGS BACKUP', _CARD_W / 2, 32);
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Ramen Ratings Backup', 12, 20);
 
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-US', {
@@ -432,22 +428,22 @@ function _drawBackupCard(stats) {
   const timeStr = now.toLocaleTimeString('en-US', {
     hour: 'numeric', minute: '2-digit',
   });
-
-  const parts = [dateStr + ' at ' + timeStr];
+  let info = dateStr + ' ' + timeStr;
   if (stats) {
     const s = [];
     if (stats.ratings) s.push(stats.ratings + ' rated');
-    if (stats.wishlist) s.push(stats.wishlist + ' wishlisted');
+    if (stats.wishlist) s.push(stats.wishlist + ' wish');
     if (stats.custom) s.push(stats.custom + ' custom');
-    if (s.length) parts.push(s.join(' \u00b7 '));
+    if (s.length) info += '  \u00b7  ' + s.join(', ');
   }
-  ctx.font = '14px sans-serif';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.fillText(parts.join('  \u2014  '), _CARD_W / 2, 64);
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillText(info, 12, 42);
 
-  ctx.font = '12px sans-serif';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-  ctx.fillText('Import in Settings to restore. Do not edit or crop.', _CARD_W / 2, 96);
+  ctx.textAlign = 'right';
+  ctx.font = '10px sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.fillText('Share original file \u2014 do not screenshot or compress', _CARD_W - 12, 42);
 
   return canvas;
 }
