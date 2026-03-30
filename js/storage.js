@@ -312,7 +312,7 @@ const _SYNC = [0x00, 0xFF, 0x00, 0xFF];
 const _SYNC_HEADER_LEN = 4 + 1 + 4; // sync(4) + version(1) + length(4)
 
 const _CARD_W = 600;
-const _CARD_H = 400;
+const _CARD_H = 160;
 const _PNG_SIG = [137, 80, 78, 71, 13, 10, 26, 10];
 const _CHUNK_TYPE = [114, 77, 98, 107]; // "rMbk" — ancillary, private, safe-to-copy
 const _CHUNK_VER = 1;
@@ -413,71 +413,41 @@ function _drawBackupCard(stats) {
 
   const grad = ctx.createLinearGradient(0, 0, _CARD_W, _CARD_H);
   grad.addColorStop(0, '#1a0a00');
-  grad.addColorStop(0.4, '#4a1a08');
-  grad.addColorStop(0.7, '#7c2d12');
-  grad.addColorStop(1, '#9a3412');
+  grad.addColorStop(0.5, '#4a1a08');
+  grad.addColorStop(1, '#7c2d12');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, _CARD_W, _CARD_H);
-
-  const glow = ctx.createRadialGradient(
-    _CARD_W / 2, _CARD_H / 2 - 30, 20,
-    _CARD_W / 2, _CARD_H / 2 - 30, 250);
-  glow.addColorStop(0, 'rgba(234, 88, 12, 0.25)');
-  glow.addColorStop(1, 'rgba(234, 88, 12, 0)');
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, _CARD_W, _CARD_H);
-
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(16, 16, _CARD_W - 32, _CARD_H - 32);
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 38px sans-serif';
-  ctx.fillText('RAMEN RATINGS', _CARD_W / 2, 130);
-  ctx.font = 'bold 28px sans-serif';
-  ctx.fillText('BACKUP', _CARD_W / 2, 170);
-
-  ctx.strokeStyle = 'rgba(251, 146, 60, 0.6)';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(_CARD_W / 2 - 80, 195);
-  ctx.lineTo(_CARD_W / 2 + 80, 195);
-  ctx.stroke();
+  ctx.font = 'bold 24px sans-serif';
+  ctx.fillText('RAMEN RATINGS BACKUP', _CARD_W / 2, 32);
 
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-US', {
-    year: 'numeric', month: 'long', day: 'numeric',
+    year: 'numeric', month: 'short', day: 'numeric',
   });
   const timeStr = now.toLocaleTimeString('en-US', {
     hour: 'numeric', minute: '2-digit',
   });
-  ctx.font = '18px sans-serif';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-  ctx.fillText(`${dateStr} at ${timeStr}`, _CARD_W / 2, 225);
 
+  const parts = [dateStr + ' at ' + timeStr];
   if (stats) {
-    const parts = [];
-    if (stats.ratings) parts.push(`${stats.ratings} ratings`);
-    if (stats.wishlist) parts.push(`${stats.wishlist} wishlisted`);
-    if (stats.custom) parts.push(`${stats.custom} custom`);
-    if (parts.length) {
-      ctx.font = '15px sans-serif';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.fillText(parts.join('  \u00b7  '), _CARD_W / 2, 265);
-    }
+    const s = [];
+    if (stats.ratings) s.push(stats.ratings + ' rated');
+    if (stats.wishlist) s.push(stats.wishlist + ' wishlisted');
+    if (stats.custom) s.push(stats.custom + ' custom');
+    if (s.length) parts.push(s.join(' \u00b7 '));
   }
+  ctx.font = '14px sans-serif';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+  ctx.fillText(parts.join('  \u2014  '), _CARD_W / 2, 64);
 
-  ctx.font = '13px sans-serif';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-  ctx.fillText('This image contains your ramen ratings data.', _CARD_W / 2, 320);
-  ctx.fillText('Import it in Settings to restore your backup.', _CARD_W / 2, 340);
-
-  ctx.font = '11px sans-serif';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-  ctx.fillText('Do not edit or crop this image', _CARD_W / 2, _CARD_H - 28);
+  ctx.font = '12px sans-serif';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+  ctx.fillText('Import in Settings to restore. Do not edit or crop.', _CARD_W / 2, 96);
 
   return canvas;
 }
@@ -496,18 +466,16 @@ function _nibblePixelRows(payload, width) {
   const totalNibbles = payload.length * 2;
   const totalPixels = Math.ceil(totalNibbles / 3);
   const rows = Math.ceil(totalPixels / width);
-  const pixelCount = rows * width;
-  const px = new Uint8ClampedArray(pixelCount * 4);
+  const px = new Uint8ClampedArray(width * rows * 4);
 
   let nibIdx = 0;
-  for (let p = 0; p < pixelCount; p++) {
+  for (let p = 0; p < width * rows; p++) {
     for (let ch = 0; ch < 3; ch++) {
       if (nibIdx < totalNibbles) {
         const bytePos = nibIdx >> 1;
-        const nibble = (nibIdx & 1) === 0
+        px[p * 4 + ch] = ((nibIdx & 1) === 0
           ? (payload[bytePos] >> 4) & 0xF
-          : payload[bytePos] & 0xF;
-        px[p * 4 + ch] = nibble * 17;
+          : payload[bytePos] & 0xF) * 17;
         nibIdx++;
       }
     }
