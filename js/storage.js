@@ -306,15 +306,61 @@ export function importBackup(file) {
 const _MAGIC = [0x52, 0x41, 0x4D, 0x45, 0x4E]; // "RAMEN" (old nibble format)
 const _HEADER_LEN = 10;
 
-const _LSB_MAGIC = [0x52, 0x41, 0x4D, 0x4E, 0x32]; // "RAMN2"
-const _LSB_VERSION = 1;
-const _LSB_HEADER_LEN = 10;
 const _CARD_W = 600;
 const _CARD_H = 400;
-const _LSB_BITS = 2;
-const _LSB_MASK = (1 << _LSB_BITS) - 1;
-const _LSB_KEEP = ~_LSB_MASK & 0xFF;
-const _LSB_CAPACITY = Math.floor((_CARD_W * _CARD_H * 3 * _LSB_BITS) / 8);
+const _PNG_SIG = [137, 80, 78, 71, 13, 10, 26, 10];
+const _CHUNK_TYPE = [114, 77, 98, 107]; // "rMbk" — ancillary, private, safe-to-copy
+const _CHUNK_VER = 1;
+
+const _crcTable = new Uint32Array(256);
+for (let n = 0; n < 256; n++) {
+  let c = n;
+  for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+  _crcTable[n] = c;
+}
+function _crc32(bytes) {
+  let crc = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) crc = _crcTable[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+function _insertPNGChunk(png, payload) {
+  const chunkData = new Uint8Array(1 + payload.length);
+  chunkData[0] = _CHUNK_VER;
+  chunkData.set(payload, 1);
+
+  const chunk = new Uint8Array(12 + chunkData.length);
+  const dv = new DataView(chunk.buffer);
+  dv.setUint32(0, chunkData.length, false);
+  chunk.set(_CHUNK_TYPE, 4);
+  chunk.set(chunkData, 8);
+  const crcBuf = new Uint8Array(4 + chunkData.length);
+  crcBuf.set(_CHUNK_TYPE, 0);
+  crcBuf.set(chunkData, 4);
+  dv.setUint32(8 + chunkData.length, _crc32(crcBuf), false);
+
+  const iend = png.length - 12;
+  const out = new Uint8Array(png.length + chunk.length);
+  out.set(png.subarray(0, iend), 0);
+  out.set(chunk, iend);
+  out.set(png.subarray(iend), iend + chunk.length);
+  return out;
+}
+
+function _extractPNGChunk(png) {
+  for (let i = 0; i < 8; i++) if (png[i] !== _PNG_SIG[i]) return null;
+  let off = 8;
+  while (off + 12 <= png.length) {
+    const dv = new DataView(png.buffer, png.byteOffset + off);
+    const len = dv.getUint32(0, false);
+    if (png[off + 4] === 114 && png[off + 5] === 77 &&
+        png[off + 6] === 98 && png[off + 7] === 107) {
+      return png.slice(off + 8, off + 8 + len);
+    }
+    off += 12 + len;
+  }
+  return null;
+}
 
 async function _deflate(bytes) {
   const cs = new CompressionStream('deflate-raw');
@@ -425,50 +471,7 @@ function _drawBackupCard(stats) {
   ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
   ctx.fillText('Do not edit or screenshot \u2014 use the original PNG file', _CARD_W / 2, _CARD_H - 28);
 
-  return ctx.getImageData(0, 0, _CARD_W, _CARD_H);
-}
-
-function _buildLSBPayload(compressed) {
-  const total = _LSB_HEADER_LEN + compressed.length;
-  const payload = new Uint8Array(total);
-  payload.set(_LSB_MAGIC, 0);
-  payload[5] = _LSB_VERSION;
-  const dv = new DataView(payload.buffer);
-  dv.setUint32(6, compressed.length, false);
-  payload.set(compressed, _LSB_HEADER_LEN);
-  return payload;
-}
-
-function _embedLSB(imageData, payload) {
-  const d = imageData.data;
-  let chIdx = 0;
-  for (let i = 0; i < payload.length; i++) {
-    const byte = payload[i];
-    for (let shift = 6; shift >= 0; shift -= _LSB_BITS) {
-      const px = Math.floor(chIdx / 3);
-      const ch = chIdx % 3;
-      const idx = px * 4 + ch;
-      d[idx] = (d[idx] & _LSB_KEEP) | ((byte >> shift) & _LSB_MASK);
-      chIdx++;
-    }
-  }
-}
-
-function _extractLSB(pixelData, numBytes) {
-  const out = new Uint8Array(numBytes);
-  let chIdx = 0;
-  for (let i = 0; i < numBytes; i++) {
-    let byte = 0;
-    for (let shift = 6; shift >= 0; shift -= _LSB_BITS) {
-      const px = Math.floor(chIdx / 3);
-      const ch = chIdx % 3;
-      const idx = px * 4 + ch;
-      byte |= (pixelData[idx] & _LSB_MASK) << shift;
-      chIdx++;
-    }
-    out[i] = byte;
-  }
-  return out;
+  return canvas;
 }
 
 export async function exportBackupImage() {
@@ -476,29 +479,20 @@ export async function exportBackupImage() {
   const json = JSON.stringify(d);
   const jsonBytes = new TextEncoder().encode(json);
   const compressed = await _deflate(jsonBytes);
-  const payload = _buildLSBPayload(compressed);
-
-  if (payload.length > _LSB_CAPACITY) {
-    throw new Error(
-      `Backup data too large for image export (${payload.length} bytes, max ${_LSB_CAPACITY}). Use JSON backup instead.`
-    );
-  }
 
   const stats = {
     ratings: Object.keys(d.ratings).length,
     wishlist: Object.keys(d.wishlist).length,
     custom: Object.keys(d.customRamen).length,
   };
-  const imageData = _drawBackupCard(stats);
-  _embedLSB(imageData, payload);
+  const canvas = _drawBackupCard(stats);
+  const cardBlob = await canvas.convertToBlob({ type: 'image/png' });
+  const pngBytes = new Uint8Array(await cardBlob.arrayBuffer());
+  const finalPng = _insertPNGChunk(pngBytes, compressed);
 
-  const canvas = new OffscreenCanvas(_CARD_W, _CARD_H);
-  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
-  ctx.putImageData(imageData, 0, 0);
-
-  const blob = await canvas.convertToBlob({ type: 'image/png' });
   const date = new Date().toISOString().slice(0, 10);
   const filename = `ramen-backup-${date}.png`;
+  const blob = new Blob([finalPng], { type: 'image/png' });
 
   const file = new File([blob], filename, { type: 'image/png' });
   if (navigator.canShare?.({ files: [file] })) {
@@ -566,45 +560,26 @@ function _decodeBackupPixels(px) {
   return _readNibblesFromPixels(px, totalBytes).slice(_HEADER_LEN);
 }
 
-async function _tryLSBImport(px) {
-  const headerBytes = _extractLSB(px, _LSB_HEADER_LEN);
-  for (let i = 0; i < _LSB_MAGIC.length; i++) {
-    if (headerBytes[i] !== _LSB_MAGIC[i]) return null;
-  }
-  const dv = new DataView(headerBytes.buffer);
-  const compLen = dv.getUint32(6, false);
-  if (compLen > _LSB_CAPACITY) return null;
-  const full = _extractLSB(px, _LSB_HEADER_LEN + compLen);
-  const compressed = full.slice(_LSB_HEADER_LEN);
-  const jsonBytes = await _inflate(compressed);
-  const json = new TextDecoder().decode(jsonBytes);
-  const imported = JSON.parse(json);
-  if (!imported.ratings || !imported.rankedList) {
-    throw new Error('Invalid backup data in image');
-  }
-  return imported;
-}
-
 async function _importBackupImage(file) {
+  const fileBytes = new Uint8Array(await file.arrayBuffer());
+  const chunkData = _extractPNGChunk(fileBytes);
+  if (chunkData && chunkData.length > 1 && chunkData[0] === _CHUNK_VER) {
+    const compressed = chunkData.slice(1);
+    const jsonBytes = await _inflate(compressed);
+    const json = new TextDecoder().decode(jsonBytes);
+    const imported = JSON.parse(json);
+    if (!imported.ratings || !imported.rankedList) {
+      throw new Error('Invalid backup data in image');
+    }
+    data = { ...defaultData(), ...imported };
+    save();
+    return data;
+  }
+
   const bitmapStrategies = [
     { colorSpaceConversion: 'none', premultiplyAlpha: 'none' },
     { premultiplyAlpha: 'none' },
   ];
-
-  for (const opts of bitmapStrategies) {
-    try {
-      const px = await _readBackupPixels(file, opts);
-      const result = await _tryLSBImport(px);
-      if (result) {
-        data = { ...defaultData(), ...result };
-        save();
-        return data;
-      }
-    } catch (err) {
-      if (err.message === 'Invalid backup data in image') throw err;
-    }
-  }
-
   let lastError;
   for (const opts of bitmapStrategies) {
     try {
