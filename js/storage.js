@@ -303,10 +303,18 @@ export function importBackup(file) {
 
 /* ---- Image Backup (PNG pixel encoding) ---- */
 
-const _MAGIC = [0x52, 0x41, 0x4D, 0x45, 0x4E]; // "RAMEN"
-const _IMG_VERSION = 2;
-const _HEADER_LEN = 10; // 5 magic + 1 version + 4 length
-const _IMG_WIDTH = 256;
+const _MAGIC = [0x52, 0x41, 0x4D, 0x45, 0x4E]; // "RAMEN" (old nibble format)
+const _HEADER_LEN = 10;
+
+const _LSB_MAGIC = [0x52, 0x41, 0x4D, 0x4E, 0x32]; // "RAMN2"
+const _LSB_VERSION = 1;
+const _LSB_HEADER_LEN = 10;
+const _CARD_W = 600;
+const _CARD_H = 400;
+const _LSB_BITS = 2;
+const _LSB_MASK = (1 << _LSB_BITS) - 1;
+const _LSB_KEEP = ~_LSB_MASK & 0xFF;
+const _LSB_CAPACITY = Math.floor((_CARD_W * _CARD_H * 3 * _LSB_BITS) / 8);
 
 async function _deflate(bytes) {
   const cs = new CompressionStream('deflate-raw');
@@ -348,50 +356,140 @@ async function _inflate(bytes) {
   return out;
 }
 
-function _buildPayload(compressed) {
-  const total = _HEADER_LEN + compressed.length;
+function _drawBackupCard(stats) {
+  const canvas = new OffscreenCanvas(_CARD_W, _CARD_H);
+  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
+
+  const grad = ctx.createLinearGradient(0, 0, _CARD_W, _CARD_H);
+  grad.addColorStop(0, '#1a0a00');
+  grad.addColorStop(0.4, '#4a1a08');
+  grad.addColorStop(0.7, '#7c2d12');
+  grad.addColorStop(1, '#9a3412');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, _CARD_W, _CARD_H);
+
+  const glow = ctx.createRadialGradient(
+    _CARD_W / 2, _CARD_H / 2 - 30, 20,
+    _CARD_W / 2, _CARD_H / 2 - 30, 250);
+  glow.addColorStop(0, 'rgba(234, 88, 12, 0.25)');
+  glow.addColorStop(1, 'rgba(234, 88, 12, 0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, _CARD_W, _CARD_H);
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(16, 16, _CARD_W - 32, _CARD_H - 32);
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 38px sans-serif';
+  ctx.fillText('RAMEN RATINGS', _CARD_W / 2, 130);
+  ctx.font = 'bold 28px sans-serif';
+  ctx.fillText('BACKUP', _CARD_W / 2, 170);
+
+  ctx.strokeStyle = 'rgba(251, 146, 60, 0.6)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(_CARD_W / 2 - 80, 195);
+  ctx.lineTo(_CARD_W / 2 + 80, 195);
+  ctx.stroke();
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', {
+    year: 'numeric', month: 'long', day: 'numeric',
+  });
+  ctx.font = '18px sans-serif';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  ctx.fillText(dateStr, _CARD_W / 2, 225);
+
+  if (stats) {
+    const parts = [];
+    if (stats.ratings) parts.push(`${stats.ratings} ratings`);
+    if (stats.wishlist) parts.push(`${stats.wishlist} wishlisted`);
+    if (stats.custom) parts.push(`${stats.custom} custom`);
+    if (parts.length) {
+      ctx.font = '15px sans-serif';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.fillText(parts.join('  \u00b7  '), _CARD_W / 2, 265);
+    }
+  }
+
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+  ctx.fillText('Do not edit this image', _CARD_W / 2, _CARD_H - 28);
+
+  return ctx.getImageData(0, 0, _CARD_W, _CARD_H);
+}
+
+function _buildLSBPayload(compressed) {
+  const total = _LSB_HEADER_LEN + compressed.length;
   const payload = new Uint8Array(total);
-  payload.set(_MAGIC, 0);
-  payload[5] = _IMG_VERSION;
+  payload.set(_LSB_MAGIC, 0);
+  payload[5] = _LSB_VERSION;
   const dv = new DataView(payload.buffer);
   dv.setUint32(6, compressed.length, false);
-  payload.set(compressed, _HEADER_LEN);
+  payload.set(compressed, _LSB_HEADER_LEN);
   return payload;
 }
 
-function _pixelsFromPayload(payload) {
-  const totalNibbles = payload.length * 2;
-  const pixelCount = Math.ceil(totalNibbles / 3);
-  const h = Math.ceil(pixelCount / _IMG_WIDTH);
-  const canvas = new OffscreenCanvas(_IMG_WIDTH, h);
-  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
-  const img = ctx.createImageData(_IMG_WIDTH, h);
-  const d = img.data;
-
-  let nibIdx = 0;
-  for (let px = 0; px < _IMG_WIDTH * h; px++) {
-    for (let ch = 0; ch < 3; ch++) {
-      if (nibIdx < totalNibbles) {
-        const bytePos = nibIdx >> 1;
-        const nibble = (nibIdx & 1) === 0
-          ? (payload[bytePos] >> 4) & 0xF
-          : payload[bytePos] & 0xF;
-        d[px * 4 + ch] = nibble * 17;
-        nibIdx++;
-      }
+function _embedLSB(imageData, payload) {
+  const d = imageData.data;
+  let chIdx = 0;
+  for (let i = 0; i < payload.length; i++) {
+    const byte = payload[i];
+    for (let shift = 6; shift >= 0; shift -= _LSB_BITS) {
+      const px = Math.floor(chIdx / 3);
+      const ch = chIdx % 3;
+      const idx = px * 4 + ch;
+      d[idx] = (d[idx] & _LSB_KEEP) | ((byte >> shift) & _LSB_MASK);
+      chIdx++;
     }
-    d[px * 4 + 3] = 255;
   }
-  ctx.putImageData(img, 0, 0);
-  return canvas;
+}
+
+function _extractLSB(pixelData, numBytes) {
+  const out = new Uint8Array(numBytes);
+  let chIdx = 0;
+  for (let i = 0; i < numBytes; i++) {
+    let byte = 0;
+    for (let shift = 6; shift >= 0; shift -= _LSB_BITS) {
+      const px = Math.floor(chIdx / 3);
+      const ch = chIdx % 3;
+      const idx = px * 4 + ch;
+      byte |= (pixelData[idx] & _LSB_MASK) << shift;
+      chIdx++;
+    }
+    out[i] = byte;
+  }
+  return out;
 }
 
 export async function exportBackupImage() {
-  const json = JSON.stringify(getData());
+  const d = getData();
+  const json = JSON.stringify(d);
   const jsonBytes = new TextEncoder().encode(json);
   const compressed = await _deflate(jsonBytes);
-  const payload = _buildPayload(compressed);
-  const canvas = _pixelsFromPayload(payload);
+  const payload = _buildLSBPayload(compressed);
+
+  if (payload.length > _LSB_CAPACITY) {
+    throw new Error(
+      `Backup data too large for image export (${payload.length} bytes, max ${_LSB_CAPACITY}). Use JSON backup instead.`
+    );
+  }
+
+  const stats = {
+    ratings: Object.keys(d.ratings).length,
+    wishlist: Object.keys(d.wishlist).length,
+    custom: Object.keys(d.customRamen).length,
+  };
+  const imageData = _drawBackupCard(stats);
+  _embedLSB(imageData, payload);
+
+  const canvas = new OffscreenCanvas(_CARD_W, _CARD_H);
+  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
+  ctx.putImageData(imageData, 0, 0);
 
   const blob = await canvas.convertToBlob({ type: 'image/png' });
   const date = new Date().toISOString().slice(0, 10);
@@ -463,21 +561,53 @@ function _decodeBackupPixels(px) {
   return _readNibblesFromPixels(px, totalBytes).slice(_HEADER_LEN);
 }
 
+async function _tryLSBImport(px) {
+  const headerBytes = _extractLSB(px, _LSB_HEADER_LEN);
+  for (let i = 0; i < _LSB_MAGIC.length; i++) {
+    if (headerBytes[i] !== _LSB_MAGIC[i]) return null;
+  }
+  const dv = new DataView(headerBytes.buffer);
+  const compLen = dv.getUint32(6, false);
+  if (compLen > _LSB_CAPACITY) return null;
+  const full = _extractLSB(px, _LSB_HEADER_LEN + compLen);
+  const compressed = full.slice(_LSB_HEADER_LEN);
+  const jsonBytes = await _inflate(compressed);
+  const json = new TextDecoder().decode(jsonBytes);
+  const imported = JSON.parse(json);
+  if (!imported.ratings || !imported.rankedList) {
+    throw new Error('Invalid backup data in image');
+  }
+  return imported;
+}
+
 async function _importBackupImage(file) {
-  const strategies = [
+  const bitmapStrategies = [
     { colorSpaceConversion: 'none', premultiplyAlpha: 'none' },
     { premultiplyAlpha: 'none' },
   ];
 
+  for (const opts of bitmapStrategies) {
+    try {
+      const px = await _readBackupPixels(file, opts);
+      const result = await _tryLSBImport(px);
+      if (result) {
+        data = { ...defaultData(), ...result };
+        save();
+        return data;
+      }
+    } catch (err) {
+      if (err.message === 'Invalid backup data in image') throw err;
+    }
+  }
+
   let lastError;
-  for (const opts of strategies) {
+  for (const opts of bitmapStrategies) {
     try {
       const px = await _readBackupPixels(file, opts);
       const compressed = _decodeBackupPixels(px);
       const jsonBytes = await _inflate(compressed);
       const json = new TextDecoder().decode(jsonBytes);
       const imported = JSON.parse(json);
-
       if (!imported.ratings || !imported.rankedList) {
         throw new Error('Invalid backup data in image');
       }
