@@ -364,7 +364,7 @@ function _pixelsFromPayload(payload) {
   const pixelCount = Math.ceil(totalNibbles / 3);
   const h = Math.ceil(pixelCount / _IMG_WIDTH);
   const canvas = new OffscreenCanvas(_IMG_WIDTH, h);
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
   const img = ctx.createImageData(_IMG_WIDTH, h);
   const d = img.data;
 
@@ -436,29 +436,21 @@ function _readNibblesFromPixels(px, numBytes) {
   return out;
 }
 
-async function _importBackupImage(file) {
-  const bitmap = await createImageBitmap(file, {
-    colorSpaceConversion: 'none',
-    premultiplyAlpha: 'none',
-  });
-
+async function _readBackupPixels(file, bitmapOpts) {
+  const bitmap = await createImageBitmap(file, bitmapOpts);
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
   ctx.drawImage(bitmap, 0, 0);
-  const imgData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
-  const px = imgData.data;
+  return ctx.getImageData(0, 0, bitmap.width, bitmap.height).data;
+}
 
-  console.log('[backup-image] Image loaded:', bitmap.width, 'x', bitmap.height,
-    '| first 20 RGBA:', Array.from(px.slice(0, 20)));
-
+function _decodeBackupPixels(px) {
   const headerBytes = _readNibblesFromPixels(px, _HEADER_LEN);
-
-  const headerHex = Array.from(headerBytes).map(b => b.toString(16).padStart(2, '0')).join(' ');
-  const headerAscii = Array.from(headerBytes.slice(0, 5)).map(b => String.fromCharCode(b)).join('');
-  console.log('[backup-image] Header:', headerHex, '| ASCII:', JSON.stringify(headerAscii));
 
   for (let i = 0; i < _MAGIC.length; i++) {
     if (headerBytes[i] !== _MAGIC[i]) {
+      const headerHex = Array.from(headerBytes).map(b => b.toString(16).padStart(2, '0')).join(' ');
+      const headerAscii = Array.from(headerBytes.slice(0, 5)).map(b => String.fromCharCode(b)).join('');
       throw new Error(
         `Not a valid Ramen Rater backup image (header: "${headerAscii}" [${headerHex}])`
       );
@@ -468,21 +460,36 @@ async function _importBackupImage(file) {
   const dv = new DataView(headerBytes.buffer);
   const compLen = dv.getUint32(6, false);
   const totalBytes = _HEADER_LEN + compLen;
-  console.log('[backup-image] Compressed length:', compLen, '| total payload:', totalBytes);
+  return _readNibblesFromPixels(px, totalBytes).slice(_HEADER_LEN);
+}
 
-  const payload = _readNibblesFromPixels(px, totalBytes);
+async function _importBackupImage(file) {
+  const strategies = [
+    { colorSpaceConversion: 'none', premultiplyAlpha: 'none' },
+    { premultiplyAlpha: 'none' },
+  ];
 
-  const compressed = payload.slice(_HEADER_LEN);
-  const jsonBytes = await _inflate(compressed);
-  const json = new TextDecoder().decode(jsonBytes);
-  const imported = JSON.parse(json);
+  let lastError;
+  for (const opts of strategies) {
+    try {
+      const px = await _readBackupPixels(file, opts);
+      const compressed = _decodeBackupPixels(px);
+      const jsonBytes = await _inflate(compressed);
+      const json = new TextDecoder().decode(jsonBytes);
+      const imported = JSON.parse(json);
 
-  if (!imported.ratings || !imported.rankedList) {
-    throw new Error('Invalid backup data in image');
+      if (!imported.ratings || !imported.rankedList) {
+        throw new Error('Invalid backup data in image');
+      }
+      data = { ...defaultData(), ...imported };
+      save();
+      return data;
+    } catch (err) {
+      lastError = err;
+      if (!err.message?.startsWith('Not a valid Ramen Rater')) throw err;
+    }
   }
-  data = { ...defaultData(), ...imported };
-  save();
-  return data;
+  throw lastError;
 }
 
 export function clearAll() {
