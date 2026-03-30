@@ -446,9 +446,12 @@ function _drawBackupCard(stats) {
   const dateStr = now.toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   });
+  const timeStr = now.toLocaleTimeString('en-US', {
+    hour: 'numeric', minute: '2-digit',
+  });
   ctx.font = '18px sans-serif';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-  ctx.fillText(dateStr, _CARD_W / 2, 225);
+  ctx.fillText(`${dateStr} at ${timeStr}`, _CARD_W / 2, 225);
 
   if (stats) {
     const parts = [];
