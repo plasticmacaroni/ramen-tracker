@@ -462,6 +462,21 @@
   <button id="scroll-top" class="scroll-top-btn hidden" aria-label="Scroll to top"><img src="images/return-to-top.png" alt="Return to top"></button>
 
   <div id="a11y-announce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <script>
+  (function(){
+    var m = location.hash.match(/tab=(\w+)/);
+    if (!m) return;
+    var tab = m[1];
+    var valid = ['rate','collection','wishlist','discover','shared'];
+    if (valid.indexOf(tab) < 0 || tab === 'rate') return;
+    var cur = document.querySelector('.view.active');
+    var next = document.getElementById('view-' + tab);
+    if (cur && next) { cur.classList.remove('active'); next.classList.add('active'); }
+    var curTab = document.querySelector('.tab-btn.active');
+    var nextTab = document.getElementById('tab-' + tab);
+    if (curTab && nextTab) { curTab.classList.remove('active'); nextTab.classList.add('active'); }
+  })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.11.0/dist/index.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" defer></script>
   <script type="module" src="js/app.js"></script>

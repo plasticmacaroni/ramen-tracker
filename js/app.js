@@ -304,7 +304,6 @@ init();
 
 window.addEventListener('pageshow', () => {
   syncSearchClearButtons();
-  requestAnimationFrame(syncSearchClearButtons);
 });
 
 const scrollTopBtn = document.getElementById('scroll-top');
