@@ -303,8 +303,13 @@ export function importBackup(file) {
 
 /* ---- Image Backup (PNG pixel encoding) ---- */
 
-const _MAGIC = [0x52, 0x41, 0x4D, 0x45, 0x4E]; // "RAMEN" (old nibble format)
+const _MAGIC = [0x52, 0x41, 0x4D, 0x45, 0x4E]; // "RAMEN" (legacy nibble format)
 const _HEADER_LEN = 10;
+
+// Robust sync marker for card+nibble format — uses extreme nibble values (0x00/0xFF)
+// so each pixel channel is either 0 or 255, surviving heavy JPEG compression.
+const _SYNC = [0x00, 0xFF, 0x00, 0xFF];
+const _SYNC_HEADER_LEN = 4 + 1 + 4; // sync(4) + version(1) + length(4)
 
 const _CARD_W = 600;
 const _CARD_H = 400;
@@ -472,9 +477,43 @@ function _drawBackupCard(stats) {
 
   ctx.font = '11px sans-serif';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-  ctx.fillText('Do not edit or screenshot \u2014 use the original PNG file', _CARD_W / 2, _CARD_H - 28);
+  ctx.fillText('Do not edit or crop this image', _CARD_W / 2, _CARD_H - 28);
 
   return canvas;
+}
+
+function _buildNibblePayload(compressed) {
+  const payload = new Uint8Array(_SYNC_HEADER_LEN + compressed.length);
+  payload.set(_SYNC);
+  payload[4] = VERSION;
+  const dv = new DataView(payload.buffer);
+  dv.setUint32(5, compressed.length, false);
+  payload.set(compressed, _SYNC_HEADER_LEN);
+  return payload;
+}
+
+function _nibblePixelRows(payload, width) {
+  const totalNibbles = payload.length * 2;
+  const totalPixels = Math.ceil(totalNibbles / 3);
+  const rows = Math.ceil(totalPixels / width);
+  const pixelCount = rows * width;
+  const px = new Uint8ClampedArray(pixelCount * 4);
+
+  let nibIdx = 0;
+  for (let p = 0; p < pixelCount; p++) {
+    for (let ch = 0; ch < 3; ch++) {
+      if (nibIdx < totalNibbles) {
+        const bytePos = nibIdx >> 1;
+        const nibble = (nibIdx & 1) === 0
+          ? (payload[bytePos] >> 4) & 0xF
+          : payload[bytePos] & 0xF;
+        px[p * 4 + ch] = nibble * 17;
+        nibIdx++;
+      }
+    }
+    px[p * 4 + 3] = 255;
+  }
+  return { px, rows };
 }
 
 export async function exportBackupImage() {
@@ -488,7 +527,20 @@ export async function exportBackupImage() {
     wishlist: Object.keys(d.wishlist).length,
     custom: Object.keys(d.customRamen).length,
   };
-  const canvas = _drawBackupCard(stats);
+
+  const nibblePayload = _buildNibblePayload(compressed);
+  const { px: nibblePx, rows: nibbleRows } = _nibblePixelRows(nibblePayload, _CARD_W);
+
+  const totalH = _CARD_H + nibbleRows;
+  const canvas = new OffscreenCanvas(_CARD_W, totalH);
+  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
+
+  const cardCanvas = _drawBackupCard(stats);
+  ctx.drawImage(cardCanvas, 0, 0);
+
+  const nibbleImg = new ImageData(nibblePx, _CARD_W, nibbleRows);
+  ctx.putImageData(nibbleImg, 0, _CARD_H);
+
   const cardBlob = await canvas.convertToBlob({ type: 'image/png' });
   const pngBytes = new Uint8Array(await cardBlob.arrayBuffer());
   const finalPng = _insertPNGChunk(pngBytes, compressed);
@@ -536,12 +588,14 @@ function _readNibblesFromPixels(px, numBytes) {
   return out;
 }
 
-async function _readBackupPixels(file, bitmapOpts) {
+async function _readBackupPixels(file, bitmapOpts, startRow = 0) {
   const bitmap = await createImageBitmap(file, bitmapOpts);
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
   const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
   ctx.drawImage(bitmap, 0, 0);
-  return ctx.getImageData(0, 0, bitmap.width, bitmap.height).data;
+  const h = bitmap.height - startRow;
+  if (h <= 0) return null;
+  return ctx.getImageData(0, startRow, bitmap.width, h).data;
 }
 
 function _decodeBackupPixels(px) {
@@ -561,6 +615,46 @@ function _decodeBackupPixels(px) {
   const compLen = dv.getUint32(6, false);
   const totalBytes = _HEADER_LEN + compLen;
   return _readNibblesFromPixels(px, totalBytes).slice(_HEADER_LEN);
+}
+
+function _decodeSyncPixels(px) {
+  const headerBytes = _readNibblesFromPixels(px, _SYNC_HEADER_LEN);
+
+  for (let i = 0; i < _SYNC.length; i++) {
+    if (Math.abs(headerBytes[i] - _SYNC[i]) > 0x11) {
+      throw new Error('Not a valid Ramen Rater backup image (sync mismatch)');
+    }
+  }
+
+  const dv = new DataView(headerBytes.buffer);
+  const compLen = dv.getUint32(5, false);
+  if (compLen === 0 || compLen > px.length) {
+    throw new Error('Not a valid Ramen Rater backup image (bad length)');
+  }
+  const totalBytes = _SYNC_HEADER_LEN + compLen;
+  return _readNibblesFromPixels(px, totalBytes).slice(_SYNC_HEADER_LEN);
+}
+
+async function _tryNibbleDecode(file, bitmapStrategies, startRow, decoderFn) {
+  let lastError;
+  for (const opts of bitmapStrategies) {
+    try {
+      const px = await _readBackupPixels(file, opts, startRow);
+      if (!px) continue;
+      const compressed = decoderFn(px);
+      const jsonBytes = await _inflate(compressed);
+      const json = new TextDecoder().decode(jsonBytes);
+      const imported = JSON.parse(json);
+      if (!imported.ratings || !imported.rankedList) {
+        throw new Error('Invalid backup data in image');
+      }
+      return imported;
+    } catch (err) {
+      lastError = err;
+      if (!err.message?.startsWith('Not a valid Ramen Rater')) throw err;
+    }
+  }
+  return lastError;
 }
 
 async function _importBackupImage(file) {
@@ -583,26 +677,24 @@ async function _importBackupImage(file) {
     { colorSpaceConversion: 'none', premultiplyAlpha: 'none' },
     { premultiplyAlpha: 'none' },
   ];
-  let lastError;
-  for (const opts of bitmapStrategies) {
-    try {
-      const px = await _readBackupPixels(file, opts);
-      const compressed = _decodeBackupPixels(px);
-      const jsonBytes = await _inflate(compressed);
-      const json = new TextDecoder().decode(jsonBytes);
-      const imported = JSON.parse(json);
-      if (!imported.ratings || !imported.rankedList) {
-        throw new Error('Invalid backup data in image');
-      }
-      data = { ...defaultData(), ...imported };
-      save();
-      return data;
-    } catch (err) {
-      lastError = err;
-      if (!err.message?.startsWith('Not a valid Ramen Rater')) throw err;
-    }
+
+  // Try nibble data below the branded card (new format with robust sync header)
+  const cardResult = await _tryNibbleDecode(file, bitmapStrategies, _CARD_H, _decodeSyncPixels);
+  if (cardResult && !(cardResult instanceof Error)) {
+    data = { ...defaultData(), ...cardResult };
+    save();
+    return data;
   }
-  throw lastError;
+
+  // Fall back to full-image nibble decode (legacy RAMEN header format)
+  const legacyResult = await _tryNibbleDecode(file, bitmapStrategies, 0, _decodeBackupPixels);
+  if (legacyResult && !(legacyResult instanceof Error)) {
+    data = { ...defaultData(), ...legacyResult };
+    save();
+    return data;
+  }
+
+  throw legacyResult || cardResult || new Error('Could not decode backup image');
 }
 
 export function clearAll() {
