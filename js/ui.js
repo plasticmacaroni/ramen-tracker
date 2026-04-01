@@ -5,6 +5,17 @@ import * as share from './share.js';
 
 const FLAVOR_LABELS = ['', 'Gross...', 'Mid', 'Average', 'Tasty!', 'Shlurp!'];
 const NOODLE_LABELS = ['', 'Bad...', 'Mid', 'Average', 'Great!', 'Quality!'];
+
+const _SUBMIT_FORM = {
+  base: 'https://docs.google.com/forms/d/e/1FAIpQLScZlhaMC0GqGvnbGBV9XHmCOlQYjiM0nrW2WqY3Nwcv_JKieA/viewform',
+  fields: {
+    brand:   'entry.2011234925',
+    variety: 'entry.77213573',
+    style:   'entry.1469188158',
+    country: 'entry.45811925',
+    barcode: 'entry.938820020',
+  },
+};
 const ITEMS_PER_PAGE = 40;
 
 /* ---- Accessibility: focus trap for modals ---- */
@@ -444,6 +455,7 @@ export function initRateView() {
 let currentRatingRamen = null;
 let selectedFlavor = 0;
 let selectedNoodle = 0;
+let _pendingMergeTarget = null;
 
 export function openRatingModal(ramen) {
   if (_pendingBarcode) dismissPendingBarcode();
@@ -479,13 +491,22 @@ export function openRatingModal(ramen) {
   }
   detailsEl.innerHTML = detailParts.join('');
 
+  const mergeBtn = document.getElementById('rating-merge-custom');
   if (ramen.custom) {
-    creditEl.innerHTML = '<span class="badge badge-custom">Custom Entry</span>';
+    creditEl.innerHTML = '<span class="badge badge-custom">Custom Entry</span>' +
+      ' <a href="#" class="rater-link submit-link">Submit to Ramen Rater ↗</a>';
+    creditEl.querySelector('.submit-link').addEventListener('click', e => {
+      e.preventDefault();
+      closeRatingModal();
+      openSettingsToSubmit();
+    });
     deleteBtn.classList.remove('hidden');
+    mergeBtn.classList.remove('hidden');
   } else {
     const url = ramen.url || `https://www.theramenrater.com/?s=%23${ramen.id}%3A`;
     creditEl.innerHTML = `<a href="${url}" target="_blank" rel="noopener" class="rater-link">View on The Ramen Rater ↗</a>`;
     deleteBtn.classList.add('hidden');
+    mergeBtn.classList.add('hidden');
   }
 
   const wishBtn = document.getElementById('rating-wishlist');
@@ -501,6 +522,7 @@ export function openRatingModal(ramen) {
   document.getElementById('rating-step-rate').classList.remove('hidden');
   document.getElementById('rating-step-compare').classList.add('hidden');
   document.getElementById('rating-step-done').classList.add('hidden');
+  document.getElementById('rating-step-merge').classList.add('hidden');
 
   document.querySelectorAll('.tier-btn').forEach(b => {
     b.classList.remove('selected');
@@ -631,6 +653,101 @@ export function initRatingModal() {
     ranking.cancelInsertion();
     storage.deleteCustomRamen(currentRatingRamen.id);
     closeRatingModal();
+  });
+
+  document.getElementById('rating-merge-custom').addEventListener('click', () => {
+    if (!currentRatingRamen || !currentRatingRamen.custom) return;
+    _pendingMergeTarget = null;
+    document.getElementById('rating-step-rate').classList.add('hidden');
+    document.getElementById('rating-step-merge').classList.remove('hidden');
+    document.getElementById('merge-search-ui').classList.remove('hidden');
+    document.getElementById('merge-confirm').classList.add('hidden');
+    const input = document.getElementById('merge-search');
+    input.value = '';
+    document.getElementById('merge-results').innerHTML = '';
+    input.focus();
+  });
+
+  document.getElementById('merge-search').addEventListener('input', () => {
+    const q = document.getElementById('merge-search').value.trim();
+    const results = document.getElementById('merge-results');
+    if (q.length < 2) { results.innerHTML = ''; return; }
+    const found = data.searchAll(q).filter(r => !r.custom).slice(0, 20);
+    results.innerHTML = '';
+    if (!found.length) {
+      results.innerHTML = '<p class="text-muted" style="padding:8px">No matches found</p>';
+      return;
+    }
+    found.forEach(r => {
+      const row = document.createElement('div');
+      row.className = 'merge-item';
+      row.tabIndex = 0;
+      row.setAttribute('role', 'button');
+
+      const img = document.createElement('div');
+      img.className = 'merge-item-img';
+      img.innerHTML = ramenImage(r);
+
+      const info = document.createElement('div');
+      info.className = 'merge-item-info';
+      const name = document.createElement('span');
+      name.className = 'merge-item-name';
+      name.textContent = r.variety;
+      const meta = document.createElement('span');
+      meta.className = 'merge-item-meta';
+      meta.textContent = [r.brand, r.style, r.country].filter(Boolean).join(' · ');
+      info.append(name, meta);
+      row.append(img, info);
+
+      const pick = () => {
+        if (!currentRatingRamen) return;
+        _pendingMergeTarget = r;
+        const searchUI = document.getElementById('merge-search-ui');
+        const confirmUI = document.getElementById('merge-confirm');
+        searchUI.classList.add('hidden');
+        confirmUI.classList.remove('hidden');
+
+        document.getElementById('merge-confirm-src-img').innerHTML = ramenImage(currentRatingRamen);
+        document.getElementById('merge-confirm-src-name').textContent = currentRatingRamen.variety;
+        document.getElementById('merge-confirm-dst-img').innerHTML = ramenImage(r);
+        document.getElementById('merge-confirm-dst-name').textContent = r.variety;
+
+        document.getElementById('merge-confirm-text').textContent =
+          `Your rating and rank from "${currentRatingRamen.variety}" will transfer to "${r.variety}". The custom entry will be deleted.`;
+
+        const warn = document.getElementById('merge-confirm-warn');
+        const existing = storage.getRating(r.id);
+        if (existing) {
+          warn.textContent = `\u26A0\uFE0F "${r.variety}" already has a rating \u2014 it will be overwritten.`;
+          warn.classList.remove('hidden');
+        } else {
+          warn.classList.add('hidden');
+        }
+      };
+      row.addEventListener('click', pick);
+      row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+      results.appendChild(row);
+    });
+  });
+
+  document.getElementById('merge-confirm-go').addEventListener('click', () => {
+    if (!currentRatingRamen || !_pendingMergeTarget) return;
+    ranking.cancelInsertion();
+    storage.mergeCustomRamen(currentRatingRamen.id, _pendingMergeTarget.id);
+    _pendingMergeTarget = null;
+    closeRatingModal();
+  });
+
+  document.getElementById('merge-confirm-back').addEventListener('click', () => {
+    _pendingMergeTarget = null;
+    document.getElementById('merge-confirm').classList.add('hidden');
+    document.getElementById('merge-search-ui').classList.remove('hidden');
+  });
+
+  document.getElementById('merge-cancel').addEventListener('click', () => {
+    _pendingMergeTarget = null;
+    document.getElementById('rating-step-merge').classList.add('hidden');
+    document.getElementById('rating-step-rate').classList.remove('hidden');
   });
 
   document.getElementById('rating-wishlist').addEventListener('click', () => {
@@ -1428,6 +1545,7 @@ export function initSettingsModal() {
 
   openBtn.addEventListener('click', () => {
     updateSettingsStats();
+    populateSubmitList();
     hideScoreToggle.checked = storage.getHideRaterScore();
     updateCardSizeButtons(storage.getCardSize());
     modal.classList.remove('hidden');
@@ -1541,6 +1659,7 @@ export function initSettingsModal() {
       location.reload();
     }
   });
+
 }
 
 function applyCardSize(size) {
@@ -1557,6 +1676,76 @@ function updateCardSizeButtons(size) {
 
 function updateSettingsStats() {
   document.getElementById('stats-count').textContent = storage.getRatedCount();
+}
+
+function openSettingsToSubmit() {
+  const modal = document.getElementById('modal-settings');
+  updateSettingsStats();
+  populateSubmitList();
+  const toggle = document.getElementById('settings-hide-rater-score');
+  if (toggle) toggle.checked = storage.getHideRaterScore();
+  updateCardSizeButtons(storage.getCardSize());
+  modal.classList.remove('hidden');
+  trapFocus(modal);
+  const section = document.getElementById('submit-section');
+  requestAnimationFrame(() => {
+    section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    section.classList.add('highlight');
+    setTimeout(() => section.classList.remove('highlight'), 1500);
+  });
+}
+
+function _openSubmitForm(ramen) {
+  const f = _SUBMIT_FORM.fields;
+  const params = new URLSearchParams();
+  if (f.brand)   params.set(f.brand,   ramen.brand   || '');
+  if (f.variety)  params.set(f.variety,  ramen.variety  || '');
+  if (f.style)   params.set(f.style,   ramen.style   || '');
+  if (f.country) params.set(f.country, ramen.country || '');
+  if (f.barcode && ramen.barcode) params.set(f.barcode, ramen.barcode);
+  window.open(`${_SUBMIT_FORM.base}?${params}`, '_blank');
+}
+
+function populateSubmitList() {
+  const list = document.getElementById('submit-list');
+  const empty = document.getElementById('submit-empty');
+  const customs = storage.getAllCustomRamenList();
+
+  list.innerHTML = '';
+
+  if (!customs.length) {
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+
+  customs.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'submit-item';
+
+    const info = document.createElement('div');
+    info.className = 'submit-item-info';
+
+    const name = document.createElement('span');
+    name.className = 'submit-item-name';
+    name.textContent = r.variety;
+
+    const meta = document.createElement('span');
+    meta.className = 'submit-item-meta';
+    meta.textContent = [r.brand, r.style, r.country, r.barcode].filter(Boolean).join(' · ');
+
+    info.append(name, meta);
+
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-submit btn-sm';
+    btn.textContent = 'SUBMIT';
+    btn.setAttribute('aria-label', `Submit ${r.variety} to The Ramen Rater`);
+    btn.addEventListener('click', () => _openSubmitForm(r));
+
+    row.append(info, btn);
+    list.appendChild(row);
+  });
 }
 
 /* ---- Backup Banner ---- */

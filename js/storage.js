@@ -203,6 +203,27 @@ export function deleteCustomRamen(id) {
   save();
 }
 
+export function mergeCustomRamen(customId, targetId) {
+  const d = getData();
+  const cKey = String(customId);
+  const tKey = String(targetId);
+  const rating = d.ratings[cKey];
+  if (!rating) return;
+
+  d.rankedList = d.rankedList.filter(e => String(e) !== tKey);
+
+  const idx = d.rankedList.findIndex(e => String(e) === cKey);
+  if (idx !== -1) d.rankedList[idx] = targetId;
+
+  d.ratings[tKey] = { ...rating };
+  delete d.ratings[cKey];
+
+  delete d.customRamen[cKey];
+  delete d.wishlist[cKey];
+
+  save();
+}
+
 /* ---- Wishlist (Want to Try) ---- */
 
 export function getWishlist() {

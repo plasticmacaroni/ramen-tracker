@@ -1138,7 +1138,7 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
             print(f"      Popularity: searching {engine} (waiting {wait:.0f}s to avoid rate limit)...")
             variety_clean = re.sub(r'\bramen\b', '', r["variety"], flags=re.IGNORECASE).strip()
             variety_clean = re.sub(r'\s+', ' ', variety_clean)
-            pop_query = f'{_quote_brand(r["brand"])} {variety_clean} ramen'
+            pop_query = f'{_quote_brand(r["brand"])} {variety_clean} "ramen"'
             time.sleep(wait)
             if engine == "google":
                 count = _google_web_result_count(page, pop_query, r["brand"])

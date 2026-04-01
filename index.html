@@ -223,8 +223,39 @@
         </div>
         <button id="rating-next" class="btn btn-primary" disabled aria-label="Submit rating and proceed to ranking">NEXT</button>
         <div class="rating-actions-secondary">
+          <button id="rating-merge-custom" class="btn btn-muted hidden" aria-label="Merge this custom ramen into an existing database entry">MERGE WITH EXISTING</button>
           <button id="rating-remove" class="btn btn-muted hidden" aria-label="Remove your rating for this ramen">REMOVE RATING</button>
           <button id="rating-delete-custom" class="btn btn-danger hidden" aria-label="Permanently delete this custom ramen entry">DELETE CUSTOM RAMEN</button>
+        </div>
+      </div>
+
+      <div id="rating-step-merge" class="rating-step hidden">
+        <div id="merge-search-ui">
+          <h3>MERGE WITH EXISTING</h3>
+          <p class="text-muted">Search for the database ramen to merge into. Your rating and rank will transfer; the custom entry will be deleted.</p>
+          <input type="text" id="merge-search" class="form-input" placeholder="Search ramen..." autocomplete="off" aria-label="Search for ramen to merge into">
+          <div id="merge-results" class="merge-results"></div>
+          <button id="merge-cancel" class="btn btn-muted" style="width:100%;margin-top:8px;">CANCEL</button>
+        </div>
+        <div id="merge-confirm" class="hidden">
+          <h3>CONFIRM MERGE</h3>
+          <div class="merge-confirm-images">
+            <div class="merge-confirm-card">
+              <div id="merge-confirm-src-img" class="merge-confirm-img"></div>
+              <span id="merge-confirm-src-name" class="merge-confirm-label"></span>
+            </div>
+            <span class="merge-confirm-arrow" aria-hidden="true">&#x2192;</span>
+            <div class="merge-confirm-card">
+              <div id="merge-confirm-dst-img" class="merge-confirm-img"></div>
+              <span id="merge-confirm-dst-name" class="merge-confirm-label"></span>
+            </div>
+          </div>
+          <p id="merge-confirm-text" class="text-muted"></p>
+          <p id="merge-confirm-warn" class="merge-confirm-warn hidden"></p>
+          <div class="merge-confirm-actions">
+            <button id="merge-confirm-back" class="btn btn-muted">BACK</button>
+            <button id="merge-confirm-go" class="btn btn-submit">MERGE</button>
+          </div>
         </div>
       </div>
 
@@ -296,6 +327,12 @@
         <h3>SHARE</h3>
         <p class="text-muted">Share your ranked ramen list with friends via a link.</p>
         <button id="share-open" class="btn btn-primary" aria-label="Share your ramen rankings as a link">SHARE MY RANKINGS</button>
+      </div>
+      <div class="settings-section" id="submit-section">
+        <h3>SUBMIT TO RAMEN RATER</h3>
+        <p class="text-muted">Submit your custom ramen for The Ramen Rater to review.</p>
+        <div id="submit-list" class="submit-list"></div>
+        <p id="submit-empty" class="text-muted hidden">No custom ramen to submit.</p>
       </div>
       <div class="settings-section">
         <h3>DATA</h3>
