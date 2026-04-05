@@ -547,34 +547,6 @@ function _binaryPixelRows(payload, width) {
   return { px, rows };
 }
 
-async function _compressImageForPixels(dataUrl, maxBytes = 2048) {
-  if (!dataUrl) return null;
-  const img = new Image();
-  await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = dataUrl; });
-  const steps = [
-    { maxSide: 80, quality: 0.5 },
-    { maxSide: 60, quality: 0.4 },
-    { maxSide: 40, quality: 0.3 },
-    { maxSide: 30, quality: 0.2 },
-  ];
-  for (const { maxSide, quality } of steps) {
-    const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
-    const w = Math.round(img.width * scale);
-    const h = Math.round(img.height * scale);
-    const c = new OffscreenCanvas(w, h);
-    c.getContext('2d').drawImage(img, 0, 0, w, h);
-    const blob = await c.convertToBlob({ type: 'image/webp', quality });
-    if (blob.size <= maxBytes) {
-      const buf = await blob.arrayBuffer();
-      const bytes = new Uint8Array(buf);
-      let binary = '';
-      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-      return 'data:image/webp;base64,' + btoa(binary);
-    }
-  }
-  return null;
-}
-
 export async function exportBackupImage() {
   const d = getData();
 
@@ -582,14 +554,11 @@ export async function exportBackupImage() {
   const fullJson = JSON.stringify(d);
   const fullCompressed = await _deflate(new TextEncoder().encode(fullJson));
 
-  // Pixel data: compress custom ramen images to tiny thumbnails for JPEG resilience
+  // Pixel data: strip imageData so the pixel layer stays compact for JPEG resilience
   const pixelData = JSON.parse(fullJson);
   if (pixelData.customRamen) {
     for (const id of Object.keys(pixelData.customRamen)) {
-      const cr = pixelData.customRamen[id];
-      if (cr.imageData) {
-        cr.imageData = await _compressImageForPixels(cr.imageData);
-      }
+      pixelData.customRamen[id].imageData = null;
     }
   }
   const pixelJson = JSON.stringify(pixelData);

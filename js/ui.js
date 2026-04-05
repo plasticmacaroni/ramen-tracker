@@ -497,8 +497,7 @@ export function openRatingModal(ramen) {
       ' <a href="#" class="rater-link submit-link">Submit to Ramen Rater ↗</a>';
     creditEl.querySelector('.submit-link').addEventListener('click', e => {
       e.preventDefault();
-      closeRatingModal();
-      openSettingsToSubmit();
+      _openSubmitForm(ramen);
     });
     deleteBtn.classList.remove('hidden');
     mergeBtn.classList.remove('hidden');
