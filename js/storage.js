@@ -194,6 +194,14 @@ export function addCustomRamen(entry) {
   return ramen;
 }
 
+export function updateCustomRamenImage(id, imageData) {
+  const d = getData();
+  const cr = d.customRamen[String(id)];
+  if (!cr) return;
+  cr.imageData = imageData;
+  save();
+}
+
 export function deleteCustomRamen(id) {
   const d = getData();
   const key = String(id);

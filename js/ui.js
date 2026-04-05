@@ -467,8 +467,18 @@ export function openRatingModal(ramen) {
   document.getElementById('rating-ramen-name').textContent = ramen.variety;
   document.getElementById('rating-ramen-meta').textContent = `${ramen.brand} · ${flag(ramen.country)} ${ramen.country || ''}`;
   const headerImg = document.getElementById('rating-header-image');
+  const changePhotoHeaderBtn = document.getElementById('rating-change-photo');
   headerImg.innerHTML = ramenImage(ramen);
-  headerImg.style.cursor = 'zoom-in';
+  if (ramen.custom && !ramen.imageData) {
+    headerImg.innerHTML = '<span class="placeholder-icon add-photo-icon">+</span>';
+    headerImg.classList.add('add-photo');
+    headerImg.style.cursor = 'pointer';
+  } else {
+    headerImg.classList.remove('add-photo');
+    headerImg.style.cursor = 'zoom-in';
+  }
+  headerImg.appendChild(changePhotoHeaderBtn);
+  changePhotoHeaderBtn.classList.toggle('hidden', !ramen.custom);
 
   const detailsEl = document.getElementById('rating-details');
   const creditEl = document.getElementById('rating-ramen-credit');
@@ -580,16 +590,86 @@ export function initRatingModal() {
   const doneBtn = document.getElementById('rating-done');
   const lightbox = document.getElementById('image-lightbox');
   const lightboxImg = document.getElementById('lightbox-img');
+  const photoInput = document.getElementById('lightbox-photo-input');
+  const changePhotoHeaderBtn = document.getElementById('rating-change-photo');
+  const photoPopup = document.getElementById('photo-popup');
+  const photoPasteZone = document.getElementById('photo-popup-paste');
 
-  document.getElementById('rating-header-image').addEventListener('click', () => {
+  function closeLightbox() { lightbox.classList.add('hidden'); lightboxImg.src = ''; }
+  function openPhotoPopup() { photoPopup.classList.remove('hidden'); photoPasteZone.focus(); }
+  function closePhotoPopup() { photoPopup.classList.add('hidden'); }
+
+  function applyCustomPhoto(dataUrl) {
+    storage.updateCustomRamenImage(currentRatingRamen.id, dataUrl);
+    currentRatingRamen.imageData = dataUrl;
+    const hdr = document.getElementById('rating-header-image');
+    hdr.innerHTML = ramenImage(currentRatingRamen);
+    hdr.appendChild(changePhotoHeaderBtn);
+    changePhotoHeaderBtn.classList.remove('hidden');
+    hdr.classList.remove('add-photo');
+    hdr.style.cursor = 'zoom-in';
+    closeLightbox();
+  }
+
+  document.getElementById('rating-header-image').addEventListener('click', (e) => {
+    if (e.target.closest('.rating-change-photo-btn')) return;
+    if (currentRatingRamen?.custom && !currentRatingRamen?.imageData) {
+      openPhotoPopup();
+      return;
+    }
     const img = document.querySelector('#rating-header-image img');
     if (!img) return;
     lightboxImg.src = img.src;
     lightbox.classList.remove('hidden');
   });
-  function closeLightbox() { lightbox.classList.add('hidden'); lightboxImg.src = ''; }
-  lightbox.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', e => {
+    if (e.target === lightbox || e.target === lightboxImg) closeLightbox();
+  });
   lightbox.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+  changePhotoHeaderBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    openPhotoPopup();
+  });
+
+  photoPopup.querySelector('.photo-popup-backdrop').addEventListener('click', closePhotoPopup);
+  photoPopup.querySelector('.photo-popup-close').addEventListener('click', closePhotoPopup);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !photoPopup.classList.contains('hidden')) closePhotoPopup();
+  });
+
+  document.getElementById('photo-popup-upload').addEventListener('click', () => {
+    photoInput.click();
+  });
+
+  photoPasteZone.addEventListener('click', () => photoPasteZone.focus());
+  photoPasteZone.addEventListener('beforeinput', e => {
+    if (e.inputType !== 'insertFromPaste') e.preventDefault();
+  });
+  photoPasteZone.addEventListener('paste', e => {
+    e.preventDefault();
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        compressImage(item.getAsFile()).then(dataUrl => {
+          applyCustomPhoto(dataUrl);
+          closePhotoPopup();
+        });
+        return;
+      }
+    }
+  });
+
+  photoInput.addEventListener('change', () => {
+    const file = photoInput.files[0];
+    if (!file || !currentRatingRamen?.custom) return;
+    compressImage(file).then(dataUrl => {
+      applyCustomPhoto(dataUrl);
+      closePhotoPopup();
+    });
+    photoInput.value = '';
+  });
 
   modal.querySelector('.modal-close').addEventListener('click', closeRatingModal);
   modal.querySelector('.modal-backdrop').addEventListener('click', closeRatingModal);

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Ramen Journal</title>
   <link rel="preload" href="fonts/bangers-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
@@ -205,7 +205,9 @@
       <button class="modal-close" aria-label="Close rating dialog">&times;</button>
       <div id="rating-step-rate" class="rating-step">
         <div id="rating-header" class="rating-header">
-          <div id="rating-header-image" class="rating-header-image" role="img" aria-label="Ramen product photo (click to enlarge)"></div>
+          <div id="rating-header-image" class="rating-header-image" role="img" aria-label="Ramen product photo (click to enlarge)">
+            <button id="rating-change-photo" class="rating-change-photo-btn hidden" type="button" title="Add or change photo">+</button>
+          </div>
           <div class="rating-header-info">
             <h2 id="rating-ramen-name"></h2>
             <p id="rating-ramen-meta" class="text-muted"></p>
@@ -286,6 +288,21 @@
   <!-- IMAGE LIGHTBOX -->
   <div id="image-lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="Full-size image view (click to close)">
     <img id="lightbox-img" src="" alt="Full-size ramen product photo">
+    <input id="lightbox-photo-input" type="file" accept="image/*" class="hidden">
+  </div>
+
+  <!-- PHOTO POPUP -->
+  <div id="photo-popup" class="photo-popup hidden">
+    <div class="photo-popup-backdrop"></div>
+    <div class="photo-popup-content">
+      <p class="photo-popup-title">Add or change photo</p>
+      <button id="photo-popup-upload" class="btn" type="button">Upload Photo</button>
+      <div id="photo-popup-paste" class="paste-zone" contenteditable="true" role="textbox" aria-label="Paste an image here">
+        <span class="paste-zone-icon" aria-hidden="true">📋</span>
+        <span>Tap here &amp; paste an image</span>
+      </div>
+      <button class="photo-popup-close" type="button" aria-label="Cancel">&times;</button>
+    </div>
   </div>
 
   <!-- SETTINGS MODAL -->
