@@ -505,6 +505,8 @@ function _nibblePixelRows(payload, width) {
 // Distinct 6-byte sync so decoders can tell binary apart from nibble format.
 const _BIN_SYNC = [0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00];
 const _BIN_HEADER_LEN = 6 + 1 + 4; // sync(6) + version(1) + length(4)
+// Guard band: data starts at 8-block-aligned row below card so JPEG artifacts can't bleed in.
+const _BIN_DATA_START = 80; // card=60px + 20px black guard (aligned to JPEG 8x8 blocks)
 
 function _buildBinaryPayload(compressed) {
   const payload = new Uint8Array(_BIN_HEADER_LEN + compressed.length);
@@ -518,30 +520,80 @@ function _buildBinaryPayload(compressed) {
 
 function _binaryPixelRows(payload, width) {
   const totalBits = payload.length * 8;
-  const totalPixels = Math.ceil(totalBits / 3);
-  const rows = Math.ceil(totalPixels / width);
+  const BLOCK = 2;
+  const bitsPerBlockRow = Math.floor(width / BLOCK);
+  const blockRows = Math.ceil(totalBits / bitsPerBlockRow);
+  const rows = blockRows * BLOCK;
   const px = new Uint8ClampedArray(width * rows * 4);
 
   let bitIdx = 0;
-  for (let p = 0; p < width * rows; p++) {
-    for (let ch = 0; ch < 3; ch++) {
-      if (bitIdx < totalBits) {
-        const bytePos = bitIdx >> 3;
-        const bitPos = 7 - (bitIdx & 7);
-        px[p * 4 + ch] = ((payload[bytePos] >> bitPos) & 1) * 255;
-        bitIdx++;
+  for (let by = 0; by < blockRows; by++) {
+    for (let bx = 0; bx < bitsPerBlockRow && bitIdx < totalBits; bx++) {
+      const bytePos = bitIdx >> 3;
+      const bitPos = 7 - (bitIdx & 7);
+      const val = ((payload[bytePos] >> bitPos) & 1) * 255;
+      for (let dy = 0; dy < BLOCK; dy++) {
+        for (let dx = 0; dx < BLOCK; dx++) {
+          const pi = ((by * BLOCK + dy) * width + bx * BLOCK + dx) * 4;
+          px[pi] = val;
+          px[pi + 1] = val;
+          px[pi + 2] = val;
+          px[pi + 3] = 255;
+        }
       }
+      bitIdx++;
     }
-    px[p * 4 + 3] = 255;
   }
   return { px, rows };
 }
 
+async function _compressImageForPixels(dataUrl, maxBytes = 2048) {
+  if (!dataUrl) return null;
+  const img = new Image();
+  await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = dataUrl; });
+  const steps = [
+    { maxSide: 80, quality: 0.5 },
+    { maxSide: 60, quality: 0.4 },
+    { maxSide: 40, quality: 0.3 },
+    { maxSide: 30, quality: 0.2 },
+  ];
+  for (const { maxSide, quality } of steps) {
+    const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+    const w = Math.round(img.width * scale);
+    const h = Math.round(img.height * scale);
+    const c = new OffscreenCanvas(w, h);
+    c.getContext('2d').drawImage(img, 0, 0, w, h);
+    const blob = await c.convertToBlob({ type: 'image/webp', quality });
+    if (blob.size <= maxBytes) {
+      const buf = await blob.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      return 'data:image/webp;base64,' + btoa(binary);
+    }
+  }
+  return null;
+}
+
 export async function exportBackupImage() {
   const d = getData();
-  const json = JSON.stringify(d);
-  const jsonBytes = new TextEncoder().encode(json);
-  const compressed = await _deflate(jsonBytes);
+
+  // Full data for lossless PNG chunk (includes full-quality custom ramen images)
+  const fullJson = JSON.stringify(d);
+  const fullCompressed = await _deflate(new TextEncoder().encode(fullJson));
+
+  // Pixel data: compress custom ramen images to tiny thumbnails for JPEG resilience
+  const pixelData = JSON.parse(fullJson);
+  if (pixelData.customRamen) {
+    for (const id of Object.keys(pixelData.customRamen)) {
+      const cr = pixelData.customRamen[id];
+      if (cr.imageData) {
+        cr.imageData = await _compressImageForPixels(cr.imageData);
+      }
+    }
+  }
+  const pixelJson = JSON.stringify(pixelData);
+  const pixelCompressed = await _deflate(new TextEncoder().encode(pixelJson));
 
   const stats = {
     ratings: Object.keys(d.ratings).length,
@@ -549,22 +601,25 @@ export async function exportBackupImage() {
     custom: Object.keys(d.customRamen).length,
   };
 
-  const binPayload = _buildBinaryPayload(compressed);
+  const binPayload = _buildBinaryPayload(pixelCompressed);
   const { px: binPx, rows: binRows } = _binaryPixelRows(binPayload, _CARD_W);
 
-  const totalH = _CARD_H + binRows;
+  const totalH = _BIN_DATA_START + binRows;
   const canvas = new OffscreenCanvas(_CARD_W, totalH);
   const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
+
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, _CARD_W, totalH);
 
   const cardCanvas = _drawBackupCard(stats);
   ctx.drawImage(cardCanvas, 0, 0);
 
   const binImg = new ImageData(binPx, _CARD_W, binRows);
-  ctx.putImageData(binImg, 0, _CARD_H);
+  ctx.putImageData(binImg, 0, _BIN_DATA_START);
 
   const cardBlob = await canvas.convertToBlob({ type: 'image/png' });
   const pngBytes = new Uint8Array(await cardBlob.arrayBuffer());
-  const finalPng = _insertPNGChunk(pngBytes, compressed);
+  const finalPng = _insertPNGChunk(pngBytes, fullCompressed);
 
   const date = new Date().toISOString().slice(0, 10);
   const filename = `ramen-backup-${date}.png`;
@@ -616,7 +671,9 @@ async function _readBackupPixels(file, bitmapOpts, startRow = 0) {
   ctx.drawImage(bitmap, 0, 0);
   const h = bitmap.height - startRow;
   if (h <= 0) return null;
-  return ctx.getImageData(0, startRow, bitmap.width, h).data;
+  const data = ctx.getImageData(0, startRow, bitmap.width, h).data;
+  data._width = bitmap.width;
+  return data;
 }
 
 function _decodeBackupPixels(px) {
@@ -656,15 +713,26 @@ function _decodeSyncPixels(px) {
   return _readNibblesFromPixels(px, totalBytes).slice(_SYNC_HEADER_LEN);
 }
 
-function _readBitsFromPixels(px, numBytes) {
+function _readBitsFromPixels(px, numBytes, width) {
   const out = new Uint8Array(numBytes);
+  const BLOCK = 2;
+  const bitsPerBlockRow = Math.floor(width / BLOCK);
+  const imgRows = px.length / 4 / width;
+  const blockRows = Math.floor(imgRows / BLOCK);
   let bitIdx = 0;
   const totalBits = numBytes * 8;
-  const totalPixels = px.length / 4;
-  for (let p = 0; p < totalPixels && bitIdx < totalBits; p++) {
-    for (let ch = 0; ch < 3 && bitIdx < totalBits; ch++) {
-      const val = px[p * 4 + ch];
-      const bit = val >= 128 ? 1 : 0;
+
+  for (let by = 0; by < blockRows && bitIdx < totalBits; by++) {
+    for (let bx = 0; bx < bitsPerBlockRow && bitIdx < totalBits; bx++) {
+      let sum = 0;
+      for (let dy = 0; dy < BLOCK; dy++) {
+        for (let dx = 0; dx < BLOCK; dx++) {
+          const pi = ((by * BLOCK + dy) * width + bx * BLOCK + dx) * 4;
+          sum += px[pi] + px[pi + 1] + px[pi + 2];
+        }
+      }
+      const avg = sum / (BLOCK * BLOCK * 3);
+      const bit = avg >= 128 ? 1 : 0;
       const bytePos = bitIdx >> 3;
       const bitPos = 7 - (bitIdx & 7);
       out[bytePos] |= bit << bitPos;
@@ -675,7 +743,8 @@ function _readBitsFromPixels(px, numBytes) {
 }
 
 function _decodeBinaryPixels(px) {
-  const headerBytes = _readBitsFromPixels(px, _BIN_HEADER_LEN);
+  const width = px._width || _CARD_W;
+  const headerBytes = _readBitsFromPixels(px, _BIN_HEADER_LEN, width);
 
   for (let i = 0; i < _BIN_SYNC.length; i++) {
     if (headerBytes[i] !== _BIN_SYNC[i]) {
@@ -689,7 +758,7 @@ function _decodeBinaryPixels(px) {
     throw new Error('Not a valid Ramen Rater backup image (bad binary length)');
   }
   const totalBytes = _BIN_HEADER_LEN + compLen;
-  return _readBitsFromPixels(px, totalBytes).slice(_BIN_HEADER_LEN);
+  return _readBitsFromPixels(px, totalBytes, width).slice(_BIN_HEADER_LEN);
 }
 
 async function _tryNibbleDecode(file, bitmapStrategies, startRow, decoderFn) {
@@ -735,8 +804,8 @@ async function _importBackupImage(file) {
     { premultiplyAlpha: 'none' },
   ];
 
-  // Try binary (1-bit/channel) data below the branded card — survives JPEG recompression
-  const binResult = await _tryNibbleDecode(file, bitmapStrategies, _CARD_H, _decodeBinaryPixels);
+  // Try binary (1-bit/channel) data below guard band — survives JPEG recompression
+  const binResult = await _tryNibbleDecode(file, bitmapStrategies, _BIN_DATA_START, _decodeBinaryPixels);
   if (binResult && !(binResult instanceof Error)) {
     data = { ...defaultData(), ...binResult };
     save();

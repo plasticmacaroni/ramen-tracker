@@ -6,7 +6,7 @@
   font-family: 'Bangers';
   font-style: normal;
   font-weight: 400;
-  font-display: swap;
+  font-display: block;
   src: url('fonts/bangers-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
@@ -122,7 +122,7 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: "Bangers", cursive;
+  font-family: "Bangers", sans-serif;
   letter-spacing: 0.04em;
   color: var(--yellow);
 }
@@ -514,7 +514,7 @@ a:hover {
   padding: 12px 28px;
   border: none;
   border-radius: var(--radius-sm);
-  font-family: "Bangers", cursive;
+  font-family: "Bangers", sans-serif;
   font-size: 1.1rem;
   letter-spacing: 0.06em;
   cursor: pointer;
@@ -702,7 +702,7 @@ a:hover {
 .badge-rank {
   background: rgba(0, 212, 170, 0.2);
   color: var(--teal);
-  font-family: "Bangers", cursive;
+  font-family: "Bangers", sans-serif;
   font-size: 0.85rem;
 }
 
@@ -744,7 +744,7 @@ a:hover {
 }
 
 .card-score {
-  font-family: "Bangers", cursive;
+  font-family: "Bangers", sans-serif;
   font-size: 2rem;
   flex-shrink: 0;
   padding: 10px 14px;
@@ -786,7 +786,7 @@ a:hover {
   position: absolute;
   bottom: 0;
   right: 0;
-  font-family: "Bangers", cursive;
+  font-family: "Bangers", sans-serif;
   font-size: 1.1rem;
   padding: 2px 8px;
   border-radius: 6px 0 0 0;
@@ -824,7 +824,7 @@ a:hover {
   padding: 2px 8px;
   border-radius: 0 6px 0 0;
   background: rgba(13, 13, 13, 0.85);
-  font-family: "Bangers", cursive;
+  font-family: "Bangers", sans-serif;
   font-size: 1.1rem;
   line-height: 1.2;
   display: flex;
@@ -1182,13 +1182,13 @@ a:hover {
 }
 
 .detail-grade {
-  font-family: "Bangers", cursive;
+  font-family: "Bangers", sans-serif;
   font-size: 0.95rem;
   letter-spacing: 0.02em;
 }
 
 .detail-user-grade {
-  font-family: "Bangers", cursive;
+  font-family: "Bangers", sans-serif;
   font-size: 0.95rem;
   letter-spacing: 0.02em;
 }
@@ -1429,7 +1429,7 @@ a:hover {
 }
 
 .compare-vs {
-  font-family: "Bangers", cursive;
+  font-family: "Bangers", sans-serif;
   font-size: 2rem;
   color: var(--yellow);
   display: flex;
@@ -1493,7 +1493,7 @@ a:hover {
 
 .done-rank {
   text-align: center;
-  font-family: "Bangers", cursive;
+  font-family: "Bangers", sans-serif;
   font-size: 2rem;
 }
 
