@@ -464,7 +464,7 @@ function _drawBackupCard(stats) {
   ctx.textAlign = 'right';
   ctx.font = '10px sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  ctx.fillText('Share original file \u2014 do not screenshot or compress', _CARD_W - 12, 42);
+  ctx.fillText('Share as file \u2014 do not screenshot', _CARD_W - 12, 42);
 
   return canvas;
 }
@@ -501,6 +501,42 @@ function _nibblePixelRows(payload, width) {
   return { px, rows };
 }
 
+// Binary (1-bit/channel) encoding — survives JPEG recompression from messaging apps.
+// Distinct 6-byte sync so decoders can tell binary apart from nibble format.
+const _BIN_SYNC = [0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00];
+const _BIN_HEADER_LEN = 6 + 1 + 4; // sync(6) + version(1) + length(4)
+
+function _buildBinaryPayload(compressed) {
+  const payload = new Uint8Array(_BIN_HEADER_LEN + compressed.length);
+  payload.set(_BIN_SYNC);
+  payload[6] = VERSION;
+  const dv = new DataView(payload.buffer);
+  dv.setUint32(7, compressed.length, false);
+  payload.set(compressed, _BIN_HEADER_LEN);
+  return payload;
+}
+
+function _binaryPixelRows(payload, width) {
+  const totalBits = payload.length * 8;
+  const totalPixels = Math.ceil(totalBits / 3);
+  const rows = Math.ceil(totalPixels / width);
+  const px = new Uint8ClampedArray(width * rows * 4);
+
+  let bitIdx = 0;
+  for (let p = 0; p < width * rows; p++) {
+    for (let ch = 0; ch < 3; ch++) {
+      if (bitIdx < totalBits) {
+        const bytePos = bitIdx >> 3;
+        const bitPos = 7 - (bitIdx & 7);
+        px[p * 4 + ch] = ((payload[bytePos] >> bitPos) & 1) * 255;
+        bitIdx++;
+      }
+    }
+    px[p * 4 + 3] = 255;
+  }
+  return { px, rows };
+}
+
 export async function exportBackupImage() {
   const d = getData();
   const json = JSON.stringify(d);
@@ -513,18 +549,18 @@ export async function exportBackupImage() {
     custom: Object.keys(d.customRamen).length,
   };
 
-  const nibblePayload = _buildNibblePayload(compressed);
-  const { px: nibblePx, rows: nibbleRows } = _nibblePixelRows(nibblePayload, _CARD_W);
+  const binPayload = _buildBinaryPayload(compressed);
+  const { px: binPx, rows: binRows } = _binaryPixelRows(binPayload, _CARD_W);
 
-  const totalH = _CARD_H + nibbleRows;
+  const totalH = _CARD_H + binRows;
   const canvas = new OffscreenCanvas(_CARD_W, totalH);
   const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
 
   const cardCanvas = _drawBackupCard(stats);
   ctx.drawImage(cardCanvas, 0, 0);
 
-  const nibbleImg = new ImageData(nibblePx, _CARD_W, nibbleRows);
-  ctx.putImageData(nibbleImg, 0, _CARD_H);
+  const binImg = new ImageData(binPx, _CARD_W, binRows);
+  ctx.putImageData(binImg, 0, _CARD_H);
 
   const cardBlob = await canvas.convertToBlob({ type: 'image/png' });
   const pngBytes = new Uint8Array(await cardBlob.arrayBuffer());
@@ -620,6 +656,42 @@ function _decodeSyncPixels(px) {
   return _readNibblesFromPixels(px, totalBytes).slice(_SYNC_HEADER_LEN);
 }
 
+function _readBitsFromPixels(px, numBytes) {
+  const out = new Uint8Array(numBytes);
+  let bitIdx = 0;
+  const totalBits = numBytes * 8;
+  const totalPixels = px.length / 4;
+  for (let p = 0; p < totalPixels && bitIdx < totalBits; p++) {
+    for (let ch = 0; ch < 3 && bitIdx < totalBits; ch++) {
+      const val = px[p * 4 + ch];
+      const bit = val >= 128 ? 1 : 0;
+      const bytePos = bitIdx >> 3;
+      const bitPos = 7 - (bitIdx & 7);
+      out[bytePos] |= bit << bitPos;
+      bitIdx++;
+    }
+  }
+  return out;
+}
+
+function _decodeBinaryPixels(px) {
+  const headerBytes = _readBitsFromPixels(px, _BIN_HEADER_LEN);
+
+  for (let i = 0; i < _BIN_SYNC.length; i++) {
+    if (headerBytes[i] !== _BIN_SYNC[i]) {
+      throw new Error('Not a valid Ramen Rater backup image (binary sync mismatch)');
+    }
+  }
+
+  const dv = new DataView(headerBytes.buffer);
+  const compLen = dv.getUint32(7, false);
+  if (compLen === 0 || compLen > px.length) {
+    throw new Error('Not a valid Ramen Rater backup image (bad binary length)');
+  }
+  const totalBytes = _BIN_HEADER_LEN + compLen;
+  return _readBitsFromPixels(px, totalBytes).slice(_BIN_HEADER_LEN);
+}
+
 async function _tryNibbleDecode(file, bitmapStrategies, startRow, decoderFn) {
   let lastError;
   for (const opts of bitmapStrategies) {
@@ -663,7 +735,15 @@ async function _importBackupImage(file) {
     { premultiplyAlpha: 'none' },
   ];
 
-  // Try nibble data below the branded card (new format with robust sync header)
+  // Try binary (1-bit/channel) data below the branded card — survives JPEG recompression
+  const binResult = await _tryNibbleDecode(file, bitmapStrategies, _CARD_H, _decodeBinaryPixels);
+  if (binResult && !(binResult instanceof Error)) {
+    data = { ...defaultData(), ...binResult };
+    save();
+    return data;
+  }
+
+  // Try nibble data below the branded card (older format with sync header)
   const cardResult = await _tryNibbleDecode(file, bitmapStrategies, _CARD_H, _decodeSyncPixels);
   if (cardResult && !(cardResult instanceof Error)) {
     data = { ...defaultData(), ...cardResult };
@@ -679,7 +759,7 @@ async function _importBackupImage(file) {
     return data;
   }
 
-  throw legacyResult || cardResult || new Error('Could not decode backup image');
+  throw legacyResult || cardResult || binResult || new Error('Could not decode backup image');
 }
 
 export function clearAll() {

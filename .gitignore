@@ -10,6 +10,7 @@ tools/node_modules/
 Thumbs.db
 *.swp
 *.swo
+nul
 
 # All downloaded/generated pipeline files (recreated by setup.sh / pipeline)
 tools/.cache/
@@ -17,3 +18,5 @@ tools/.cache/
 *.traineddata
 
 tools/s*
+
+data/popularity_refreshed.json

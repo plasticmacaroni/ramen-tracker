@@ -210,9 +210,40 @@ def save_json(ramen_list):
     print(f"  Saved {out_path} ({out_path.stat().st_size / 1024:.0f} KB)")
 
 
+def cleanup_excluded():
+    """Remove images and urls for excluded IDs."""
+    ramen_ids = set()
+    ramen_path = DATA_DIR / "ramen.json"
+    if ramen_path.exists():
+        with open(ramen_path, 'r', encoding='utf-8') as f:
+            ramen_ids = {str(r['id']) for r in json.load(f)}
+
+    removed_images = 0
+    if IMAGES_DIR.exists():
+        for f in IMAGES_DIR.glob("*.webp"):
+            if f.stem.isdigit() and f.stem not in ramen_ids:
+                f.unlink()
+                removed_images += 1
+
+    removed_urls = 0
+    urls_path = DATA_DIR / "urls.json"
+    if urls_path.exists():
+        with open(urls_path, 'r', encoding='utf-8') as f:
+            urls = json.load(f)
+        before = len(urls)
+        urls = {k: v for k, v in urls.items() if k in ramen_ids}
+        removed_urls = before - len(urls)
+        if removed_urls:
+            with open(urls_path, 'w', encoding='utf-8') as f:
+                json.dump(urls, f, indent=2, ensure_ascii=False)
+                f.write('\n')
+
+    if removed_images or removed_urls:
+        print(f"  Cleaned up excluded entries: {removed_images} images, {removed_urls} URLs removed")
+
+
 POPULARITY_PATH = DATA_DIR / "popularity.json"
-
-
+REFRESHED_PATH = DATA_DIR / "popularity_refreshed.json"
 def load_popularity():
     """Load {id: count} from data/popularity.json. Returns dict with int keys."""
     if POPULARITY_PATH.exists():
@@ -228,6 +259,41 @@ def save_popularity(pop_map):
     with open(POPULARITY_PATH, 'w', encoding='utf-8') as f:
         json.dump({str(k): v for k, v in sorted(pop_map.items())}, f, ensure_ascii=False)
     print(f"  Saved {POPULARITY_PATH} ({len(pop_map)} entries)")
+
+
+def _load_refreshed():
+    if REFRESHED_PATH.exists():
+        with open(REFRESHED_PATH, 'r', encoding='utf-8') as f:
+            return set(json.load(f))
+    return set()
+
+
+def _save_refreshed(ids):
+    with open(REFRESHED_PATH, 'w', encoding='utf-8') as f:
+        json.dump(sorted(ids), f)
+
+
+def next_refresh_candidate(pop_map):
+    """Return the ramen ID with the highest popularity that hasn't been refreshed yet, or None."""
+    refreshed = _load_refreshed()
+    best_id, best_score = None, -1
+    for rid, count in pop_map.items():
+        if rid not in refreshed and count > best_score:
+            best_id, best_score = rid, count
+    return best_id
+
+
+def mark_popularity_refreshed(rid):
+    """Mark an ID as refreshed after its new score has been saved."""
+    refreshed = _load_refreshed()
+    refreshed.add(rid)
+    _save_refreshed(refreshed)
+
+
+def count_unrefreshed(pop_map):
+    """Count how many popularity entries haven't been refreshed yet."""
+    refreshed = _load_refreshed()
+    return sum(1 for rid in pop_map if rid not in refreshed)
 
 
 BROWSER_HEADERS = {
@@ -366,7 +432,7 @@ class ScraperControlPanel:
         self.engine = "google"
         self._lock = threading.Lock()
         self._single_queue = []
-        self._bulk_paused = True
+        self._bulk_paused = False
         self._wake = threading.Event()
         self._match_ids = []
         self.shutting_down = False
@@ -548,6 +614,17 @@ class ScraperControlPanel:
     def record_success(self, rid, brand, variety, count):
         if self._root:
             self._root.after(0, lambda: self._add_recent(rid, brand, variety, count))
+
+    def record_error(self, rid, brand, variety, reason="NO RESULTS"):
+        if self._root:
+            self._root.after(0, lambda: self._add_recent_error(rid, brand, variety, reason))
+
+    def _add_recent_error(self, rid, brand, variety, reason):
+        line = f"#{rid:<5d} *** {reason} ***  {brand} — {variety}"
+        self._recent_list.insert(0, line)
+        self._recent_list.itemconfig(0, fg="#ff4444", selectforeground="#ff6666")
+        if self._recent_list.size() > 50:
+            self._recent_list.delete(50, tk.END)
 
     def _add_recent(self, rid, brand, variety, count):
         line = f"#{rid:<5d} {count:>12,}  {brand} — {variety}"
@@ -870,6 +947,47 @@ WEBP_QUALITY = 75
 MAX_FILE_SIZE = 80_000  # 80KB threshold for recompression
 
 
+def _recompress_single(path, Image):
+    """Recompress a single image if it exceeds size/width limits."""
+    if not path.exists() or Image is None:
+        return
+    try:
+        from PIL import ImageOps
+        file_size = path.stat().st_size
+        img = Image.open(path)
+        reasons = []
+
+        exif_orientation = None
+        try:
+            exif_orientation = img.getexif().get(0x0112, 1)
+        except Exception:
+            pass
+        if exif_orientation and exif_orientation != 1:
+            img = ImageOps.exif_transpose(img)
+            reasons.append(f"EXIF rotated")
+
+        if file_size > MAX_FILE_SIZE:
+            reasons.append(f"too large ({file_size//1024}KB)")
+        if img.width > MAX_WIDTH:
+            reasons.append(f"too wide ({img.width}px)")
+
+        if not reasons:
+            return
+
+        img = img.convert('RGB')
+        if img.width > MAX_WIDTH:
+            ratio = MAX_WIDTH / img.width
+            img = img.resize((MAX_WIDTH, int(img.height * ratio)), Image.LANCZOS)
+
+        fmt = path.suffix.lstrip('.').upper()
+        quality_kw = {'quality': WEBP_QUALITY} if fmt == 'WEBP' else {'optimize': True}
+        img.save(path, fmt, **quality_kw)
+        new_size = path.stat().st_size
+        print(f"      Recompressed: {', '.join(reasons)} -> {new_size//1024}KB ({img.width}x{img.height})")
+    except Exception as e:
+        print(f"      Recompress error: {e}")
+
+
 def _recompress_dir(directory, patterns, fmt, quality, Image):
     """Recompress images in a directory that exceed size/width limits. Returns count."""
     if not directory.exists():
@@ -1046,13 +1164,24 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
               if r['id'] not in existing
               or r['id'] not in pop_map]
 
-    if not needed:
+    total_ramen = len(ramen_list)
+    missing_pop = sum(1 for r in ramen_list if r['id'] not in pop_map)
+    unrefreshed = count_unrefreshed(pop_map)
+
+    if not needed and unrefreshed == 0:
         print(f"Images & popularity: everything up to date ({len(existing)} images).")
         return
 
-    any_need_popularity = any(r['id'] not in pop_map for r in needed)
+    def _priority(r):
+        missing_image = r['id'] not in existing
+        missing_pop = r['id'] not in pop_map
+        tier = 0 if missing_image and missing_pop else 1
+        pop_score = -(pop_map.get(r['id'], 0))
+        return (tier, pop_score, r['id'])
 
-    total_ramen = len(ramen_list)
+    needed.sort(key=_priority)
+
+    any_need_popularity = missing_pop > 0 or unrefreshed > 0
 
     if limit is not None:
         batch = needed[:limit]
@@ -1060,7 +1189,8 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
     else:
         batch = needed
         print(f"Processing: {len(batch)} ramen need images and/or popularity")
-    print(f"Coverage: {len(existing)}/{total_ramen} have images ({100 * len(existing) / total_ramen:.1f}%)")
+    print(f"  Images:     {len(existing)}/{total_ramen} ({100 * len(existing) / total_ramen:.1f}%)")
+    print(f"  Popularity: {total_ramen - missing_pop}/{total_ramen} ({missing_pop} missing, {unrefreshed} to refresh)")
 
     pw, context, page = None, None, None
     if any_need_popularity:
@@ -1123,6 +1253,7 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                         downloaded += 1
                         has_image = True
                         existing.add(r['id'])
+                        _recompress_single(out_path, Image)
                         print(f"      Image: saved")
                         break
                 if not saved:
@@ -1138,7 +1269,7 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
             print(f"      Popularity: searching {engine} (waiting {wait:.0f}s to avoid rate limit)...")
             variety_clean = re.sub(r'\bramen\b', '', r["variety"], flags=re.IGNORECASE).strip()
             variety_clean = re.sub(r'\s+', ' ', variety_clean)
-            pop_query = f'{_quote_brand(r["brand"])} {variety_clean} "ramen"'
+            pop_query = f'{_quote_brand(r["brand"])} {variety_clean} {r.get("country", "")}'.strip()
             time.sleep(wait)
             if engine == "google":
                 count = _google_web_result_count(page, pop_query, r["brand"])
@@ -1151,12 +1282,33 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                 print(f"      Popularity: {count:,}")
                 if panel:
                     panel.record_success(r['id'], r['brand'], r['variety'], count)
-                    remaining = sum(1 for x in batch if x['id'] not in pop_map)
-                    panel.update_scored_total(scored, remaining)
+                    cur_missing = sum(1 for x in ramen_list if x['id'] not in pop_map)
+                    cur_unrefreshed = count_unrefreshed(pop_map)
+                    panel.update_scored_total(scored, cur_missing + cur_unrefreshed)
             else:
-                print(f"      Popularity: no results")
+                no_results += 1
+                print(f"      *** POPULARITY ERROR: NO RESULTS for #{r['id']} {r['brand']} — {r['variety']} ***")
+                if panel:
+                    panel.record_error(r['id'], r['brand'], r['variety'])
         elif existing_pop:
             print(f"      Popularity: {existing_pop:,} (cached)")
+
+        # Check all images in both ramen and brand directories for recompression
+        if has_pillow:
+            for directory, pattern in [(IMAGES_DIR, "*.webp"), (BRAND_DIR, "*.png")]:
+                if not directory.exists():
+                    continue
+                for img_file in directory.glob(pattern):
+                    try:
+                        if img_file.stat().st_size > MAX_FILE_SIZE:
+                            _recompress_single(img_file, Image)
+                    except Exception:
+                        pass
+
+    _ramen_by_id = {r['id']: r for r in ramen_list}
+
+    if panel:
+        panel.update_scored_total(0, missing_pop + unrefreshed)
 
     try:
         idx = 0
@@ -1176,10 +1328,14 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                         print(f"    [single] #{found['id']} {found['brand']} - {found['variety']}")
                         if found['id'] not in existing and (IMAGES_DIR / f"{found['id']}.webp").exists():
                             existing.add(found['id'])
-                        _do_one(found, f"[single] ({len(existing)}/{total_ramen})")
+                        cur_missing = sum(1 for x in ramen_list if x['id'] not in pop_map)
+                        cur_unrefreshed = count_unrefreshed(pop_map)
+                        _do_one(found, f"[single] pop: {cur_missing} missing, {cur_unrefreshed} to refresh")
                         if panel:
                             panel.set_progress(f"[single] #{found['id']} done")
-                            panel.set_status("Single done — paused. Click Resume all scraping to continue.")
+                        with panel._lock:
+                            panel._bulk_paused = False
+                        panel._wake.set()
                     else:
                         if panel:
                             panel.set_status(f"No ramen with id {req}")
@@ -1192,14 +1348,61 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                         panel._wake.clear()
                     continue
 
-            if idx >= n_batch:
-                break
+            if idx < n_batch:
+                r = batch[idx]
+                if r['id'] not in existing and (IMAGES_DIR / f"{r['id']}.webp").exists():
+                    existing.add(r['id'])
+                cur_missing = sum(1 for x in ramen_list if x['id'] not in pop_map)
+                cur_unrefreshed = count_unrefreshed(pop_map)
+                _do_one(r, f"[{idx + 1}/{n_batch}] pop: {cur_missing} missing, {cur_unrefreshed} to refresh")
+                idx += 1
+            elif page:
+                next_rid = next_refresh_candidate(pop_map)
+                if next_rid is None:
+                    break
+                r = _ramen_by_id.get(next_rid)
+                if not r:
+                    mark_popularity_refreshed(next_rid)
+                    continue
+                old_score = pop_map.get(r['id'], 0)
+                cur_unrefreshed = count_unrefreshed(pop_map)
+                prefix = f"[refresh {cur_unrefreshed} left]"
+                print(f"    {prefix} #{r['id']} {r['brand']} — {r['variety']} (current: {old_score:,})")
+                if panel:
+                    panel.set_progress(f"{prefix} {r['variety'][:30]}")
+                    panel.set_status(f"Engine: {_get_engine().title()}")
 
-            r = batch[idx]
-            if r['id'] not in existing and (IMAGES_DIR / f"{r['id']}.webp").exists():
-                existing.add(r['id'])
-            _do_one(r, f"[{idx + 1}/{n_batch}] ({len(existing)}/{total_ramen})")
-            idx += 1
+                engine = _get_engine()
+                wait = random.uniform(3, 12)
+                print(f"      Popularity: searching {engine} (waiting {wait:.0f}s)...")
+                variety_clean = re.sub(r'\bramen\b', '', r["variety"], flags=re.IGNORECASE).strip()
+                variety_clean = re.sub(r'\s+', ' ', variety_clean)
+                pop_query = f'{_quote_brand(r["brand"])} {variety_clean} "ramen" {r.get("country", "")}'.strip()
+                time.sleep(wait)
+                if engine == "google":
+                    count = _google_web_result_count(page, pop_query, r["brand"])
+                else:
+                    count = _bing_web_result_count(page, pop_query, r["brand"])
+                if count > 0:
+                    pop_map[r['id']] = count
+                    scored += 1
+                    save_popularity(pop_map)
+                    print(f"      Popularity: {count:,} (was {old_score:,})")
+                    if panel:
+                        panel.record_success(r['id'], r['brand'], r['variety'], count)
+                        cur_missing = sum(1 for x in ramen_list if x['id'] not in pop_map)
+                        panel.update_scored_total(scored, cur_missing + count_unrefreshed(pop_map))
+                else:
+                    no_results += 1
+                    print(f"      *** POPULARITY ERROR: NO RESULTS for #{r['id']} {r['brand']} — {r['variety']} (was {old_score:,}) ***")
+                    if panel:
+                        panel.record_error(r['id'], r['brand'], r['variety'])
+                mark_popularity_refreshed(next_rid)
+                if panel:
+                    cur_missing = sum(1 for x in ramen_list if x['id'] not in pop_map)
+                    panel.update_scored_total(scored, cur_missing + count_unrefreshed(pop_map))
+            else:
+                break
     finally:
         if context:
             context.close()
@@ -1212,6 +1415,8 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
     if no_results: parts.append(f"{no_results} no image results")
     if errors: parts.append(f"{errors} image errors")
     print(f"  Done: {', '.join(parts) if parts else 'nothing to do'}")
+
+    recompress_existing()
 
 
 def main():
@@ -1227,6 +1432,7 @@ def main():
         print("No data parsed. Exiting.")
         sys.exit(1)
     save_json(ramen_list)
+    cleanup_excluded()
 
     existing_images = sum(1 for f in IMAGES_DIR.glob("*.webp") if f.stem.isdigit()) if IMAGES_DIR.exists() else 0
     print(f"  {existing_images} ramen already have images")

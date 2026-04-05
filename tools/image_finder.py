@@ -128,14 +128,13 @@ def _follow_search(page, rid):
     Returns (url, exact_match:bool) or (None, False)."""
     try:
         links = page.query_selector_all("h2.entry-title a, .entry-title a")
-        prefix = f"#{rid}:"
-        for link in links:
-            text = (link.inner_text() or "").strip()
-            if text.startswith(prefix):
-                href = link.get_attribute("href") or ""
-                if href:
-                    page.goto(href, wait_until="domcontentloaded", timeout=15000)
-                    return page.url, True
+        tag = f"#{rid}:"
+        matched = [l for l in links if tag in (l.inner_text() or "")]
+        if len(matched) == 1:
+            href = matched[0].get_attribute("href") or ""
+            if href:
+                page.goto(href, wait_until="domcontentloaded", timeout=15000)
+                return page.url, True
         if links:
             href = links[0].get_attribute("href") or ""
             if href:

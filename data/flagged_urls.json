@@ -1,0 +1,452 @@
+[
+  {
+    "id": 1869,
+    "brand": "Nissin",
+    "variety": "Soba Fried Noodles Chili",
+    "url": "https://www.theramenrater.com/2015/12/19/36761/",
+    "slug": "36761",
+    "score": 0.0,
+    "has_id": false,
+    "has_brand": false,
+    "wrong_id": null,
+    "reasons": [
+      "no ID in URL, slug doesn't match name or brand"
+    ]
+  },
+  {
+    "id": 2254,
+    "brand": "Nissin",
+    "variety": "Disney Cuties Instant Noodle Seaweed Flavor",
+    "url": "https://www.theramenrater.com/2016/11/25/2253/",
+    "slug": "2253",
+    "score": 0.0,
+    "has_id": false,
+    "has_brand": false,
+    "wrong_id": 2253,
+    "reasons": [
+      "slug contains #2253 (different ramen)",
+      "no ID in URL, slug doesn't match name or brand"
+    ]
+  },
+  {
+    "id": 1511,
+    "brand": "Long Jun Hang",
+    "variety": "Tainan Yi Mien with Sesame Oil Sauce",
+    "url": "https://www.theramenrater.com/2014/10/28/1510-tainan/",
+    "slug": "1510 tainan",
+    "score": 0.23,
+    "has_id": false,
+    "has_brand": false,
+    "wrong_id": 1510,
+    "reasons": [
+      "slug contains #1510 (different ramen)",
+      "no ID in URL, slug doesn't match name or brand"
+    ]
+  },
+  {
+    "id": 365,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Prawn",
+    "url": "https://www.theramenrater.com/2012/10/21/906-daddy-kari-365-instant-noodles-curry-flavour/",
+    "slug": "906 daddy kari 365 instant noodles curry flavour",
+    "score": 0.389,
+    "has_id": true,
+    "has_brand": false,
+    "wrong_id": 906,
+    "reasons": [
+      "slug contains #906 (different ramen)"
+    ]
+  },
+  {
+    "id": 1603,
+    "brand": "Salam Mie",
+    "variety": "Mi Goreng Ala Jawa Dengan Sambal Cabe Asli",
+    "url": "https://www.theramenrater.com/2015/03/05/1604-salam-mie-jawa/",
+    "slug": "1604 salam mie jawa",
+    "score": 0.394,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 1604,
+    "reasons": [
+      "slug contains #1604 (different ramen)"
+    ]
+  },
+  {
+    "id": 1608,
+    "brand": "Hao Way",
+    "variety": "Penang Vegetarian Prawn Instant Noodles",
+    "url": "https://www.theramenrater.com/2015/03/10/608-vegetarian-prawn/",
+    "slug": "608 vegetarian prawn",
+    "score": 0.507,
+    "has_id": false,
+    "has_brand": false,
+    "wrong_id": 608,
+    "reasons": [
+      "slug contains #608 (different ramen)"
+    ]
+  },
+  {
+    "id": 2999,
+    "brand": "Uni-President",
+    "variety": "Pickled Cabbage Beef Stir Noodle Bowl",
+    "url": "https://www.theramenrater.com/2018/10/23/2925-uni-president-pickled/",
+    "slug": "2925 uni president pickled",
+    "score": 0.526,
+    "has_id": false,
+    "has_brand": false,
+    "wrong_id": 2925,
+    "reasons": [
+      "slug contains #2925 (different ramen)"
+    ]
+  },
+  {
+    "id": 598,
+    "brand": "Little Cook",
+    "variety": "Vegetarian",
+    "url": "https://www.theramenrater.com/2011/12/13/601a-little-cook-instant-noodles-vegetarian-flavour-cup/",
+    "slug": "601a little cook instant noodles vegetarian flavour cup",
+    "score": 0.571,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 601,
+    "reasons": [
+      "slug contains #601 (different ramen)"
+    ]
+  },
+  {
+    "id": 3087,
+    "brand": "Way Premium Foods",
+    "variety": "Premium Scallop Noodles",
+    "url": "https://www.theramenrater.com/2019/02/05/3007-way-scallop-noodles/",
+    "slug": "3007 way scallop noodles",
+    "score": 0.585,
+    "has_id": false,
+    "has_brand": false,
+    "wrong_id": 3007,
+    "reasons": [
+      "slug contains #3007 (different ramen)"
+    ]
+  },
+  {
+    "id": 2641,
+    "brand": "Nanoblock",
+    "variety": "Ramen Bokki",
+    "url": "https://www.theramenrater.com/2017/12/06/2642-nanoblcok-ramen_nbc_229/",
+    "slug": "2642 nanoblcok ramen_nbc_229",
+    "score": 0.612,
+    "has_id": false,
+    "has_brand": false,
+    "wrong_id": 2642,
+    "reasons": [
+      "slug contains #2642 (different ramen)"
+    ]
+  },
+  {
+    "id": 606,
+    "brand": "Six Fortune",
+    "variety": "U-Dong",
+    "url": "https://www.theramenrater.com/2011/12/16/605-six-fortune-instant-u-dong-noodles/",
+    "slug": "605 six fortune instant u dong noodles",
+    "score": 0.618,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 605,
+    "reasons": [
+      "slug contains #605 (different ramen)"
+    ]
+  },
+  {
+    "id": 3305,
+    "brand": "Sapporo Ichiban",
+    "variety": "Cupstar Classic Shoyu Ramen",
+    "url": "https://www.theramenrater.com/2019/10/07/3505-cupstar-classic-shoyu/",
+    "slug": "3505 cupstar classic shoyu",
+    "score": 0.638,
+    "has_id": false,
+    "has_brand": false,
+    "wrong_id": 3505,
+    "reasons": [
+      "slug contains #3505 (different ramen)"
+    ]
+  },
+  {
+    "id": 3281,
+    "brand": "Samlip",
+    "variety": "Hi-Myon Spicy Katsuo Udon",
+    "url": "https://www.theramenrater.com/2019/09/12/3280-samlip-hi-myon-spicy/",
+    "slug": "3280 samlip hi myon spicy",
+    "score": 0.679,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 3280,
+    "reasons": [
+      "slug contains #3280 (different ramen)"
+    ]
+  },
+  {
+    "id": 3186,
+    "brand": "Nissin Miojo",
+    "variety": "Nissin Lamen Light Legumes",
+    "url": "https://www.theramenrater.com/2019/05/30/3187-nissin-miojo-light-legumes/",
+    "slug": "3187 nissin miojo light legumes",
+    "score": 0.743,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 3187,
+    "reasons": [
+      "slug contains #3187 (different ramen)"
+    ]
+  },
+  {
+    "id": 3189,
+    "brand": "Canton",
+    "variety": "Spicy Tomato Flavor",
+    "url": "https://www.theramenrater.com/2019/06/04/3096-canton-spicy-tomato/",
+    "slug": "3096 canton spicy tomato",
+    "score": 0.76,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 3096,
+    "reasons": [
+      "slug contains #3096 (different ramen)"
+    ]
+  },
+  {
+    "id": 2562,
+    "brand": "Binh Tay",
+    "variety": "Mi Hai Cua",
+    "url": "https://www.theramenrater.com/2017/09/25/2462-binh-tay-mi-hai-cua-crab/",
+    "slug": "2462 binh tay mi hai cua crab",
+    "score": 0.792,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 2462,
+    "reasons": [
+      "slug contains #2462 (different ramen)"
+    ]
+  },
+  {
+    "id": 1977,
+    "brand": "MyOri",
+    "variety": "Malaysia Penang Green Curry Vermicelli (New Package)",
+    "url": "https://www.theramenrater.com/2016/03/21/197-7-myori_-malaysia-penang-green-curry-vermicelli/",
+    "slug": "197 7 myori_ malaysia penang green curry vermicelli",
+    "score": 0.822,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 197,
+    "reasons": [
+      "slug contains #197 (different ramen)"
+    ]
+  },
+  {
+    "id": 2373,
+    "brand": "Nissin",
+    "variety": "Top Ramen Atta Nooldes Masala",
+    "url": "https://www.theramenrater.com/2017/03/15/2673-top-ramen-atta-noodles-masala/",
+    "slug": "2673 top ramen atta noodles masala",
+    "score": 0.829,
+    "has_id": false,
+    "has_brand": false,
+    "wrong_id": 2673,
+    "reasons": [
+      "slug contains #2673 (different ramen)"
+    ]
+  },
+  {
+    "id": 2757,
+    "brand": "MyKuali",
+    "variety": "Hokkien Prawn (2018 Recipe)",
+    "url": "https://www.theramenrater.com/2018/03/09/2828-mykuali-hokkien-2018-recipe/",
+    "slug": "2828 mykuali hokkien 2018 recipe",
+    "score": 0.831,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 2828,
+    "reasons": [
+      "slug contains #2828 (different ramen)"
+    ]
+  },
+  {
+    "id": 4240,
+    "brand": "Samyang Foods",
+    "variety": "Buldak Habanero Lime Artificial Spicy Chicken Flavor Ramen",
+    "url": "https://www.theramenrater.com/2022/08/24/4400-samyang-buldak-habanero-lime-artificial-spicy-chicken-flavor-ramen-united-states/",
+    "slug": "4400 samyang buldak habanero lime artificial spicy chicken flavor ramen united states",
+    "score": 0.841,
+    "has_id": false,
+    "has_brand": false,
+    "wrong_id": 4400,
+    "reasons": [
+      "slug contains #4400 (different ramen)"
+    ]
+  },
+  {
+    "id": 4132,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Fish Head Curry Flavor",
+    "url": "https://www.theramenrater.com/2022/04/27/4235-nissin-cup-noodles-fish-head-curry-flavor-singapore/",
+    "slug": "4235 nissin cup noodles fish head curry flavor singapore",
+    "score": 0.845,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 4235,
+    "reasons": [
+      "slug contains #4235 (different ramen)"
+    ]
+  },
+  {
+    "id": 1363,
+    "brand": "Sau Tao",
+    "variety": "Instant Noodle King Won Ton Flavor",
+    "url": "https://www.theramenrater.com/2014/04/17/1348-sau-tao-instant-noodle-king-wonton-soup-flavor/",
+    "slug": "1348 sau tao instant noodle king wonton soup flavor",
+    "score": 0.882,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 1348,
+    "reasons": [
+      "slug contains #1348 (different ramen)"
+    ]
+  },
+  {
+    "id": 3925,
+    "brand": "Mamee",
+    "variety": "Monster x Daebak Ghost Pepper Mie Goreng Indonesia",
+    "url": "https://www.theramenrater.com/2021/08/19/3976-mamee-monster-x-daebak-ghost-pepper-mie-goreng-indonesia-malaysia/",
+    "slug": "3976 mamee monster x daebak ghost pepper mie goreng indonesia malaysia",
+    "score": 0.889,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 3976,
+    "reasons": [
+      "slug contains #3976 (different ramen)"
+    ]
+  },
+  {
+    "id": 1365,
+    "brand": "Four Seas",
+    "variety": "Seaweed Hot and Spicy Instant Noodle Mushroom and Beef Flavor",
+    "url": "https://www.theramenrater.com/2014/04/20/1350-four-seas-seaweed-hot-spicy-instant-noodle-mushroom-beef-flavour/",
+    "slug": "1350 four seas seaweed hot spicy instant noodle mushroom beef flavour",
+    "score": 0.9,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 1350,
+    "reasons": [
+      "slug contains #1350 (different ramen)"
+    ]
+  },
+  {
+    "id": 1367,
+    "brand": "Sawadee",
+    "variety": "Instant Noodles Vegetable and Mushroom Flavor",
+    "url": "https://www.theramenrater.com/2014/04/23/1351-sawadee-instant-noodles-vegetable-mushroom-flavour/",
+    "slug": "1351 sawadee instant noodles vegetable mushroom flavour",
+    "score": 0.907,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 1351,
+    "reasons": [
+      "slug contains #1351 (different ramen)"
+    ]
+  },
+  {
+    "id": 2634,
+    "brand": "Samyang Foods",
+    "variety": "Ramen Bokki",
+    "url": "https://www.theramenrater.com/2017/11/30/2534-samyang-foods-ramen-bokki/",
+    "slug": "2534 samyang foods ramen bokki",
+    "score": 0.909,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 2534,
+    "reasons": [
+      "slug contains #2534 (different ramen)"
+    ]
+  },
+  {
+    "id": 1231,
+    "brand": "A-Sha",
+    "variety": "Instant Noodle Shallot Flavor",
+    "url": "https://www.theramenrater.com/2013/11/21/1230-a-sha-instant-noodle-shallot-flavor/",
+    "slug": "1230 a sha instant noodle shallot flavor",
+    "score": 0.919,
+    "has_id": false,
+    "has_brand": false,
+    "wrong_id": 1230,
+    "reasons": [
+      "slug contains #1230 (different ramen)"
+    ]
+  },
+  {
+    "id": 1370,
+    "brand": "Papa",
+    "variety": "Oriental Style Instant 'Kua-Chap'",
+    "url": "https://www.theramenrater.com/2014/04/25/1352-papa-oriental-style-instant-kua-chap/",
+    "slug": "1352 papa oriental style instant kua chap",
+    "score": 0.921,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 1352,
+    "reasons": [
+      "slug contains #1352 (different ramen)"
+    ]
+  },
+  {
+    "id": 2136,
+    "brand": "Nissin",
+    "variety": "Demae Ramen Roast Beef Flavor Instant Noodles",
+    "url": "https://www.theramenrater.com/2016/08/11/2106-nissin-demae-ramen-roast-beef-flavour-instant-noodle/",
+    "slug": "2106 nissin demae ramen roast beef flavour instant noodle",
+    "score": 0.936,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 2106,
+    "reasons": [
+      "slug contains #2106 (different ramen)"
+    ]
+  },
+  {
+    "id": 852,
+    "brand": "SuperMi",
+    "variety": "Sedaap Mi Kuah Rasa Kari Ayam",
+    "url": "https://www.theramenrater.com/2012/09/03/862-supermi-sedaaap-mi-kuah-rasa-kari-ayam/",
+    "slug": "862 supermi sedaaap mi kuah rasa kari ayam",
+    "score": 0.937,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 862,
+    "reasons": [
+      "slug contains #862 (different ramen)"
+    ]
+  },
+  {
+    "id": 1364,
+    "brand": "Golden Wheat",
+    "variety": "Korean Style Stew Pork Flavor Noodle Soup",
+    "url": "https://www.theramenrater.com/2014/04/19/1349-golden-wheat-korean-style-stew-pork-flavour-noodle-soup/",
+    "slug": "1349 golden wheat korean style stew pork flavour noodle soup",
+    "score": 0.947,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 1349,
+    "reasons": [
+      "slug contains #1349 (different ramen)"
+    ]
+  },
+  {
+    "id": 2074,
+    "brand": "Nissin",
+    "variety": "Cup Noodles Sabor Pollo Habanero Y Limon Sopa Instantanea",
+    "url": "https://www.theramenrater.com/2016/06/12/2043-nissin-cup-noodles-sabor-pollo-habanero-y-limon-sopa-instantanea/",
+    "slug": "2043 nissin cup noodles sabor pollo habanero y limon sopa instantanea",
+    "score": 0.962,
+    "has_id": false,
+    "has_brand": true,
+    "wrong_id": 2043,
+    "reasons": [
+      "slug contains #2043 (different ramen)"
+    ]
+  }
+]

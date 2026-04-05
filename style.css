@@ -161,9 +161,32 @@ a:hover {
   border-bottom: 2px solid var(--yellow);
 }
 
+.header-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
 #app-header h1 {
   font-size: 1.6rem;
   margin: 0;
+  white-space: nowrap;
+}
+
+.header-credit {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.header-credit a {
+  color: var(--yellow);
+  text-decoration: none;
+}
+
+.header-credit a:hover {
+  text-decoration: underline;
 }
 
 #settings-btn {
@@ -304,13 +327,17 @@ a:hover {
   position: absolute;
   right: 10px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(calc(-50% - 1px));
   background: none;
   border: none;
   color: var(--text-muted);
   font-size: 1.3rem;
+  line-height: 1;
   cursor: pointer;
   padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ---- VIEW CONTROLS ---- */
