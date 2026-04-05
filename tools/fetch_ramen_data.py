@@ -988,6 +988,18 @@ def _recompress_single(path, Image):
         print(f"      Recompress error: {e}")
 
 
+def _recompress_scan(Image):
+    """Scan all ramen and brand images, recompress any that need it."""
+    for directory, pattern in [(IMAGES_DIR, "*.webp"), (BRAND_DIR, "*.png")]:
+        if not directory.exists():
+            continue
+        for img_file in directory.glob(pattern):
+            try:
+                _recompress_single(img_file, Image)
+            except Exception:
+                pass
+
+
 def _recompress_dir(directory, patterns, fmt, quality, Image):
     """Recompress images in a directory that exceed size/width limits. Returns count."""
     if not directory.exists():
@@ -1293,17 +1305,8 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
         elif existing_pop:
             print(f"      Popularity: {existing_pop:,} (cached)")
 
-        # Check all images in both ramen and brand directories for recompression
         if has_pillow:
-            for directory, pattern in [(IMAGES_DIR, "*.webp"), (BRAND_DIR, "*.png")]:
-                if not directory.exists():
-                    continue
-                for img_file in directory.glob(pattern):
-                    try:
-                        if img_file.stat().st_size > MAX_FILE_SIZE:
-                            _recompress_single(img_file, Image)
-                    except Exception:
-                        pass
+            _recompress_scan(Image)
 
     _ramen_by_id = {r['id']: r for r in ramen_list}
 
@@ -1371,6 +1374,9 @@ def fetch_images_and_popularity(ramen_list, limit=None, panel=None):
                 if panel:
                     panel.set_progress(f"{prefix} {r['variety'][:30]}")
                     panel.set_status(f"Engine: {_get_engine().title()}")
+
+                if has_pillow:
+                    _recompress_scan(Image)
 
                 engine = _get_engine()
                 wait = random.uniform(3, 12)
