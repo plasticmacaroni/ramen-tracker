@@ -318,6 +318,7 @@ export function importBackup(file) {
           reject(new Error('Invalid backup file'));
           return;
         }
+        _mergeCustomRamenImages(imported);
         data = { ...defaultData(), ...imported };
         save();
         resolve(data);
@@ -760,6 +761,16 @@ async function _tryNibbleDecode(file, bitmapStrategies, startRow, decoderFn) {
   return lastError;
 }
 
+function _mergeCustomRamenImages(imported) {
+  const oldCustom = data?.customRamen || {};
+  const newCustom = imported.customRamen || {};
+  for (const id of Object.keys(newCustom)) {
+    if (!newCustom[id].imageData && oldCustom[id]?.imageData) {
+      newCustom[id].imageData = oldCustom[id].imageData;
+    }
+  }
+}
+
 async function _importBackupImage(file) {
   const fileBytes = new Uint8Array(await file.arrayBuffer());
   const chunkData = _extractPNGChunk(fileBytes);
@@ -771,6 +782,7 @@ async function _importBackupImage(file) {
     if (!imported.ratings || !imported.rankedList) {
       throw new Error('Invalid backup data in image');
     }
+    _mergeCustomRamenImages(imported);
     data = { ...defaultData(), ...imported };
     save();
     return data;
@@ -784,6 +796,7 @@ async function _importBackupImage(file) {
   // Try binary (1-bit/channel) data below guard band — survives JPEG recompression
   const binResult = await _tryNibbleDecode(file, bitmapStrategies, _BIN_DATA_START, _decodeBinaryPixels);
   if (binResult && !(binResult instanceof Error)) {
+    _mergeCustomRamenImages(binResult);
     data = { ...defaultData(), ...binResult };
     save();
     return data;
@@ -792,6 +805,7 @@ async function _importBackupImage(file) {
   // Try nibble data below the branded card (older format with sync header)
   const cardResult = await _tryNibbleDecode(file, bitmapStrategies, _CARD_H, _decodeSyncPixels);
   if (cardResult && !(cardResult instanceof Error)) {
+    _mergeCustomRamenImages(cardResult);
     data = { ...defaultData(), ...cardResult };
     save();
     return data;
@@ -800,6 +814,7 @@ async function _importBackupImage(file) {
   // Fall back to full-image nibble decode (legacy RAMEN header format)
   const legacyResult = await _tryNibbleDecode(file, bitmapStrategies, 0, _decodeBackupPixels);
   if (legacyResult && !(legacyResult instanceof Error)) {
+    _mergeCustomRamenImages(legacyResult);
     data = { ...defaultData(), ...legacyResult };
     save();
     return data;
